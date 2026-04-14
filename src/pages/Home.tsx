@@ -5,7 +5,7 @@ import {
   calculateStandings, getNextMatch, getNextMatchday,
   getRecentResults, getPlayer,
 } from "@/data/leagueData";
-import logo from "@/assets/logo.jpg";
+import logo from "@/assets/logo-circle.png";
 
 function Countdown({ targetDate }: { targetDate: string }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
@@ -68,7 +68,7 @@ export default function Home() {
       <section className="relative py-16 md:py-24 px-4 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
         <div className="relative z-10 max-w-4xl mx-auto">
-          <img src={logo} alt="BPL Logo" className="h-32 w-32 md:h-40 md:w-40 mx-auto mb-6 rounded-2xl object-contain" />
+          <img src={logo} alt="BPL Logo" className="h-32 w-32 md:h-40 md:w-40 mx-auto mb-6 rounded-full object-cover" />
           <h1 className="font-heading text-7xl md:text-9xl text-foreground leading-none">
             Bro Premier League
           </h1>
