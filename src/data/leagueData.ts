@@ -22,14 +22,14 @@ export interface Matchday {
 }
 
 export const players: Player[] = [
-  { id: 1, name: "Андрій", club: "Динамо Київ", platform: "PS5", clubColor: "217 78% 57%" },
+  { id: 1, name: "Андрій", club: "Динамо Київ", platform: "PC", clubColor: "217 78% 57%" },
   { id: 2, name: "Влад", club: "Аль Наср", platform: "PS5", clubColor: "42 87% 55%" },
   { id: 3, name: "Коля", club: "Брайтон", platform: "Xbox", clubColor: "217 90% 50%" },
   { id: 4, name: "Міша", club: "Атлетіко Мадрид", platform: "PS5", clubColor: "0 70% 50%" },
   { id: 5, name: "Жека", club: "Бенфіка", platform: "PS5", clubColor: "0 80% 45%" },
-  { id: 6, name: "Ігор", club: "Ліон", platform: "Xbox", clubColor: "217 60% 45%" },
+  { id: 6, name: "Ігор", club: "Ліон", platform: "PS5", clubColor: "217 60% 45%" },
   { id: 7, name: "Сашко", club: "Реал Мадрид", platform: "PS5", clubColor: "0 0% 95%" },
-  { id: 8, name: "Олексій", club: "Ліль", platform: "PC", clubColor: "0 75% 40%" },
+  { id: 8, name: "Олексій", club: "Ліль", platform: "PS5", clubColor: "0 75% 40%" },
   { id: 9, name: "Сергій", club: "Марсель", platform: "PS5", clubColor: "200 70% 55%" },
 ];
 
