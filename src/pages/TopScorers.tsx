@@ -5,16 +5,16 @@ export default function TopScorers() {
   const scorers = getTopScorers();
 
   const medalColors = [
-    "text-accent", // gold
-    "text-gray-300", // silver
-    "text-amber-700", // bronze
+    "text-accent",
+    "text-gray-300",
+    "text-amber-700",
   ];
 
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-3xl">
         <h1 className="font-heading text-5xl mb-8 flex items-center gap-3">
-          <Trophy className="h-10 w-10 text-accent" /> Top Scorers
+          <Trophy className="h-10 w-10 text-accent" /> Бомбардири
         </h1>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -22,9 +22,9 @@ export default function TopScorers() {
             <thead>
               <tr className="border-b border-border text-muted-foreground">
                 <th className="py-3 px-4 text-left">#</th>
-                <th className="py-3 px-4 text-left">Player</th>
-                <th className="py-3 px-4 text-left">Club</th>
-                <th className="py-3 px-4 text-center font-bold">Goals</th>
+                <th className="py-3 px-4 text-left">Гравець</th>
+                <th className="py-3 px-4 text-left">Клуб</th>
+                <th className="py-3 px-4 text-center font-bold">Голи</th>
               </tr>
             </thead>
             <tbody>

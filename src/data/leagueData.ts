@@ -3,139 +3,134 @@ export interface Player {
   name: string;
   club: string;
   platform: "PS5" | "Xbox" | "PC";
-  clubColor: string; // HSL accent color for the club
+  clubColor: string;
 }
 
 export interface Match {
-  home: number; // player id
-  away: number; // player id
+  home: number;
+  away: number;
   homeScore: number | null;
   awayScore: number | null;
 }
 
 export interface Matchday {
   number: number;
-  date: string; // e.g. "2026-04-17"
+  date: string;
+  label: string;
   matches: Match[];
-  bye: number; // player id who has a bye
+  bye: number;
 }
 
 export const players: Player[] = [
-  { id: 1, name: "Андрій", club: "Dynamo Kyiv", platform: "PS5", clubColor: "217 78% 57%" },
-  { id: 2, name: "Влад", club: "Al Nassr", platform: "PS5", clubColor: "42 87% 55%" },
-  { id: 3, name: "Коля", club: "Brighton", platform: "Xbox", clubColor: "217 90% 50%" },
-  { id: 4, name: "Міша", club: "Atletico Madrid", platform: "PS5", clubColor: "0 70% 50%" },
-  { id: 5, name: "Жека", club: "Benfica", platform: "PS5", clubColor: "0 80% 45%" },
-  { id: 6, name: "Ігор", club: "Lyon", platform: "Xbox", clubColor: "217 60% 45%" },
-  { id: 7, name: "Сашко", club: "Real Madrid", platform: "PS5", clubColor: "0 0% 95%" },
-  { id: 8, name: "Олексій", club: "Lille", platform: "PC", clubColor: "0 75% 40%" },
-  { id: 9, name: "Сергій", club: "Marseille", platform: "PS5", clubColor: "200 70% 55%" },
+  { id: 1, name: "Андрій", club: "Динамо Київ", platform: "PS5", clubColor: "217 78% 57%" },
+  { id: 2, name: "Влад", club: "Аль Наср", platform: "PS5", clubColor: "42 87% 55%" },
+  { id: 3, name: "Коля", club: "Брайтон", platform: "Xbox", clubColor: "217 90% 50%" },
+  { id: 4, name: "Міша", club: "Атлетіко Мадрид", platform: "PS5", clubColor: "0 70% 50%" },
+  { id: 5, name: "Жека", club: "Бенфіка", platform: "PS5", clubColor: "0 80% 45%" },
+  { id: 6, name: "Ігор", club: "Ліон", platform: "Xbox", clubColor: "217 60% 45%" },
+  { id: 7, name: "Сашко", club: "Реал Мадрид", platform: "PS5", clubColor: "0 0% 95%" },
+  { id: 8, name: "Олексій", club: "Ліль", platform: "PC", clubColor: "0 75% 40%" },
+  { id: 9, name: "Сергій", club: "Марсель", platform: "PS5", clubColor: "200 70% 55%" },
 ];
 
-// Round-robin schedule for 9 players (using dummy player 0 for byes)
-// Each round: 4 matches + 1 bye. Double round-robin = 18 matchdays.
-// Season: Apr 17 – Jun 15, 2026 (every ~3.5 days)
+function m(home: number, away: number): Match {
+  return { home, away, homeScore: null, awayScore: null };
+}
 
-const matchdayDates = [
-  "2026-04-17", "2026-04-20", "2026-04-23", "2026-04-26",
-  "2026-04-29", "2026-05-02", "2026-05-05", "2026-05-08",
-  "2026-05-11", "2026-05-14", "2026-05-17", "2026-05-20",
-  "2026-05-23", "2026-05-26", "2026-05-29", "2026-06-01",
-  "2026-06-05", "2026-06-08",
+export const matchdays: Matchday[] = [
+  // === ПЕРШЕ КОЛО ===
+  {
+    number: 1, date: "2026-04-17", label: "Пт–Сб 17–18.04 · Перше коло",
+    bye: 5,
+    matches: [m(4, 1), m(3, 2), m(9, 7), m(8, 6)],
+  },
+  {
+    number: 2, date: "2026-04-19", label: "Нд 19.04 · Перше коло",
+    bye: 5,
+    matches: [m(2, 1), m(8, 3), m(4, 9), m(6, 7)],
+  },
+  {
+    number: 3, date: "2026-04-26", label: "Сб 26.04 · Перше коло",
+    bye: 4,
+    matches: [m(1, 8), m(5, 6), m(3, 9), m(7, 2)],
+  },
+  {
+    number: 4, date: "2026-04-27", label: "Нд 27.04 · Перше коло",
+    bye: 1,
+    matches: [m(3, 4), m(8, 9), m(6, 2), m(5, 7)],
+  },
+  {
+    number: 5, date: "2026-05-03", label: "Сб 03.05 · Перше коло",
+    bye: 7,
+    matches: [m(1, 9), m(3, 5), m(2, 6), m(4, 8)],
+  },
+  {
+    number: 6, date: "2026-05-04", label: "Нд 04.05 · Перше коло",
+    bye: 6,
+    matches: [m(1, 3), m(7, 4), m(5, 9), m(2, 8)],
+  },
+  {
+    number: 7, date: "2026-05-10", label: "Сб 10.05 · Перше коло",
+    bye: 8,
+    matches: [m(9, 6), m(4, 5), m(1, 2), m(7, 3)],
+  },
+  {
+    number: 8, date: "2026-05-11", label: "Нд 11.05 · Перше коло",
+    bye: 4,
+    matches: [m(6, 1), m(8, 7), m(5, 3), m(9, 2)],
+  },
+  {
+    number: 9, date: "2026-05-17", label: "Сб 17.05 · Перше коло",
+    bye: 6,
+    matches: [m(1, 4), m(8, 5), m(7, 9), m(2, 3)],
+  },
+  // === ДРУГЕ КОЛО ===
+  {
+    number: 10, date: "2026-05-18", label: "Нд 18.05 · Друге коло",
+    bye: 8,
+    matches: [m(6, 9), m(2, 4), m(5, 1), m(3, 7)],
+  },
+  {
+    number: 11, date: "2026-05-24", label: "Сб 24.05 · Друге коло",
+    bye: 2,
+    matches: [m(5, 8), m(6, 3), m(7, 1), m(9, 4)],
+  },
+  {
+    number: 12, date: "2026-05-25", label: "Нд 25.05 · Друге коло",
+    bye: 1,
+    matches: [m(4, 2), m(9, 3), m(7, 5), m(6, 8)],
+  },
+  {
+    number: 13, date: "2026-05-31", label: "Сб 31.05 · Друге коло",
+    bye: 3,
+    matches: [m(9, 8), m(4, 6), m(2, 5), m(1, 7)],
+  },
+  {
+    number: 14, date: "2026-06-01", label: "Нд 01.06 · Друге коло",
+    bye: 7,
+    matches: [m(3, 8), m(1, 6), m(5, 4), m(2, 9)],
+  },
+  {
+    number: 15, date: "2026-06-07", label: "Сб 07.06 · Друге коло",
+    bye: 2,
+    matches: [m(4, 7), m(8, 1), m(3, 6), m(9, 5)],
+  },
+  {
+    number: 16, date: "2026-06-08", label: "Нд 08.06 · Друге коло",
+    bye: 9,
+    matches: [m(4, 3), m(7, 6), m(8, 2), m(1, 5)],
+  },
+  {
+    number: 17, date: "2026-06-14", label: "Сб 14.06 · Друге коло",
+    bye: 9,
+    matches: [m(2, 7), m(8, 4), m(3, 1), m(6, 5)],
+  },
+  {
+    number: 18, date: "2026-06-15", label: "Нд 15.06 · Друге коло",
+    bye: 3,
+    matches: [m(9, 1), m(5, 2), m(7, 8), m(6, 4)],
+  },
 ];
-
-// Generate round-robin pairings for 9 players (+ phantom 0)
-function generateRoundRobin(): { matches: [number, number][]; bye: number }[] {
-  const n = 10; // 9 players + 1 phantom (id 0)
-  const ids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const rounds: { matches: [number, number][]; bye: number }[] = [];
-
-  for (let r = 0; r < n - 1; r++) {
-    const roundMatches: [number, number][] = [];
-    let byePlayer = 0;
-
-    for (let i = 0; i < n / 2; i++) {
-      const home = ids[i];
-      const away = ids[n - 1 - i];
-      if (home === 0) {
-        byePlayer = away;
-      } else if (away === 0) {
-        byePlayer = home;
-      } else {
-        roundMatches.push([home, away]);
-      }
-    }
-
-    rounds.push({ matches: roundMatches, bye: byePlayer });
-
-    // Rotate: fix first element, rotate rest
-    const last = ids.pop()!;
-    ids.splice(1, 0, last);
-  }
-
-  return rounds;
-}
-
-const singleRound = generateRoundRobin();
-
-// Build matchdays: first 9 = first leg, next 9 = reverse leg
-function buildMatchdays(): Matchday[] {
-  const mds: Matchday[] = [];
-
-  for (let i = 0; i < 9; i++) {
-    const r = singleRound[i];
-    mds.push({
-      number: i + 1,
-      date: matchdayDates[i],
-      matches: r.matches.map(([h, a]) => ({
-        home: h,
-        away: a,
-        homeScore: null,
-        awayScore: null,
-      })),
-      bye: r.bye,
-    });
-  }
-
-  // Reverse fixtures for second leg
-  for (let i = 0; i < 9; i++) {
-    const r = singleRound[i];
-    mds.push({
-      number: i + 10,
-      date: matchdayDates[i + 9],
-      matches: r.matches.map(([h, a]) => ({
-        home: a,
-        away: h,
-        homeScore: null,
-        awayScore: null,
-      })),
-      bye: r.bye,
-    });
-  }
-
-  return mds;
-}
-
-export const matchdays: Matchday[] = buildMatchdays();
-
-// Add some placeholder scores for matchday 1 and 2
-matchdays[0].matches[0].homeScore = 3;
-matchdays[0].matches[0].awayScore = 1;
-matchdays[0].matches[1].homeScore = 2;
-matchdays[0].matches[1].awayScore = 2;
-matchdays[0].matches[2].homeScore = 0;
-matchdays[0].matches[2].awayScore = 1;
-matchdays[0].matches[3].homeScore = 4;
-matchdays[0].matches[3].awayScore = 2;
-
-matchdays[1].matches[0].homeScore = 1;
-matchdays[1].matches[0].awayScore = 0;
-matchdays[1].matches[1].homeScore = 3;
-matchdays[1].matches[1].awayScore = 3;
-matchdays[1].matches[2].homeScore = 2;
-matchdays[1].matches[2].awayScore = 1;
-matchdays[1].matches[3].homeScore = 0;
-matchdays[1].matches[3].awayScore = 2;
 
 // Helper functions
 export function getPlayer(id: number): Player {
@@ -168,23 +163,23 @@ export function calculateStandings(): Standing[] {
   });
 
   matchdays.forEach(md => {
-    md.matches.forEach(m => {
-      if (m.homeScore === null || m.awayScore === null) return;
+    md.matches.forEach(match => {
+      if (match.homeScore === null || match.awayScore === null) return;
 
-      const home = stats[m.home];
-      const away = stats[m.away];
+      const home = stats[match.home];
+      const away = stats[match.away];
 
       home.played++;
       away.played++;
-      home.goalsFor += m.homeScore;
-      home.goalsAgainst += m.awayScore;
-      away.goalsFor += m.awayScore;
-      away.goalsAgainst += m.homeScore;
+      home.goalsFor += match.homeScore;
+      home.goalsAgainst += match.awayScore;
+      away.goalsFor += match.awayScore;
+      away.goalsAgainst += match.homeScore;
 
-      if (m.homeScore > m.awayScore) {
+      if (match.homeScore > match.awayScore) {
         home.won++; home.points += 3; home.form.push("W");
         away.lost++; away.form.push("L");
-      } else if (m.homeScore < m.awayScore) {
+      } else if (match.homeScore < match.awayScore) {
         away.won++; away.points += 3; away.form.push("W");
         home.lost++; home.form.push("L");
       } else {
@@ -209,9 +204,9 @@ export function getTopScorers(): { playerId: number; goals: number }[] {
   players.forEach(p => { goals[p.id] = 0; });
 
   matchdays.forEach(md => {
-    md.matches.forEach(m => {
-      if (m.homeScore !== null) goals[m.home] += m.homeScore;
-      if (m.awayScore !== null) goals[m.away] += m.awayScore;
+    md.matches.forEach(match => {
+      if (match.homeScore !== null) goals[match.home] += match.homeScore;
+      if (match.awayScore !== null) goals[match.away] += match.awayScore;
     });
   });
 
@@ -220,24 +215,31 @@ export function getTopScorers(): { playerId: number; goals: number }[] {
     .sort((a, b) => b.goals - a.goals);
 }
 
+export function getNextMatchday(): Matchday | null {
+  for (const md of matchdays) {
+    if (md.matches.some(m => m.homeScore === null)) return md;
+  }
+  return null;
+}
+
 export function getNextMatch(): { matchday: Matchday; match: Match } | null {
   for (const md of matchdays) {
-    for (const m of md.matches) {
-      if (m.homeScore === null) {
-        return { matchday: md, match: m };
+    for (const match of md.matches) {
+      if (match.homeScore === null) {
+        return { matchday: md, match };
       }
     }
   }
   return null;
 }
 
-export function getRecentResults(): { matchday: Matchday; match: Match }[] {
+export function getRecentResults(count: number = 5): { matchday: Matchday; match: Match }[] {
   const results: { matchday: Matchday; match: Match }[] = [];
   for (const md of [...matchdays].reverse()) {
-    for (const m of [...md.matches].reverse()) {
-      if (m.homeScore !== null) {
-        results.push({ matchday: md, match: m });
-        if (results.length >= 6) return results;
+    for (const match of [...md.matches].reverse()) {
+      if (match.homeScore !== null) {
+        results.push({ matchday: md, match });
+        if (results.length >= count) return results;
       }
     }
   }
