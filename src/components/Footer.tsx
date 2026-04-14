@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Logo & About */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src={logo} alt="BPL" className="h-10 w-10 rounded-lg object-contain" />
+              <img src={logo} alt="BPL" className="h-10 w-10 rounded-full object-cover" />
               <span className="font-heading text-2xl">Bro Premier League</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
