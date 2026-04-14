@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['"Bebas Neue"', 'cursive'],
+        heading: ['"Bebas Neue"', 'sans-serif'],
         sans: ['Inter', 'sans-serif'],
       },
       colors: {
