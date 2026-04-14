@@ -3,7 +3,6 @@ import { matchdays, getPlayer } from "@/data/leagueData";
 
 export default function Fixtures() {
   const [filter, setFilter] = useState<number | "all">("all");
-
   const filtered = filter === "all" ? matchdays : matchdays.filter(md => md.number === filter);
 
   return (
@@ -11,7 +10,6 @@ export default function Fixtures() {
       <div className="container mx-auto max-w-4xl">
         <h1 className="font-heading text-5xl mb-8">Матчі та Результати</h1>
 
-        {/* Filter */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-2">
             <button
@@ -36,7 +34,6 @@ export default function Fixtures() {
           </div>
         </div>
 
-        {/* Matchday cards */}
         <div className="space-y-6">
           {filtered.map(md => {
             const isOpening = md.number === 1;
@@ -49,11 +46,11 @@ export default function Fixtures() {
                   isOpening ? "border-accent shadow-lg shadow-accent/10" : "border-border"
                 }`}
               >
-                <div className={`px-5 py-3 flex items-center justify-between ${
+                <div className={`px-6 py-4 flex items-center justify-between ${
                   isOpening ? "bg-accent/10" : "bg-secondary/50"
                 }`}>
                   <div>
-                    <span className={`font-heading text-xl ${isOpening ? "text-accent" : ""}`}>
+                    <span className={`font-heading text-2xl ${isOpening ? "text-accent" : ""}`}>
                       Тур {md.number}
                     </span>
                     {isOpening && (
@@ -62,7 +59,7 @@ export default function Fixtures() {
                       </span>
                     )}
                   </div>
-                  <span className="text-sm text-muted-foreground">{md.label}</span>
+                  <span className="text-base text-muted-foreground">{md.label}</span>
                 </div>
 
                 <div className="divide-y divide-border">
@@ -75,33 +72,33 @@ export default function Fixtures() {
                     return (
                       <div
                         key={mi}
-                        className={`px-5 py-3 flex items-center justify-between ${
+                        className={`px-6 py-4 flex items-center justify-between ${
                           isFirstEver ? "bg-accent/5" : ""
                         }`}
                       >
                         <div className="flex-1 text-right">
-                          <span className="font-medium">{home.name}</span>
-                          <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">{home.club}</span>
+                          <span className="font-medium text-lg">{home.name}</span>
+                          <span className="text-sm text-muted-foreground ml-2 hidden sm:inline">{home.club}</span>
                         </div>
-                        <div className="mx-4 min-w-[60px] text-center">
+                        <div className="mx-5 min-w-[70px] text-center">
                           {played ? (
-                            <span className="font-heading text-xl text-accent">
+                            <span className="font-heading text-2xl text-accent">
                               {m.homeScore} - {m.awayScore}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground font-heading text-lg">VS</span>
+                            <span className="text-muted-foreground font-heading text-2xl">VS</span>
                           )}
                         </div>
                         <div className="flex-1 text-left">
-                          <span className="text-xs text-muted-foreground mr-2 hidden sm:inline">{away.club}</span>
-                          <span className="font-medium">{away.name}</span>
+                          <span className="text-sm text-muted-foreground mr-2 hidden sm:inline">{away.club}</span>
+                          <span className="font-medium text-lg">{away.name}</span>
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                <div className="px-5 py-2 bg-secondary/30 text-xs text-muted-foreground">
+                <div className="px-6 py-3 bg-secondary/30 text-sm text-muted-foreground">
                   🔴 Відпочиває: {byePlayer.name} ({byePlayer.club})
                 </div>
               </div>

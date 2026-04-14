@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Crown } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, X } from "lucide-react";
+import logo from "@/assets/logo.jpg";
 
 const navLinks = [
   { path: "/", label: "Головна" },
@@ -11,13 +12,13 @@ const navLinks = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const location = useLocation();
+  const location = window.location;
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2">
-          <Crown className="h-8 w-8 text-accent" />
+          <img src={logo} alt="BPL" className="h-10 w-10 rounded-lg object-contain" />
           <span className="font-heading text-2xl tracking-wider text-foreground">BPL</span>
         </Link>
 
