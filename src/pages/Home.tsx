@@ -69,7 +69,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
         <div className="relative z-10 max-w-4xl mx-auto">
           <img src={logo} alt="BPL Logo" className="h-32 w-32 md:h-40 md:w-40 mx-auto mb-6 rounded-full object-cover" />
-          <h1 className="font-heading text-7xl md:text-9xl text-foreground leading-none">
+          <h1 className="font-heading text-5xl md:text-7xl text-foreground leading-none">
             Bro Premier League
           </h1>
           <p className="mt-6 text-xl md:text-2xl text-muted-foreground">
