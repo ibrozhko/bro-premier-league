@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import logo from "@/assets/logo-circle.png";
+import logo from "@/assets/logo.svg";
 
 const navLinks = [
   { path: "/", label: "Головна" },

@@ -5,7 +5,7 @@ import {
   calculateStandings, getNextMatch, getNextMatchday,
   getRecentResults, getPlayer,
 } from "@/data/leagueData";
-import logo from "@/assets/logo-circle.png";
+import logo from "@/assets/logo.svg";
 
 function Countdown({ targetDate }: { targetDate: string }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
