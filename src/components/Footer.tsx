@@ -1,5 +1,5 @@
 import { Twitch } from "lucide-react";
-import logo from "@/assets/logo.jpg";
+import logo from "@/assets/logo-circle.png";
 
 export default function Footer() {
   return (
