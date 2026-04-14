@@ -1,0 +1,58 @@
+import { players, calculateStandings, getTopScorers } from "@/data/leagueData";
+import { Gamepad2, Monitor } from "lucide-react";
+
+export default function Players() {
+  const standings = calculateStandings();
+  const scorers = getTopScorers();
+
+  return (
+    <div className="min-h-screen py-12 px-4">
+      <div className="container mx-auto max-w-5xl">
+        <h1 className="font-heading text-5xl mb-8">Players</h1>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {players.map(p => {
+            const s = standings.find(st => st.playerId === p.id)!;
+            const goals = scorers.find(sc => sc.playerId === p.id)?.goals ?? 0;
+
+            return (
+              <div
+                key={p.id}
+                className="bg-card rounded-xl border border-border p-5 relative overflow-hidden"
+              >
+                <div
+                  className="absolute top-0 left-0 w-1 h-full"
+                  style={{ backgroundColor: `hsl(${p.clubColor})` }}
+                />
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="font-heading text-2xl">{p.name}</h3>
+                    <p className="text-sm text-muted-foreground">{p.club}</p>
+                  </div>
+                  <span className="flex items-center gap-1 text-xs bg-secondary px-2 py-1 rounded-md text-muted-foreground">
+                    {p.platform === "PC" ? <Monitor className="h-3 w-3" /> : <Gamepad2 className="h-3 w-3" />}
+                    {p.platform}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {[
+                    { label: "P", value: s.played },
+                    { label: "GF", value: goals },
+                    { label: "GA", value: s.goalsAgainst },
+                    { label: "Pts", value: s.points },
+                  ].map(stat => (
+                    <div key={stat.label} className="bg-secondary rounded-lg py-2">
+                      <div className="font-heading text-lg text-accent">{stat.value}</div>
+                      <div className="text-[10px] text-muted-foreground uppercase">{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
