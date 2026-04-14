@@ -9,7 +9,7 @@ export default function Fixtures() {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-4xl">
-        <h1 className="font-heading text-5xl mb-8">Fixtures & Results</h1>
+        <h1 className="font-heading text-5xl mb-8">Матчі та Результати</h1>
 
         {/* Filter */}
         <div className="mb-8">
@@ -20,7 +20,7 @@ export default function Fixtures() {
                 filter === "all" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
               }`}
             >
-              All
+              Всі
             </button>
             {matchdays.map(md => (
               <button
@@ -41,9 +41,6 @@ export default function Fixtures() {
           {filtered.map(md => {
             const isOpening = md.number === 1;
             const byePlayer = getPlayer(md.bye);
-            const dateStr = new Date(md.date).toLocaleDateString("en-GB", {
-              weekday: "short", day: "numeric", month: "short", year: "numeric",
-            });
 
             return (
               <div
@@ -57,15 +54,15 @@ export default function Fixtures() {
                 }`}>
                   <div>
                     <span className={`font-heading text-xl ${isOpening ? "text-accent" : ""}`}>
-                      Matchday {md.number}
+                      Тур {md.number}
                     </span>
                     {isOpening && (
                       <span className="ml-2 text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full font-semibold">
-                        OPENING
+                        ВІДКРИТТЯ
                       </span>
                     )}
                   </div>
-                  <span className="text-sm text-muted-foreground">{dateStr}</span>
+                  <span className="text-sm text-muted-foreground">{md.label}</span>
                 </div>
 
                 <div className="divide-y divide-border">
@@ -105,7 +102,7 @@ export default function Fixtures() {
                 </div>
 
                 <div className="px-5 py-2 bg-secondary/30 text-xs text-muted-foreground">
-                  Bye: {byePlayer.name} ({byePlayer.club})
+                  🔴 Відпочиває: {byePlayer.name} ({byePlayer.club})
                 </div>
               </div>
             );

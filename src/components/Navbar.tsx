@@ -3,11 +3,10 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Crown } from "lucide-react";
 
 const navLinks = [
-  { path: "/", label: "Home" },
-  { path: "/standings", label: "Standings" },
-  { path: "/fixtures", label: "Fixtures" },
-  { path: "/players", label: "Players" },
-  { path: "/top-scorers", label: "Top Scorers" },
+  { path: "/", label: "Головна" },
+  { path: "/fixtures", label: "Матчі" },
+  { path: "/players", label: "Гравці" },
+  { path: "/top-scorers", label: "Бомбардири" },
 ];
 
 export default function Navbar() {
@@ -22,7 +21,6 @@ export default function Navbar() {
           <span className="font-heading text-2xl tracking-wider text-foreground">BPL</span>
         </Link>
 
-        {/* Desktop */}
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map(l => (
             <Link
@@ -39,13 +37,11 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Mobile toggle */}
         <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t border-border bg-background px-4 pb-4">
           {navLinks.map(l => (

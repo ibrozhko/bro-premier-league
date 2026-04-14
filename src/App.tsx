@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
-import Standings from "./pages/Standings";
 import Fixtures from "./pages/Fixtures";
 import Players from "./pages/Players";
 import TopScorers from "./pages/TopScorers";
@@ -22,7 +21,6 @@ const App = () => (
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/standings" element={<Standings />} />
           <Route path="/fixtures" element={<Fixtures />} />
           <Route path="/players" element={<Players />} />
           <Route path="/top-scorers" element={<TopScorers />} />

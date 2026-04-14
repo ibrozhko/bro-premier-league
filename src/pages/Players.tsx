@@ -8,7 +8,7 @@ export default function Players() {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-5xl">
-        <h1 className="font-heading text-5xl mb-8">Players</h1>
+        <h1 className="font-heading text-5xl mb-8">Гравці</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {players.map(p => {
@@ -37,10 +37,10 @@ export default function Players() {
 
                 <div className="grid grid-cols-4 gap-2 text-center">
                   {[
-                    { label: "P", value: s.played },
-                    { label: "GF", value: goals },
-                    { label: "GA", value: s.goalsAgainst },
-                    { label: "Pts", value: s.points },
+                    { label: "І", value: s.played },
+                    { label: "ГЗ", value: goals },
+                    { label: "ГП", value: s.goalsAgainst },
+                    { label: "О", value: s.points },
                   ].map(stat => (
                     <div key={stat.label} className="bg-secondary rounded-lg py-2">
                       <div className="font-heading text-lg text-accent">{stat.value}</div>
