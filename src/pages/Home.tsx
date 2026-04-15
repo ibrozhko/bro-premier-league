@@ -116,17 +116,17 @@ export default function Home() {
                   const home = getPlayer(match.home);
                   const away = getPlayer(match.away);
                   return (
-                    <div key={mi} className="px-6 py-5 flex items-center justify-between">
+                    <div key={mi} className="px-3 md:px-6 py-3 md:py-5 flex items-center justify-between">
                       <div className="flex-1 text-right">
-                        <span className="font-medium text-lg">{home.name}</span>
-                        <span className="text-sm text-muted-foreground ml-2 hidden sm:inline">{home.club}</span>
+                        <span className="font-medium text-sm md:text-lg">{home.name}</span>
+                        <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">{home.club}</span>
                       </div>
-                      <div className="mx-5 min-w-[70px] text-center">
-                        <span className="text-muted-foreground font-heading text-3xl">VS</span>
+                      <div className="mx-2 md:mx-5 min-w-[40px] md:min-w-[70px] text-center">
+                        <span className="text-muted-foreground font-heading text-xl md:text-3xl">VS</span>
                       </div>
                       <div className="flex-1 text-left">
-                        <span className="text-sm text-muted-foreground mr-2 hidden sm:inline">{away.club}</span>
-                        <span className="font-medium text-lg">{away.name}</span>
+                        <span className="text-xs text-muted-foreground mr-2 hidden sm:inline">{away.club}</span>
+                        <span className="font-medium text-sm md:text-lg">{away.name}</span>
                       </div>
                     </div>
                   );
