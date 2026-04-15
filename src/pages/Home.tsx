@@ -36,9 +36,9 @@ function Countdown({ targetDate }: { targetDate: string }) {
   return (
     <div className="flex gap-4 justify-center">
       {units.map(u => (
-        <div key={u.label} className="bg-secondary rounded-xl p-4 min-w-[80px] text-center">
-          <div className="font-heading text-5xl text-accent">{u.value}</div>
-          <div className="text-xs text-muted-foreground uppercase mt-1">{u.label}</div>
+        <div key={u.label} className="bg-secondary rounded-xl p-3 md:p-4 min-w-[60px] md:min-w-[80px] text-center">
+          <div className="font-heading text-3xl md:text-5xl text-accent">{u.value}</div>
+          <div className="text-[10px] md:text-xs text-muted-foreground uppercase mt-1">{u.label}</div>
         </div>
       ))}
     </div>
@@ -69,10 +69,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
         <div className="relative z-10 max-w-4xl mx-auto">
           <img src={logo} alt="BPL Logo" className="h-32 w-32 md:h-40 md:w-40 mx-auto mb-6 rounded-full object-cover" />
-          <h1 className="font-heading text-5xl md:text-7xl text-foreground leading-none">
+          <h1 className="font-heading text-4xl md:text-7xl text-foreground leading-none">
             Bro Premier League
           </h1>
-          <p className="mt-6 text-xl md:text-2xl text-muted-foreground">
+          <p className="mt-4 text-base md:text-2xl text-muted-foreground">
             FC 26 · Приватна Ліга · Сезон 1 · 9 Гравців · 72 Матчі
           </p>
 
@@ -82,15 +82,15 @@ export default function Home() {
               <p className="text-base text-muted-foreground uppercase tracking-widest mb-4">
                 Наступний матч — Тур {next.matchday.number}
               </p>
-              <div className="inline-flex items-center gap-6 bg-card rounded-2xl px-8 py-6 border border-border">
+              <div className="inline-flex items-center gap-4 md:gap-6 bg-card rounded-2xl px-5 md:px-8 py-4 md:py-6 border border-border">
                 <div className="text-right">
-                  <div className="font-heading text-3xl md:text-4xl">{getPlayer(next.match.home).name}</div>
-                  <div className="text-base text-muted-foreground">{getPlayer(next.match.home).club}</div>
+                  <div className="font-heading text-xl md:text-4xl">{getPlayer(next.match.home).name}</div>
+                  <div className="text-xs md:text-base text-muted-foreground">{getPlayer(next.match.home).club}</div>
                 </div>
-                <span className="text-accent font-heading text-3xl md:text-4xl">VS</span>
+                <span className="text-accent font-heading text-2xl md:text-4xl">VS</span>
                 <div className="text-left">
-                  <div className="font-heading text-3xl md:text-4xl">{getPlayer(next.match.away).name}</div>
-                  <div className="text-base text-muted-foreground">{getPlayer(next.match.away).club}</div>
+                  <div className="font-heading text-xl md:text-4xl">{getPlayer(next.match.away).name}</div>
+                  <div className="text-xs md:text-base text-muted-foreground">{getPlayer(next.match.away).club}</div>
                 </div>
               </div>
               <div className="mt-8">
