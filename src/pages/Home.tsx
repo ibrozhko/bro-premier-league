@@ -107,7 +107,7 @@ export default function Home() {
           <div className="container mx-auto max-w-4xl">
             <div className="flex items-center gap-3 mb-6">
               <Calendar className="h-7 w-7 text-primary" />
-              <h2 className="font-heading text-4xl">Ігри Туру {nextMd.number}</h2>
+              <h2 className="font-heading text-2xl md:text-4xl">Ігри Туру {nextMd.number}</h2>
               <span className="text-base text-muted-foreground ml-auto">{nextMd.label}</span>
             </div>
             <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -145,7 +145,7 @@ export default function Home() {
         <section className="py-10 px-4">
           <div className="container mx-auto max-w-4xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-heading text-4xl">Останні Результати</h2>
+              <h2 className="font-heading text-2xl md:text-4xl">Останні Результати</h2>
               <Link to="/fixtures" className="text-primary text-base flex items-center gap-1 hover:underline">
                 Всі матчі <ChevronRight className="h-5 w-5" />
               </Link>
@@ -176,8 +176,8 @@ export default function Home() {
       <section className="py-10 px-4">
         <div className="container mx-auto max-w-5xl">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-heading text-4xl flex items-center gap-3">
-              <Trophy className="h-8 w-8 text-accent" /> Таблиця
+            <h2 className="font-heading text-2xl md:text-4xl flex items-center gap-3">
+              <Trophy className="h-6 w-6 md:h-8 md:w-8 text-accent" /> Таблиця
             </h2>
           </div>
           <div className="bg-card rounded-xl border border-border overflow-x-auto">
