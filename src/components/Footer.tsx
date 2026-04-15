@@ -1,4 +1,4 @@
-import { Twitch } from "lucide-react";
+import { Twitch, Youtube } from "lucide-react";
 import logo from "@/assets/logo.svg";
 
 export default function Footer() {
@@ -33,15 +33,26 @@ export default function Footer() {
           {/* Social */}
           <div>
             <h3 className="font-heading text-xl mb-3">Стежити за лігою</h3>
-            <a
-              href="https://www.twitch.tv/bpl2026"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-secondary hover:bg-secondary/80 transition-colors rounded-lg px-4 py-2.5 text-sm font-medium"
-            >
-              <Twitch className="h-5 w-5 text-purple-400" />
-              <span>BPL на Twitch</span>
-            </a>
+            <div className="flex flex-col gap-3">
+              <a
+                href="https://www.twitch.tv/bpl2026"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-secondary hover:bg-secondary/80 transition-colors rounded-lg px-4 py-2.5 text-sm font-medium"
+              >
+                <Twitch className="h-5 w-5 text-purple-400" />
+                <span>BPL на Twitch</span>
+              </a>
+              <a
+                href="https://www.youtube.com/@BroPremierLeague"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-secondary hover:bg-secondary/80 transition-colors rounded-lg px-4 py-2.5 text-sm font-medium"
+              >
+                <Youtube className="h-5 w-5 text-red-500" />
+                <span>BPL на YouTube</span>
+              </a>
+            </div>
             <p className="text-xs text-muted-foreground mt-4">
               Трансляції матчів та турнірів у прямому ефірі.
             </p>
