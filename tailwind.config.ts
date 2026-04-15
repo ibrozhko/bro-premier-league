@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['"Russo One"', 'sans-serif'],
+        heading: ['"Barlow Condensed"', 'sans-serif'],
         sans: ['Montserrat', 'sans-serif'],
       },
       colors: {
