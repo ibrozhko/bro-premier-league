@@ -161,7 +161,7 @@ export default function Home() {
                     ))}
                   </div>
                   <div className="px-6 py-3 bg-secondary/30 text-sm text-muted-foreground">
-                    🔴 Відпочиває: {getPlayer(nextMd.bye).name} ({getPlayer(nextMd.bye).club})
+                    🏝️ Відпочиває: {getPlayer(nextMd.bye).name} ({getPlayer(nextMd.bye).club})
                   </div>
                 </div>
               </div>
