@@ -102,43 +102,73 @@ export default function Home() {
       </section>
 
       {/* Next Matchday Games */}
-      {nextMd && (
-        <section className="py-10 px-4">
-          <div className="container mx-auto max-w-4xl">
-            <div className="flex items-center gap-3 mb-6">
-              <Calendar className="h-7 w-7 text-primary" />
-              <h2 className="font-heading text-2xl md:text-4xl">Ігри {nextMd.number} Туру</h2>
-              <span className="text-base text-muted-foreground ml-auto">{nextMd.label}</span>
-            </div>
-            <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <div className="divide-y divide-border">
-                {nextMd.matches.map((match, mi) => {
-                  const home = getPlayer(match.home);
-                  const away = getPlayer(match.away);
-                  return (
-                    <div key={mi} className="px-3 md:px-6 py-3 md:py-5 flex items-center justify-between">
-                      <div className="flex-1 text-right">
-                        <div className="font-medium text-base md:text-xl">{home.name}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">{home.club}</div>
-                      </div>
-                      <div className="mx-2 md:mx-5 min-w-[40px] md:min-w-[70px] text-center">
-                        <span className="text-muted-foreground font-heading text-xl md:text-3xl">VS</span>
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="font-medium text-base md:text-xl">{away.name}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">{away.club}</div>
-                      </div>
-                    </div>
-                  );
-                })}
+      {nextMd && (() => {
+        const openingMatch = nextMd.number === 1 ? nextMd.matches[0] : null;
+        const restMatches = nextMd.number === 1 ? nextMd.matches.slice(1) : nextMd.matches;
+
+        const MatchRow = ({ match }: { match: typeof nextMd.matches[0] }) => {
+          const home = getPlayer(match.home);
+          const away = getPlayer(match.away);
+          return (
+            <div className="px-3 md:px-6 py-3 md:py-5 flex items-center justify-between">
+              <div className="flex-1 text-right">
+                <div className="font-medium text-base md:text-xl">{home.name}</div>
+                <div className="text-sm md:text-base text-muted-foreground">{home.club}</div>
               </div>
-              <div className="px-6 py-3 bg-secondary/30 text-sm text-muted-foreground">
-                🔴 Відпочиває: {getPlayer(nextMd.bye).name} ({getPlayer(nextMd.bye).club})
+              <div className="mx-2 md:mx-5 min-w-[40px] md:min-w-[70px] text-center">
+                <span className="text-muted-foreground font-heading text-xl md:text-3xl">VS</span>
+              </div>
+              <div className="flex-1 text-left">
+                <div className="font-medium text-base md:text-xl">{away.name}</div>
+                <div className="text-sm md:text-base text-muted-foreground">{away.club}</div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          );
+        };
+
+        return (
+          <section className="py-10 px-4">
+            <div className="container mx-auto max-w-4xl space-y-6">
+              {/* Opening Match */}
+              {openingMatch && (
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-accent text-xl">⭐</span>
+                    <h2 className="font-heading text-2xl md:text-4xl">Матч Відкриття</h2>
+                    <span className="text-base text-muted-foreground ml-auto">Пт 17.04 · 21:00</span>
+                  </div>
+                  <div className="bg-card rounded-xl border-2 border-accent overflow-hidden">
+                    <MatchRow match={openingMatch} />
+                  </div>
+                </div>
+              )}
+
+              {/* Rest of matchday */}
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <Calendar className="h-7 w-7 text-primary" />
+                  <h2 className="font-heading text-2xl md:text-4xl">
+                    {openingMatch ? `Матчі ${nextMd.number} Туру` : `Ігри ${nextMd.number} Туру`}
+                  </h2>
+                  <span className="text-base text-muted-foreground ml-auto">
+                    {openingMatch ? "Сб 18.04" : nextMd.label}
+                  </span>
+                </div>
+                <div className="bg-card rounded-xl border border-border overflow-hidden">
+                  <div className="divide-y divide-border">
+                    {restMatches.map((match, mi) => (
+                      <MatchRow key={mi} match={match} />
+                    ))}
+                  </div>
+                  <div className="px-6 py-3 bg-secondary/30 text-sm text-muted-foreground">
+                    🔴 Відпочиває: {getPlayer(nextMd.bye).name} ({getPlayer(nextMd.bye).club})
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Recent Results — last 5 */}
       {recent.length > 0 && (
