@@ -169,7 +169,6 @@ export default function Home() {
           </section>
         );
       })()}
-      )}
 
       {/* Recent Results — last 5 */}
       {recent.length > 0 && (
