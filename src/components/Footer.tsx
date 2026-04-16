@@ -52,6 +52,15 @@ export default function Footer() {
                 <Youtube className="h-5 w-5 text-red-500" />
                 <span>BPL на YouTube</span>
               </a>
+              <a
+                href="https://send.monobank.ua/jar/A3ngJfhe2x"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-secondary hover:bg-secondary/80 transition-colors rounded-lg px-4 py-2.5 text-sm font-medium"
+              >
+                <span className="text-lg">🏦</span>
+                <span>На розвиток ліги</span>
+              </a>
             </div>
             <p className="text-xs text-muted-foreground mt-4">
               Трансляції матчів та турнірів у прямому ефірі.
