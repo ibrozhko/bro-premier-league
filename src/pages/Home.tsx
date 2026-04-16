@@ -107,7 +107,7 @@ export default function Home() {
           <div className="container mx-auto max-w-4xl">
             <div className="flex items-center gap-3 mb-6">
               <Calendar className="h-7 w-7 text-primary" />
-              <h2 className="font-heading text-2xl md:text-4xl">Ігри Туру {nextMd.number}</h2>
+              <h2 className="font-heading text-2xl md:text-4xl">Ігри {nextMd.number} Туру</h2>
               <span className="text-base text-muted-foreground ml-auto">{nextMd.label}</span>
             </div>
             <div className="bg-card rounded-xl border border-border overflow-hidden">
