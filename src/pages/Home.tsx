@@ -118,15 +118,15 @@ export default function Home() {
                   return (
                     <div key={mi} className="px-3 md:px-6 py-3 md:py-5 flex items-center justify-between">
                       <div className="flex-1 text-right">
-                        <div className="font-medium text-sm md:text-lg">{home.name}</div>
-                        <div className="text-xs text-muted-foreground">{home.club}</div>
+                        <div className="font-medium text-base md:text-xl">{home.name}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">{home.club}</div>
                       </div>
                       <div className="mx-2 md:mx-5 min-w-[40px] md:min-w-[70px] text-center">
                         <span className="text-muted-foreground font-heading text-xl md:text-3xl">VS</span>
                       </div>
                       <div className="flex-1 text-left">
-                        <div className="font-medium text-sm md:text-lg">{away.name}</div>
-                        <div className="text-xs text-muted-foreground">{away.club}</div>
+                        <div className="font-medium text-base md:text-xl">{away.name}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">{away.club}</div>
                       </div>
                     </div>
                   );
