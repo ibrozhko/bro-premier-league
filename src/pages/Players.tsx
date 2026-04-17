@@ -8,7 +8,7 @@ export default function Players() {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-5xl">
-        <h1 className="font-heading text-5xl mb-8">Гравці</h1>
+        <h1 className="h-page mb-8">Гравці</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {players.map(p => {
@@ -26,8 +26,8 @@ export default function Players() {
                 />
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-heading text-2xl">{p.name}</h3>
-                    <p className="text-sm text-muted-foreground">{p.club}</p>
+                    <h3 className="h-card">{p.name}</h3>
+                    <p className="t-meta">{p.club}</p>
                   </div>
                   <span className="flex items-center gap-1 text-xs bg-secondary px-2 py-1 rounded-md text-muted-foreground">
                     {p.platform === "PC" ? <Monitor className="h-3 w-3" /> : <Gamepad2 className="h-3 w-3" />}
@@ -43,8 +43,8 @@ export default function Players() {
                     { label: "О", value: s.points },
                   ].map(stat => (
                     <div key={stat.label} className="bg-secondary rounded-lg py-2">
-                      <div className="font-heading text-lg text-accent">{stat.value}</div>
-                      <div className="text-[10px] text-muted-foreground uppercase">{stat.label}</div>
+                      <div className="font-heading text-xl text-accent">{stat.value}</div>
+                      <div className="t-label">{stat.label}</div>
                     </div>
                   ))}
                 </div>

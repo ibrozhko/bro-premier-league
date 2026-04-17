@@ -13,18 +13,18 @@ export default function TopScorers() {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-3xl">
-        <h1 className="font-heading text-5xl mb-8 flex items-center gap-3">
+        <h1 className="h-page mb-8 flex items-center gap-3">
           <Trophy className="h-10 w-10 text-accent" /> Бомбардири
         </h1>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-muted-foreground">
-                <th className="py-3 px-4 text-left">#</th>
-                <th className="py-3 px-4 text-left">Гравець</th>
-                <th className="py-3 px-4 text-left">Клуб</th>
-                <th className="py-3 px-4 text-center font-bold">Голи</th>
+              <tr className="border-b border-border">
+                <th className="py-3 px-4 text-left t-label">#</th>
+                <th className="py-3 px-4 text-left t-label">Гравець</th>
+                <th className="py-3 px-4 text-left t-label">Клуб</th>
+                <th className="py-3 px-4 text-center t-label font-bold">Голи</th>
               </tr>
             </thead>
             <tbody>
