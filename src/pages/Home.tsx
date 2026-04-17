@@ -106,9 +106,17 @@ export default function Home() {
         const openingMatch = nextMd.number === 1 ? nextMd.matches[0] : null;
         const restMatches = nextMd.number === 1 ? nextMd.matches.slice(1) : nextMd.matches;
 
+        // Times for matchday 1 (18.04) by home-away player IDs
+        const md1Times: Record<string, string> = {
+          "9-7": "21:00",
+          "8-6": "22:00",
+          "3-2": "23:00",
+        };
+
         const MatchRow = ({ match }: { match: typeof nextMd.matches[0] }) => {
           const home = getPlayer(match.home);
           const away = getPlayer(match.away);
+          const time = nextMd.number === 1 ? md1Times[`${match.home}-${match.away}`] : undefined;
           return (
             <div className="px-3 md:px-6 py-3 md:py-5 flex items-center justify-between">
               <div className="flex-1 text-right">
@@ -116,7 +124,14 @@ export default function Home() {
                 <div className="t-meta">{home.club}</div>
               </div>
               <div className="mx-2 md:mx-5 min-w-[40px] md:min-w-[70px] text-center">
-                <span className="text-muted-foreground h-section">VS</span>
+                {time ? (
+                  <div>
+                    <div className="text-muted-foreground h-section">VS</div>
+                    <div className="t-meta text-accent mt-1">{time}</div>
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground h-section">VS</span>
+                )}
               </div>
               <div className="flex-1 text-left">
                 <div className="h-card">{away.name}</div>
