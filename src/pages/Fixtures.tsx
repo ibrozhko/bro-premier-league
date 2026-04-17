@@ -41,10 +41,17 @@ export default function Fixtures() {
             const openingMatch = isOpening ? md.matches[0] : null;
             const restMatches = isOpening ? md.matches.slice(1) : md.matches;
 
+            const md1Times: Record<string, string> = {
+              "9-7": "21:00",
+              "8-6": "22:00",
+              "3-2": "23:00",
+            };
+
             const MatchRow = ({ m, highlight }: { m: typeof md.matches[0]; highlight?: boolean }) => {
               const home = getPlayer(m.home);
               const away = getPlayer(m.away);
               const played = m.homeScore !== null;
+              const time = md.number === 1 && !highlight ? md1Times[`${m.home}-${m.away}`] : undefined;
               return (
                 <div className={`px-6 py-4 flex items-center justify-between ${highlight ? "bg-accent/5" : ""}`}>
                   <div className="flex-1 text-right">
@@ -55,7 +62,10 @@ export default function Fixtures() {
                     {played ? (
                       <span className="font-heading text-2xl text-accent">{m.homeScore} - {m.awayScore}</span>
                     ) : (
-                      <span className="text-muted-foreground font-heading text-2xl">VS</span>
+                      <div>
+                        <div className="text-muted-foreground font-heading text-2xl">VS</div>
+                        {time && <div className="t-meta text-accent mt-1">{time}</div>}
+                      </div>
                     )}
                   </div>
                   <div className="flex-1 text-left">
