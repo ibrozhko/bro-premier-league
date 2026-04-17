@@ -69,3 +69,15 @@
     text-transform: uppercase;
   }
 }
+
+@layer components {
+  /* Typography hierarchy — use these classes everywhere for consistency */
+  .h-page    { @apply font-heading text-5xl md:text-6xl leading-none; }
+  .h-section { @apply font-heading text-3xl md:text-4xl leading-tight; }
+  .h-card    { @apply font-heading text-xl md:text-2xl leading-tight; }
+  .h-stat    { @apply font-heading text-2xl md:text-3xl leading-none; }
+
+  .t-body    { @apply text-base; }
+  .t-meta    { @apply text-sm text-muted-foreground; }
+  .t-label   { @apply text-xs uppercase tracking-wider text-muted-foreground; }
+}
