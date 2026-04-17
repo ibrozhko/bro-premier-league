@@ -8,7 +8,7 @@ export default function Fixtures() {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-4xl">
-        <h1 className="font-heading text-5xl mb-8">Матчі та Результати</h1>
+        <h1 className="h-page mb-8">Матчі та Результати</h1>
 
         <div className="mb-8">
           <div className="flex flex-wrap gap-2">
@@ -48,8 +48,8 @@ export default function Fixtures() {
               return (
                 <div className={`px-6 py-4 flex items-center justify-between ${highlight ? "bg-accent/5" : ""}`}>
                   <div className="flex-1 text-right">
-                    <span className="font-medium text-lg">{home.name}</span>
-                    <span className="text-sm text-muted-foreground ml-2 hidden sm:inline">{home.club}</span>
+                    <span className="font-medium t-body md:text-lg">{home.name}</span>
+                    <span className="t-meta ml-2 hidden sm:inline">{home.club}</span>
                   </div>
                   <div className="mx-5 min-w-[70px] text-center">
                     {played ? (
@@ -59,8 +59,8 @@ export default function Fixtures() {
                     )}
                   </div>
                   <div className="flex-1 text-left">
-                    <span className="text-sm text-muted-foreground mr-2 hidden sm:inline">{away.club}</span>
-                    <span className="font-medium text-lg">{away.name}</span>
+                    <span className="t-meta mr-2 hidden sm:inline">{away.club}</span>
+                    <span className="font-medium t-body md:text-lg">{away.name}</span>
                   </div>
                 </div>
               );
@@ -73,12 +73,12 @@ export default function Fixtures() {
                   <div className="bg-card rounded-xl border-2 border-accent overflow-hidden shadow-lg shadow-accent/10">
                     <div className="px-6 py-4 flex items-center justify-between bg-accent/10">
                       <div>
-                        <span className="font-heading text-2xl text-accent">Матч Відкриття</span>
+                        <span className="h-card text-accent">Матч Відкриття</span>
                         <span className="ml-2 text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full font-semibold">
                           ⭐ 17.04 · 21:00
                         </span>
                       </div>
-                      <span className="text-base text-muted-foreground">Тур {md.number}</span>
+                      <span className="t-meta">Тур {md.number}</span>
                     </div>
                     <MatchRow m={openingMatch} highlight />
                   </div>
@@ -88,11 +88,11 @@ export default function Fixtures() {
                 <div className={`bg-card rounded-xl border overflow-hidden border-border`}>
                   <div className="px-6 py-4 flex items-center justify-between bg-secondary/50">
                     <div>
-                      <span className="font-heading text-2xl">
+                      <span className="h-card">
                         {isOpening ? `Матчі Туру ${md.number}` : `Тур ${md.number}`}
                       </span>
                     </div>
-                    <span className="text-base text-muted-foreground">
+                    <span className="t-meta">
                       {isOpening ? "Сб 18.04" : md.label}
                     </span>
                   </div>
@@ -101,7 +101,7 @@ export default function Fixtures() {
                       <MatchRow key={mi} m={m} />
                     ))}
                   </div>
-                  <div className="px-6 py-3 bg-secondary/30 text-sm text-muted-foreground">
+                  <div className="px-6 py-3 bg-secondary/30 t-meta">
                     🏝️ Відпочиває: {byePlayer.name} ({byePlayer.club})
                   </div>
                 </div>

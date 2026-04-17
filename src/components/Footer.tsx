@@ -10,9 +10,9 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <img src={logo} alt="BPL" className="h-10 w-10 rounded-full object-cover" />
-              <span className="font-heading text-2xl">Bro Premier League</span>
+              <span className="h-card">Bro Premier League</span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="t-meta leading-relaxed">
               Приватна ліга FC 26 · Сезон 1 · 9 гравців · 18 турів · 72 матчі.
               Подвійне коло · Квітень – Червень 2026.
             </p>
@@ -20,8 +20,8 @@ export default function Footer() {
 
           {/* Rules */}
           <div>
-            <h3 className="font-heading text-xl mb-3">Правила</h3>
-            <ul className="text-sm text-muted-foreground space-y-1.5">
+            <h3 className="h-card mb-3">Правила</h3>
+            <ul className="t-meta space-y-1.5">
               <li>Перемога — 3 очки</li>
               <li>Нічия — 1 очко</li>
               <li>Поразка — 0 очок</li>
@@ -32,7 +32,7 @@ export default function Footer() {
 
           {/* Social */}
           <div>
-            <h3 className="font-heading text-xl mb-3">Стежити за лігою</h3>
+            <h3 className="h-card mb-3">Стежити за лігою</h3>
             <div className="flex flex-col gap-3">
               <a
                 href="https://www.twitch.tv/bpl2026"
