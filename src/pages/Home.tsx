@@ -103,8 +103,10 @@ export default function Home() {
 
       {/* Next Matchday Games */}
       {nextMd && (() => {
-        const openingMatch = nextMd.number === 1 ? nextMd.matches[0] : null;
-        const restMatches = nextMd.number === 1 ? nextMd.matches.slice(1) : nextMd.matches;
+        const unplayed = nextMd.matches.filter(m => m.homeScore === null);
+        const openingMatch = nextMd.number === 1 && unplayed[0] && unplayed[0].home === 4 ? unplayed[0] : null;
+        const restMatches = openingMatch ? unplayed.slice(1) : unplayed;
+        if (unplayed.length === 0) return null;
 
         // Times for matchday 1 (18.04) by home-away player IDs
         const md1Times: Record<string, string> = {
