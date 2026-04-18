@@ -94,7 +94,15 @@ export default function Home() {
                 </div>
               </div>
               <div className="mt-8">
-                <Countdown targetDate={next.matchday.date} />
+                <Countdown targetIso={
+                  next.matchday.number === 1
+                    ? ({
+                        "9-7": "2026-04-18T21:00:00+03:00",
+                        "8-6": "2026-04-18T22:00:00+03:00",
+                        "3-2": "2026-04-18T23:00:00+03:00",
+                      } as Record<string, string>)[`${next.match.home}-${next.match.away}`] ?? `${next.matchday.date}T21:00:00+03:00`
+                    : `${next.matchday.date}T21:00:00+03:00`
+                } />
               </div>
             </div>
           )}
