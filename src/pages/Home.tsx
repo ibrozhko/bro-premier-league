@@ -7,11 +7,11 @@ import {
 } from "@/data/leagueData";
 import logo from "@/assets/logo.svg";
 
-function Countdown({ targetDate }: { targetDate: string }) {
+function Countdown({ targetIso }: { targetIso: string }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
-    const target = new Date(targetDate + "T21:00:00+03:00").getTime();
+    const target = new Date(targetIso).getTime();
     const tick = () => {
       const diff = Math.max(0, target - Date.now());
       setTimeLeft({
@@ -24,7 +24,7 @@ function Countdown({ targetDate }: { targetDate: string }) {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [targetDate]);
+  }, [targetIso]);
 
   const units = [
     { label: "Днів", value: timeLeft.days },
@@ -94,7 +94,15 @@ export default function Home() {
                 </div>
               </div>
               <div className="mt-8">
-                <Countdown targetDate={next.matchday.date} />
+                <Countdown targetIso={
+                  next.matchday.number === 1
+                    ? ({
+                        "9-7": "2026-04-18T21:00:00+03:00",
+                        "8-6": "2026-04-18T22:00:00+03:00",
+                        "3-2": "2026-04-18T23:00:00+03:00",
+                      } as Record<string, string>)[`${next.match.home}-${next.match.away}`] ?? `${next.matchday.date}T21:00:00+03:00`
+                    : `${next.matchday.date}T21:00:00+03:00`
+                } />
               </div>
             </div>
           )}
