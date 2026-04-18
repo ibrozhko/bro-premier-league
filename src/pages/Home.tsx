@@ -24,7 +24,7 @@ function Countdown({ targetIso }: { targetIso: string }) {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [targetDate]);
+  }, [targetIso]);
 
   const units = [
     { label: "Днів", value: timeLeft.days },
