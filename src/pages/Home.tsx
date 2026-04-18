@@ -11,7 +11,7 @@ function Countdown({ targetDate }: { targetDate: string }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
-    const target = new Date(targetDate + "T21:00:00").getTime();
+    const target = new Date(targetDate + "T21:00:00+03:00").getTime();
     const tick = () => {
       const diff = Math.max(0, target - Date.now());
       setTimeLeft({
