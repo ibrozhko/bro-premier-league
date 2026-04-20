@@ -195,29 +195,38 @@ export default function Home() {
         );
       })()}
 
-      {/* Recent Results — last 5 */}
+      {/* Recent Results — slider */}
       {recent.length > 0 && (
         <section className="py-10 px-4">
-          <div className="container mx-auto max-w-4xl">
+          <div className="container mx-auto max-w-5xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="h-section">Останні Результати</h2>
               <Link to="/fixtures" className="text-primary text-sm flex items-center gap-1 hover:underline">
                 Всі матчі <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 scrollbar-thin">
               {recent.map((r, i) => {
                 const home = getPlayer(r.match.home);
                 const away = getPlayer(r.match.away);
                 return (
-                  <div key={i} className="bg-card rounded-xl border border-border p-5">
-                    <div className="t-meta mb-2">Тур {r.matchday.number}</div>
-                    <div className="text-center">
-                      <div className="t-body font-medium">{home.name}</div>
-                      <div className="h-stat text-accent my-1">
-                        {r.match.homeScore} - {r.match.awayScore}
-                      </div>
-                      <div className="t-body font-medium">{away.name}</div>
+                  <div
+                    key={i}
+                    className="snap-start shrink-0 w-[320px] md:w-[360px] bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3"
+                  >
+                    <div className="t-meta shrink-0 px-2 py-1 rounded-md bg-secondary">Т{r.matchday.number}</div>
+                    <div className="flex-1 min-w-0 text-right">
+                      <div className="t-body font-medium truncate">{home.name}</div>
+                      <div className="t-meta truncate">{home.club}</div>
+                    </div>
+                    <div className="shrink-0 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/30">
+                      <span className="font-heading text-xl text-accent tabular-nums">
+                        {r.match.homeScore}:{r.match.awayScore}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="t-body font-medium truncate">{away.name}</div>
+                      <div className="t-meta truncate">{away.club}</div>
                     </div>
                   </div>
                 );
