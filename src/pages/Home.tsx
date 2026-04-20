@@ -90,13 +90,17 @@ export default function Home() {
               </p>
               <div className="inline-flex items-center gap-4 md:gap-6 bg-card rounded-2xl px-5 md:px-8 py-4 md:py-6 border border-border">
                 <div className="text-right">
-                  <div className="h-card">{getPlayer(next.match.home).name}</div>
-                  <div className="t-meta">{getPlayer(next.match.home).club}</div>
+                  <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
+                    <span className="h-card">{getPlayer(next.match.home).name}</span>
+                    <span className="t-meta block md:inline">{getPlayer(next.match.home).club}</span>
+                  </div>
                 </div>
                 <span className="text-accent h-section">VS</span>
                 <div className="text-left">
-                  <div className="h-card">{getPlayer(next.match.away).name}</div>
-                  <div className="t-meta">{getPlayer(next.match.away).club}</div>
+                  <div className="md:flex md:items-baseline md:gap-2">
+                    <span className="h-card">{getPlayer(next.match.away).name}</span>
+                    <span className="t-meta block md:inline">{getPlayer(next.match.away).club}</span>
+                  </div>
                 </div>
               </div>
               <div className="mt-8">
