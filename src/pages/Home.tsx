@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Trophy, ChevronRight, Calendar } from "lucide-react";
 import {
   calculateStandings, getNextMatch, getNextMatchday,
-  getRecentResults, getPlayer,
+  matchdays, getPlayer,
 } from "@/data/leagueData";
 import logo from "@/assets/logo.svg";
 
@@ -60,7 +60,13 @@ export default function Home() {
   const standings = calculateStandings();
   const next = getNextMatch();
   const nextMd = getNextMatchday();
-  const recent = getRecentResults(10);
+  // Show results from the current/last active tour: latest matchday that has at least one played match
+  const activeTour = [...matchdays].reverse().find(md => md.matches.some(m => m.homeScore !== null));
+  const recent = activeTour
+    ? activeTour.matches
+        .filter(m => m.homeScore !== null)
+        .map(match => ({ matchday: activeTour, match }))
+    : [];
 
   return (
     <div className="min-h-screen">
@@ -200,7 +206,7 @@ export default function Home() {
         <section className="py-10 px-4">
           <div className="container mx-auto max-w-5xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="h-section">Останні Результати</h2>
+              <h2 className="h-section">Результати · Тур {activeTour!.number}</h2>
               <Link to="/fixtures" className="text-primary text-sm flex items-center gap-1 hover:underline">
                 Всі матчі <ChevronRight className="h-4 w-4" />
               </Link>
