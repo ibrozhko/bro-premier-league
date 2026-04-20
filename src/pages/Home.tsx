@@ -211,16 +211,15 @@ export default function Home() {
                 Всі матчі <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 scrollbar-thin">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {recent.map((r, i) => {
                 const home = getPlayer(r.match.home);
                 const away = getPlayer(r.match.away);
                 return (
                   <div
                     key={i}
-                    className="snap-start shrink-0 w-[320px] md:w-[360px] bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3"
+                    className="bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3"
                   >
-                    <div className="t-meta shrink-0 px-2 py-1 rounded-md bg-secondary">Т{r.matchday.number}</div>
                     <div className="flex-1 min-w-0 text-right">
                       <div className="t-body font-medium truncate">{home.name}</div>
                       <div className="t-meta truncate">{home.club}</div>
