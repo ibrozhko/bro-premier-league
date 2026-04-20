@@ -1,16 +1,49 @@
 import { useState } from "react";
-import { matchdays, getPlayer } from "@/data/leagueData";
+import { matchdays, getPlayer, players } from "@/data/leagueData";
 
 export default function Fixtures() {
   const [filter, setFilter] = useState<number | "all">("all");
-  const filtered = filter === "all" ? matchdays : matchdays.filter(md => md.number === filter);
+  const [playerFilter, setPlayerFilter] = useState<number | "all">("all");
+
+  const filteredByTour = filter === "all" ? matchdays : matchdays.filter(md => md.number === filter);
+  const filtered = playerFilter === "all"
+    ? filteredByTour
+    : filteredByTour
+        .map(md => ({ ...md, matches: md.matches.filter(m => m.home === playerFilter || m.away === playerFilter) }))
+        .filter(md => md.matches.length > 0);
 
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-4xl">
         <h1 className="h-page mb-8">Матчі та Результати</h1>
 
+        <div className="mb-6">
+          <div className="t-label mb-2">Фільтр по гравцю</div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setPlayerFilter("all")}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                playerFilter === "all" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Всі гравці
+            </button>
+            {players.map(p => (
+              <button
+                key={p.id}
+                onClick={() => setPlayerFilter(p.id)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  playerFilter === p.id ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="mb-8">
+          <div className="t-label mb-2">Фільтр по туру</div>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilter("all")}
