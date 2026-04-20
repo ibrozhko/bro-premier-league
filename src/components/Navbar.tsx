@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import logo from "@/assets/logo.svg";
 
@@ -12,7 +12,7 @@ const navLinks = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const location = window.location;
+  const location = useLocation();
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
