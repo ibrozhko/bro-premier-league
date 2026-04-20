@@ -60,7 +60,7 @@ export default function Home() {
   const standings = calculateStandings();
   const next = getNextMatch();
   const nextMd = getNextMatchday();
-  const recent = getRecentResults(5);
+  const recent = getRecentResults(10);
 
   return (
     <div className="min-h-screen">
