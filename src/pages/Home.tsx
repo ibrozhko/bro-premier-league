@@ -140,8 +140,10 @@ export default function Home() {
           return (
             <div className="px-3 md:px-6 py-3 md:py-5 flex items-center justify-between">
               <div className="flex-1 text-right">
-                <div className="h-card">{home.name}</div>
-                <div className="t-meta">{home.club}</div>
+                <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
+                  <span className="h-card">{home.name}</span>
+                  <span className="t-meta block md:inline">{home.club}</span>
+                </div>
               </div>
               <div className="mx-2 md:mx-5 min-w-[40px] md:min-w-[70px] text-center">
                 {time ? (
@@ -154,8 +156,10 @@ export default function Home() {
                 )}
               </div>
               <div className="flex-1 text-left">
-                <div className="h-card">{away.name}</div>
-                <div className="t-meta">{away.club}</div>
+                <div className="md:flex md:items-baseline md:gap-2">
+                  <span className="h-card">{away.name}</span>
+                  <span className="t-meta block md:inline">{away.club}</span>
+                </div>
               </div>
             </div>
           );
@@ -225,8 +229,11 @@ export default function Home() {
                     className="bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3"
                   >
                     <div className="flex-1 min-w-0 text-right">
-                      <div className="t-body font-medium truncate">{home.name}</div>
-                      <div className="t-meta truncate">{home.club}</div>
+                      <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
+                        <span className="t-body font-medium truncate">{home.name}</span>
+                        <span className="t-meta truncate hidden md:inline">{home.club}</span>
+                      </div>
+                      <div className="t-meta truncate md:hidden">{home.club}</div>
                     </div>
                     <div className="shrink-0 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/30">
                       <span className="font-heading text-xl text-accent tabular-nums">
@@ -234,8 +241,11 @@ export default function Home() {
                       </span>
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <div className="t-body font-medium truncate">{away.name}</div>
-                      <div className="t-meta truncate">{away.club}</div>
+                      <div className="md:flex md:items-baseline md:gap-2">
+                        <span className="t-body font-medium truncate">{away.name}</span>
+                        <span className="t-meta truncate hidden md:inline">{away.club}</span>
+                      </div>
+                      <div className="t-meta truncate md:hidden">{away.club}</div>
                     </div>
                   </div>
                 );
