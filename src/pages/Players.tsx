@@ -24,12 +24,12 @@ export default function Players() {
                   className="absolute top-0 left-0 w-1 h-full"
                   style={{ backgroundColor: `hsl(${p.clubColor})` }}
                 />
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="h-card">{p.name}</h3>
-                    <p className="t-meta">{p.club}</p>
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="h-card truncate">{p.name}</h3>
+                    <p className="t-meta truncate">{p.club}</p>
                   </div>
-                  <span className="flex items-center gap-1 text-xs bg-secondary px-2 py-1 rounded-md text-muted-foreground">
+                  <span className="shrink-0 flex items-center gap-1 text-xs bg-secondary px-2 py-1 rounded-md text-muted-foreground">
                     {p.platform === "PC" ? <Monitor className="h-3 w-3" /> : <Gamepad2 className="h-3 w-3" />}
                     {p.platform}
                   </span>
