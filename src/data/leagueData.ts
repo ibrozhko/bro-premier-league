@@ -62,7 +62,7 @@ export const matchdays: Matchday[] = [
   {
     number: 3, date: "2026-04-26", label: "Сб 26.04 · Перше коло",
     bye: 4,
-    matches: [m(1, 8), m(5, 6), m(3, 9), m(7, 2)],
+    matches: [m(1, 8), m(5, 6), { home: 3, away: 9, homeScore: 5, awayScore: 4 }, m(7, 2)],
   },
   {
     number: 4, date: "2026-04-27", label: "Нд 27.04 · Перше коло",
