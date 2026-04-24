@@ -263,22 +263,22 @@ export default function Home() {
               <Trophy className="h-7 w-7 md:h-8 md:w-8 text-accent" /> Таблиця
             </h2>
           </div>
-          <div className="bg-card rounded-xl border border-border overflow-x-auto">
-            <table className="w-full text-sm whitespace-nowrap">
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="py-3 px-4 text-left t-label">#</th>
-                  <th className="py-3 px-4 text-left t-label">Гравець</th>
-                  <th className="py-3 px-4 text-left t-label hidden md:table-cell">Клуб</th>
-                  <th className="py-3 px-4 text-center t-label">І</th>
-                  <th className="py-3 px-4 text-center t-label">В</th>
-                  <th className="py-3 px-4 text-center t-label">Н</th>
-                  <th className="py-3 px-4 text-center t-label">П</th>
-                  <th className="py-3 px-4 text-center t-label hidden sm:table-cell">ГЗ</th>
-                  <th className="py-3 px-4 text-center t-label hidden sm:table-cell">ГП</th>
-                  <th className="py-3 px-4 text-center t-label">РГ</th>
-                  <th className="py-3 px-4 text-center t-label font-bold">О</th>
-                  <th className="py-3 px-4 text-center t-label hidden lg:table-cell">Форма</th>
+                  <th className="py-3 px-2 sm:px-4 text-left t-label">#</th>
+                  <th className="py-3 px-2 sm:px-4 text-left t-label">Гравець</th>
+                  <th className="py-3 px-2 sm:px-4 text-left t-label hidden md:table-cell">Клуб</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label">І</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden xs:table-cell sm:table-cell">В</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden sm:table-cell">Н</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden sm:table-cell">П</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden md:table-cell">ГЗ</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden md:table-cell">ГП</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label">РГ</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label font-bold">О</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden lg:table-cell">Форма</th>
                 </tr>
               </thead>
               <tbody>
@@ -286,25 +286,31 @@ export default function Home() {
                   const p = getPlayer(s.playerId);
                   return (
                     <tr key={s.playerId} className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors">
-                      <td className="py-4 px-4">
-                        <span className={`font-heading text-lg ${i === 0 ? "text-accent" : i < 3 ? "text-primary" : ""}`}>
+                      <td className="py-3 px-2 sm:px-4">
+                        <span className={`font-heading text-base sm:text-lg ${i === 0 ? "text-accent" : i < 3 ? "text-primary" : ""}`}>
                           {i + 1}
                         </span>
                       </td>
-                      <td className="py-4 px-4 font-medium">{p.name}</td>
-                      <td className="py-4 px-4 text-muted-foreground hidden md:table-cell">
+                      <td className="py-3 px-2 sm:px-4 font-medium">
+                        <div>{p.name}</div>
+                        <div className="t-meta md:hidden flex items-center gap-1.5 mt-0.5">
+                          <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: `hsl(${p.clubColor})` }} />
+                          {p.club}
+                        </div>
+                      </td>
+                      <td className="py-3 px-2 sm:px-4 text-muted-foreground hidden md:table-cell">
                         <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ backgroundColor: `hsl(${p.clubColor})` }} />
                         {p.club}
                       </td>
-                      <td className="py-4 px-4 text-center">{s.played}</td>
-                      <td className="py-4 px-4 text-center">{s.won}</td>
-                      <td className="py-4 px-4 text-center">{s.drawn}</td>
-                      <td className="py-4 px-4 text-center">{s.lost}</td>
-                      <td className="py-4 px-4 text-center hidden sm:table-cell">{s.goalsFor}</td>
-                      <td className="py-4 px-4 text-center hidden sm:table-cell">{s.goalsAgainst}</td>
-                      <td className="py-4 px-4 text-center">{s.goalDifference > 0 ? "+" : ""}{s.goalDifference}</td>
-                      <td className="py-4 px-4 text-center font-bold text-accent">{s.points}</td>
-                      <td className="py-4 px-4 hidden lg:table-cell">
+                      <td className="py-3 px-2 sm:px-4 text-center">{s.played}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center hidden sm:table-cell">{s.won}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center hidden sm:table-cell">{s.drawn}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center hidden sm:table-cell">{s.lost}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center hidden md:table-cell">{s.goalsFor}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center hidden md:table-cell">{s.goalsAgainst}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center">{s.goalDifference > 0 ? "+" : ""}{s.goalDifference}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center font-bold text-accent">{s.points}</td>
+                      <td className="py-3 px-2 sm:px-4 hidden lg:table-cell">
                         <div className="flex gap-1 justify-center">
                           {s.form.length > 0
                             ? s.form.map((f, fi) => <FormDot key={fi} result={f} />)
