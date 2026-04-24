@@ -213,9 +213,9 @@ export default function Home() {
       {recent.length > 0 && (
         <section className="py-10 px-4">
           <div className="container mx-auto max-w-5xl">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
               <h2 className="h-section">Результати · Тур {activeTour!.number}</h2>
-              <Link to="/fixtures" className="text-primary text-sm flex items-center gap-1 hover:underline">
+              <Link to="/fixtures" className="text-primary text-sm flex items-center gap-1 hover:underline whitespace-nowrap">
                 Всі матчі <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
