@@ -6,8 +6,10 @@ import {
   getSeasonSummary, lastUpdated, matchdays, getPlayer,
 } from "@/data/leagueData";
 import logo from "@/assets/logo.svg";
+import { useLanguage } from "@/lib/i18n";
 
 function Countdown({ targetIso }: { targetIso: string }) {
+  const { t } = useLanguage();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
@@ -27,10 +29,10 @@ function Countdown({ targetIso }: { targetIso: string }) {
   }, [targetIso]);
 
   const units = [
-    { label: "Днів", value: timeLeft.days },
-    { label: "Годин", value: timeLeft.hours },
-    { label: "Хвилин", value: timeLeft.mins },
-    { label: "Секунд", value: timeLeft.secs },
+    { label: t("countdown.days"), value: timeLeft.days },
+    { label: t("countdown.hours"), value: timeLeft.hours },
+    { label: t("countdown.minutes"), value: timeLeft.mins },
+    { label: t("countdown.seconds"), value: timeLeft.secs },
   ];
 
   return (
@@ -57,10 +59,13 @@ function FormDot({ result }: { result: "W" | "D" | "L" }) {
 }
 
 export default function Home() {
+  const { language, matchdayLabel, player, t } = useLanguage();
   const standings = calculateStandings();
   const season = getSeasonSummary();
   const next = getNextMatch();
   const nextMd = getNextMatchday();
+  const leader = season.leader ? player(season.leader) : null;
+  const bestAttack = season.bestAttack ? player(season.bestAttack) : null;
   // Show results from the current/last active tour: latest matchday that has at least one played match
   const activeTour = [...matchdays].reverse().find(md => md.matches.some(m => m.homeScore !== null));
   const recent = activeTour
@@ -80,16 +85,16 @@ export default function Home() {
             Bro Premier League
           </h1>
           <p className="mt-4 t-body md:text-lg text-muted-foreground max-w-[280px] sm:max-w-none mx-auto">
-            FC 26 · Приватна Ліга · Сезон 1 · 9 Гравців · 72 Матчі
+            {t("hero.subtitle")}
           </p>
-          <p className="mt-3 t-label">Оновлено: {lastUpdated}</p>
+          <p className="mt-3 t-label">{t("common.updated")}: {lastUpdated}</p>
 
           <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-left">
             {[
-              { label: "Лідер", value: season.leader?.name ?? "—", meta: season.leader?.club ?? "" },
-              { label: "Зіграно", value: `${season.playedMatches}/${season.totalMatches}`, meta: "матчів" },
-              { label: "Голів", value: season.totalGoals, meta: "у сезоні" },
-              { label: "Атака", value: season.bestAttack?.name ?? "—", meta: `${season.bestAttackGoals} голів` },
+              { label: t("home.leader"), value: leader?.name ?? "—", meta: leader?.club ?? "" },
+              { label: t("home.played"), value: `${season.playedMatches}/${season.totalMatches}`, meta: t("home.matches") },
+              { label: t("home.goals"), value: season.totalGoals, meta: t("home.seasonGoals") },
+              { label: t("home.attack"), value: bestAttack?.name ?? "—", meta: `${season.bestAttackGoals} ${t("home.goals").toLowerCase()}` },
             ].map(item => (
               <div key={item.label} className="bg-card/80 border border-border rounded-lg p-3 sm:p-4 min-w-0">
                 <div className="t-label mb-1">{item.label}</div>
@@ -103,20 +108,20 @@ export default function Home() {
           {next && (
             <div className="mt-10 md:mt-12">
               <p className="t-label mb-4">
-                Наступний матч — Тур {next.matchday.number}
+                {t("home.nextMatch")} — {language === "uk" ? "Тур" : "Matchday"} {next.matchday.number}
               </p>
               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 bg-card rounded-xl md:rounded-2xl px-4 md:px-8 py-4 md:py-6 border border-border w-full max-w-[520px] mx-auto">
                 <div className="text-right min-w-0">
                   <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
-                    <span className="h-card block truncate">{getPlayer(next.match.home).name}</span>
-                    <span className="t-meta block md:inline truncate">{getPlayer(next.match.home).club}</span>
+                    <span className="h-card block truncate">{player(getPlayer(next.match.home)).name}</span>
+                    <span className="t-meta block md:inline truncate">{player(getPlayer(next.match.home)).club}</span>
                   </div>
                 </div>
                 <span className="text-accent h-section">VS</span>
                 <div className="text-left min-w-0">
                   <div className="md:flex md:items-baseline md:gap-2">
-                    <span className="h-card block truncate">{getPlayer(next.match.away).name}</span>
-                    <span className="t-meta block md:inline truncate">{getPlayer(next.match.away).club}</span>
+                    <span className="h-card block truncate">{player(getPlayer(next.match.away)).name}</span>
+                    <span className="t-meta block md:inline truncate">{player(getPlayer(next.match.away)).club}</span>
                   </div>
                 </div>
               </div>
@@ -153,13 +158,15 @@ export default function Home() {
         const MatchRow = ({ match }: { match: typeof nextMd.matches[0] }) => {
           const home = getPlayer(match.home);
           const away = getPlayer(match.away);
+          const displayHome = player(home);
+          const displayAway = player(away);
           const time = nextMd.number === 1 ? md1Times[`${match.home}-${match.away}`] : undefined;
           return (
             <div className="px-3 md:px-6 py-3 md:py-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-5">
               <div className="min-w-0 text-right">
                 <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
-                  <span className="h-card block truncate">{home.name}</span>
-                  <span className="t-meta block md:inline truncate">{home.club}</span>
+                  <span className="h-card block truncate">{displayHome.name}</span>
+                  <span className="t-meta block md:inline truncate">{displayHome.club}</span>
                 </div>
               </div>
               <div className="min-w-[42px] md:min-w-[70px] text-center">
@@ -174,8 +181,8 @@ export default function Home() {
               </div>
               <div className="min-w-0 text-left">
                 <div className="md:flex md:items-baseline md:gap-2">
-                  <span className="h-card block truncate">{away.name}</span>
-                  <span className="t-meta block md:inline truncate">{away.club}</span>
+                  <span className="h-card block truncate">{displayAway.name}</span>
+                  <span className="t-meta block md:inline truncate">{displayAway.club}</span>
                 </div>
               </div>
             </div>
@@ -190,8 +197,8 @@ export default function Home() {
                 <div>
                   <div className="flex items-center gap-3 mb-4">
                     <span className="text-accent text-xl">⭐</span>
-                    <h2 className="h-section">Матч Відкриття</h2>
-                    <span className="t-meta ml-auto">Пт 17.04 · 21:00</span>
+                    <h2 className="h-section">{t("home.openingMatch")}</h2>
+                    <span className="t-meta ml-auto">{language === "uk" ? "Пт" : "Fri"} 17.04 · 21:00</span>
                   </div>
                   <div className="bg-card rounded-xl border-2 border-accent overflow-hidden">
                     <MatchRow match={openingMatch} />
@@ -203,11 +210,11 @@ export default function Home() {
               <div>
                   <div className="flex items-center gap-3 mb-4">
                     <Calendar className="h-7 w-7 text-primary" />
-                    <h2 className="h-section">
-                      {openingMatch ? `Матчі ${nextMd.number} Туру` : `Ігри ${nextMd.number} Туру`}
+                    <h2 className="h-section min-w-0">
+                      {openingMatch ? `${t("home.matchdayGames")} ${nextMd.number}` : `${t("home.games")} ${nextMd.number}`}
                     </h2>
                   <span className="t-meta ml-auto text-right">
-                    {openingMatch ? "Сб 18.04" : nextMd.label}
+                    {openingMatch ? (language === "uk" ? "Сб 18.04" : "Sat 18.04") : matchdayLabel(nextMd.label)}
                   </span>
                 </div>
                 <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -217,7 +224,7 @@ export default function Home() {
                     ))}
                   </div>
                   <div className="px-6 py-3 bg-secondary/30 t-meta">
-                    🏝️ Відпочиває: {getPlayer(nextMd.bye).name} ({getPlayer(nextMd.bye).club})
+                    {t("fixtures.bye")}: {player(getPlayer(nextMd.bye)).name} ({player(getPlayer(nextMd.bye)).club})
                   </div>
                 </div>
               </div>
@@ -231,15 +238,17 @@ export default function Home() {
         <section className="py-10 px-4">
           <div className="container mx-auto max-w-5xl">
             <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
-              <h2 className="h-section">Результати · Тур {activeTour!.number}</h2>
+              <h2 className="h-section">{t("home.recentResults")} · {language === "uk" ? "Тур" : "Matchday"} {activeTour!.number}</h2>
               <Link to="/fixtures" className="text-primary text-sm flex items-center gap-1 hover:underline whitespace-nowrap">
-                Всі матчі <ChevronRight className="h-4 w-4" />
+                {t("home.allMatches")} <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {recent.map((r, i) => {
                 const home = getPlayer(r.match.home);
                 const away = getPlayer(r.match.away);
+                const displayHome = player(home);
+                const displayAway = player(away);
                 return (
                   <div
                     key={i}
@@ -247,22 +256,22 @@ export default function Home() {
                   >
                     <div className="flex-1 min-w-0 text-right">
                       <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
-                        <span className="t-body font-medium truncate">{home.name}</span>
-                        <span className="t-meta truncate hidden md:inline">{home.club}</span>
+                        <span className="t-body font-medium truncate">{displayHome.name}</span>
+                        <span className="t-meta truncate hidden md:inline">{displayHome.club}</span>
                       </div>
-                      <div className="t-meta truncate md:hidden">{home.club}</div>
+                      <div className="t-meta truncate md:hidden">{displayHome.club}</div>
                     </div>
                     <div className="shrink-0 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/30">
-                      <span className="font-heading text-xl text-accent tabular-nums">
+                      <span className="font-heading text-lg sm:text-xl text-accent tabular-nums">
                         {r.match.homeScore}:{r.match.awayScore}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <div className="md:flex md:items-baseline md:gap-2">
-                        <span className="t-body font-medium truncate">{away.name}</span>
-                        <span className="t-meta truncate hidden md:inline">{away.club}</span>
+                        <span className="t-body font-medium truncate">{displayAway.name}</span>
+                        <span className="t-meta truncate hidden md:inline">{displayAway.club}</span>
                       </div>
-                      <div className="t-meta truncate md:hidden">{away.club}</div>
+                      <div className="t-meta truncate md:hidden">{displayAway.club}</div>
                     </div>
                   </div>
                 );
@@ -277,7 +286,7 @@ export default function Home() {
         <div className="container mx-auto max-w-5xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="h-section flex items-center gap-3">
-              <Trophy className="h-7 w-7 md:h-8 md:w-8 text-accent" /> Таблиця
+              <Trophy className="h-7 w-7 md:h-8 md:w-8 text-accent" /> {t("home.table")}
             </h2>
           </div>
           <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -285,22 +294,23 @@ export default function Home() {
               <thead>
                 <tr className="border-b border-border">
                   <th className="py-3 px-2 sm:px-4 text-left t-label">#</th>
-                  <th className="py-3 px-2 sm:px-4 text-left t-label">Гравець</th>
-                  <th className="py-3 px-2 sm:px-4 text-left t-label hidden md:table-cell">Клуб</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label">І</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden xs:table-cell sm:table-cell">В</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden sm:table-cell">Н</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden sm:table-cell">П</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden md:table-cell">ГЗ</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden md:table-cell">ГП</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label">РГ</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label font-bold">О</th>
-                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden lg:table-cell">Форма</th>
+                  <th className="py-3 px-2 sm:px-4 text-left t-label">{t("common.player")}</th>
+                  <th className="py-3 px-2 sm:px-4 text-left t-label hidden md:table-cell">{t("common.club")}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label">{language === "uk" ? "І" : "P"}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden xs:table-cell sm:table-cell">{language === "uk" ? "В" : "W"}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden sm:table-cell">{language === "uk" ? "Н" : "D"}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden sm:table-cell">{language === "uk" ? "П" : "L"}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden md:table-cell">{language === "uk" ? "ГЗ" : "GF"}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden md:table-cell">{language === "uk" ? "ГП" : "GA"}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label">{language === "uk" ? "РГ" : "GD"}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label font-bold">{language === "uk" ? "О" : "Pts"}</th>
+                  <th className="py-3 px-2 sm:px-4 text-center t-label hidden lg:table-cell">{language === "uk" ? "Форма" : "Form"}</th>
                 </tr>
               </thead>
               <tbody>
                 {standings.map((s, i) => {
                   const p = getPlayer(s.playerId);
+                  const displayPlayer = player(p);
                   return (
                     <tr key={s.playerId} className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors">
                       <td className="py-3 px-2 sm:px-4">
@@ -309,15 +319,15 @@ export default function Home() {
                         </span>
                       </td>
                       <td className="py-3 px-2 sm:px-4 font-medium">
-                        <div>{p.name}</div>
+                        <div>{displayPlayer.name}</div>
                         <div className="t-meta md:hidden flex items-center gap-1.5 mt-0.5">
                           <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: `hsl(${p.clubColor})` }} />
-                          {p.club}
+                          {displayPlayer.club}
                         </div>
                       </td>
                       <td className="py-3 px-2 sm:px-4 text-muted-foreground hidden md:table-cell">
                         <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ backgroundColor: `hsl(${p.clubColor})` }} />
-                        {p.club}
+                        {displayPlayer.club}
                       </td>
                       <td className="py-3 px-2 sm:px-4 text-center">{s.played}</td>
                       <td className="py-3 px-2 sm:px-4 text-center hidden sm:table-cell">{s.won}</td>
@@ -342,7 +352,7 @@ export default function Home() {
             </table>
           </div>
           <div className="mt-3 t-meta leading-relaxed">
-            І — ігри, В — перемоги, Н — нічиї, П — поразки, ГЗ — голи забиті, ГП — голи пропущені, РГ — різниця голів, О — очки.
+            {t("home.tableLegend")}
           </div>
         </div>
       </section>
