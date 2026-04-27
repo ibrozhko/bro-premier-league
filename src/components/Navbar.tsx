@@ -2,17 +2,19 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import logo from "@/assets/logo.svg";
+import { useLanguage } from "@/lib/i18n";
 
 const navLinks = [
-  { path: "/", label: "Головна" },
-  { path: "/fixtures", label: "Матчі" },
-  { path: "/players", label: "Гравці" },
-  { path: "/top-scorers", label: "Бомбардири" },
-];
+  { path: "/", labelKey: "nav.home" },
+  { path: "/fixtures", labelKey: "nav.fixtures" },
+  { path: "/players", labelKey: "nav.players" },
+  { path: "/top-scorers", labelKey: "nav.topScorers" },
+] as const;
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { language, toggleLanguage, t } = useLanguage();
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
@@ -33,9 +35,16 @@ export default function Navbar() {
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               }`}
             >
-              {l.label}
+              {t(l.labelKey)}
             </Link>
           ))}
+          <button
+            onClick={toggleLanguage}
+            className="ml-2 rounded-md border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
+            aria-label="Toggle language"
+          >
+            {language === "uk" ? "EN" : "UA"}
+          </button>
         </div>
 
         <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
@@ -54,9 +63,19 @@ export default function Navbar() {
                 location.pathname === l.path ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              {l.label}
+              {t(l.labelKey)}
             </Link>
           ))}
+          <button
+            onClick={() => {
+              toggleLanguage();
+              setOpen(false);
+            }}
+            className="mt-3 rounded-md border border-border px-3 py-2 text-xs font-semibold text-muted-foreground"
+            aria-label="Toggle language"
+          >
+            {language === "uk" ? "English" : "Українська"}
+          </button>
         </div>
       )}
     </nav>
