@@ -61,8 +61,8 @@ export const matchdays: Matchday[] = [
     number: 3, date: "2026-04-25", label: "Сб 25.04 · Перше коло",
     bye: 4,
     matches: [
-      { home: 1, away: 8, homeScore: null, awayScore: null },
-      { home: 5, away: 6, homeScore: null, awayScore: null },
+      { home: 1, away: 8, homeScore: 6, awayScore: 2 },
+      { home: 5, away: 6, homeScore: 1, awayScore: 7 },
       { home: 3, away: 9, homeScore: 5, awayScore: 4 },
       { home: 7, away: 2, homeScore: 2, awayScore: 6 },
     ],
@@ -71,10 +71,10 @@ export const matchdays: Matchday[] = [
     number: 4, date: "2026-04-26", label: "Нд 26.04 · Перше коло",
     bye: 1,
     matches: [
-      { home: 3, away: 4, homeScore: null, awayScore: null },
+      { home: 3, away: 4, homeScore: 5, awayScore: 7 },
       { home: 8, away: 9, homeScore: 6, awayScore: 2 },
-      { home: 6, away: 2, homeScore: null, awayScore: null },
-      { home: 5, away: 7, homeScore: null, awayScore: null },
+      { home: 6, away: 2, homeScore: 0, awayScore: 2 },
+      { home: 5, away: 7, homeScore: 1, awayScore: 2 },
     ],
   },
   {
