@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { matchdays, getPlayer, players } from "@/data/leagueData";
+import { useLanguage } from "@/lib/i18n";
 
 export default function Fixtures() {
+  const { language, matchdayLabel, player, t } = useLanguage();
   const [filter, setFilter] = useState<number | "all">("all");
   const [playerFilter, setPlayerFilter] = useState<number | "all">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "played" | "upcoming">("all");
@@ -24,10 +26,10 @@ export default function Fixtures() {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-4xl">
-        <h1 className="h-page mb-8">Матчі та Результати</h1>
+        <h1 className="h-page mb-8">{t("fixtures.title")}</h1>
 
         <div className="mb-6">
-          <div className="t-label mb-2">Фільтр по гравцю</div>
+          <div className="t-label mb-2">{t("fixtures.playerFilter")}</div>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
             <button
               onClick={() => setPlayerFilter("all")}
@@ -35,7 +37,7 @@ export default function Fixtures() {
                 playerFilter === "all" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
               }`}
             >
-              Всі гравці
+              {language === "uk" ? "Всі гравці" : "All players"}
             </button>
             {players.map(p => (
               <button
@@ -45,19 +47,19 @@ export default function Fixtures() {
                   playerFilter === p.id ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {p.name}
+                {player(p).name}
               </button>
             ))}
           </div>
         </div>
 
         <div className="mb-6">
-          <div className="t-label mb-2">Статус матчів</div>
+          <div className="t-label mb-2">{t("fixtures.statusFilter")}</div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { value: "all", label: "Всі" },
-              { value: "played", label: "Зіграні" },
-              { value: "upcoming", label: "Майбутні" },
+              { value: "all", label: t("common.all") },
+              { value: "played", label: t("common.played") },
+              { value: "upcoming", label: t("common.upcoming") },
             ].map(item => (
               <button
                 key={item.value}
@@ -73,7 +75,7 @@ export default function Fixtures() {
         </div>
 
         <div className="mb-8">
-          <div className="t-label mb-2">Фільтр по туру</div>
+          <div className="t-label mb-2">{t("fixtures.matchdayFilter")}</div>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
             <button
               onClick={() => setFilter("all")}
@@ -81,7 +83,7 @@ export default function Fixtures() {
                 filter === "all" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
               }`}
             >
-              Всі
+              {t("common.all")}
             </button>
             {matchdays.map(md => (
               <button
@@ -100,16 +102,19 @@ export default function Fixtures() {
         <div className="space-y-6">
           {filtered.map(md => {
             const byePlayer = getPlayer(md.bye);
+            const displayByePlayer = player(byePlayer);
 
             const MatchRow = ({ m }: { m: typeof md.matches[0] }) => {
               const home = getPlayer(m.home);
               const away = getPlayer(m.away);
+              const displayHome = player(home);
+              const displayAway = player(away);
               const played = m.homeScore !== null;
               return (
                 <div className="px-3 sm:px-6 py-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
                   <div className="min-w-0 text-right">
-                    <span className="font-medium t-body block truncate">{home.name}</span>
-                    <span className="t-meta sm:ml-2 block sm:inline truncate">{home.club}</span>
+                    <span className="font-medium t-body block truncate">{displayHome.name}</span>
+                    <span className="t-meta sm:ml-2 block sm:inline truncate">{displayHome.club}</span>
                   </div>
                   <div className="min-w-[56px] sm:min-w-[70px] text-center">
                     {played ? (
@@ -119,8 +124,8 @@ export default function Fixtures() {
                     )}
                   </div>
                   <div className="min-w-0 text-left">
-                    <span className="font-medium t-body block truncate">{away.name}</span>
-                    <span className="t-meta sm:mr-2 block sm:inline truncate">{away.club}</span>
+                    <span className="font-medium t-body block truncate">{displayAway.name}</span>
+                    <span className="t-meta sm:mr-2 block sm:inline truncate">{displayAway.club}</span>
                   </div>
                 </div>
               );
@@ -130,8 +135,8 @@ export default function Fixtures() {
               <div key={md.number} className="space-y-4">
                 <div className="bg-card rounded-xl border overflow-hidden border-border">
                   <div className="px-3 sm:px-6 py-4 flex items-center justify-between gap-3 bg-secondary/50">
-                    <span className="h-card">Тур {md.number}</span>
-                    <span className="t-meta text-right">{md.label}</span>
+                    <span className="h-card">{language === "uk" ? "Тур" : "Matchday"} {md.number}</span>
+                    <span className="t-meta text-right">{matchdayLabel(md.label)}</span>
                   </div>
                   <div className="divide-y divide-border">
                     {md.matches.map((m, mi) => (
@@ -139,7 +144,7 @@ export default function Fixtures() {
                     ))}
                   </div>
                   <div className="px-3 sm:px-6 py-3 bg-secondary/30 t-meta">
-                    🏝️ Відпочиває: {byePlayer.name} ({byePlayer.club})
+                    {t("fixtures.bye")}: {displayByePlayer.name} ({displayByePlayer.club})
                   </div>
                 </div>
               </div>
