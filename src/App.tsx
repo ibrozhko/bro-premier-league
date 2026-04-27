@@ -10,6 +10,7 @@ import Fixtures from "./pages/Fixtures";
 import Players from "./pages/Players";
 import TopScorers from "./pages/TopScorers";
 import NotFound from "./pages/NotFound";
+import { LanguageProvider } from "./lib/i18n";
 
 const queryClient = new QueryClient();
 
@@ -18,17 +19,19 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/fixtures" element={<Fixtures />} />
-          <Route path="/players" element={<Players />} />
-          <Route path="/top-scorers" element={<TopScorers />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Footer />
-      </BrowserRouter>
+      <LanguageProvider>
+        <BrowserRouter>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/fixtures" element={<Fixtures />} />
+            <Route path="/players" element={<Players />} />
+            <Route path="/top-scorers" element={<TopScorers />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Footer />
+        </BrowserRouter>
+      </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
