@@ -108,18 +108,18 @@ export default function Fixtures() {
               return (
                 <div className="px-3 sm:px-6 py-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
                   <div className="min-w-0 text-right">
-                    <span className="font-medium t-body md:text-lg block truncate">{home.name}</span>
+                    <span className="font-medium t-body block truncate">{home.name}</span>
                     <span className="t-meta sm:ml-2 block sm:inline truncate">{home.club}</span>
                   </div>
                   <div className="min-w-[56px] sm:min-w-[70px] text-center">
                     {played ? (
-                      <span className="font-heading text-xl sm:text-2xl text-accent">{m.homeScore} - {m.awayScore}</span>
+                      <span className="font-heading text-lg sm:text-2xl text-accent">{m.homeScore} - {m.awayScore}</span>
                     ) : (
-                      <div className="text-muted-foreground font-heading text-xl sm:text-2xl">VS</div>
+                      <div className="text-muted-foreground font-heading text-lg sm:text-2xl">VS</div>
                     )}
                   </div>
                   <div className="min-w-0 text-left">
-                    <span className="font-medium t-body md:text-lg block truncate">{away.name}</span>
+                    <span className="font-medium t-body block truncate">{away.name}</span>
                     <span className="t-meta sm:mr-2 block sm:inline truncate">{away.club}</span>
                   </div>
                 </div>
