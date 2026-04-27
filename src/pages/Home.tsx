@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Trophy, ChevronRight, Calendar } from "lucide-react";
 import {
   calculateStandings, getNextMatch, getNextMatchday,
-  matchdays, getPlayer,
+  getSeasonSummary, lastUpdated, matchdays, getPlayer,
 } from "@/data/leagueData";
 import logo from "@/assets/logo.svg";
 
@@ -34,9 +34,9 @@ function Countdown({ targetIso }: { targetIso: string }) {
   ];
 
   return (
-    <div className="flex gap-4 justify-center">
+    <div className="flex gap-2 sm:gap-4 justify-center">
       {units.map(u => (
-        <div key={u.label} className="bg-secondary rounded-xl p-3 md:p-4 min-w-[60px] md:min-w-[80px] text-center">
+        <div key={u.label} className="bg-secondary rounded-lg sm:rounded-xl p-2.5 md:p-4 min-w-[58px] md:min-w-[80px] text-center">
           <div className="h-stat text-accent">{u.value}</div>
           <div className="t-label mt-1">{u.label}</div>
         </div>
@@ -58,6 +58,7 @@ function FormDot({ result }: { result: "W" | "D" | "L" }) {
 
 export default function Home() {
   const standings = calculateStandings();
+  const season = getSeasonSummary();
   const next = getNextMatch();
   const nextMd = getNextMatchday();
   // Show results from the current/last active tour: latest matchday that has at least one played match
@@ -71,35 +72,51 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative py-16 md:py-24 px-4 text-center overflow-hidden">
+      <section className="relative py-10 sm:py-14 md:py-24 px-4 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
         <div className="relative z-10 max-w-4xl mx-auto">
-          <img src={logo} alt="BPL Logo" className="h-32 w-32 md:h-40 md:w-40 mx-auto mb-6 rounded-full object-cover" />
+          <img src={logo} alt="BPL Logo" className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 mx-auto mb-5 md:mb-6 rounded-full object-cover" />
           <h1 className="h-page text-foreground">
             Bro Premier League
           </h1>
-          <p className="mt-4 t-body md:text-lg text-muted-foreground">
+          <p className="mt-4 t-body md:text-lg text-muted-foreground max-w-[280px] sm:max-w-none mx-auto">
             FC 26 · Приватна Ліга · Сезон 1 · 9 Гравців · 72 Матчі
           </p>
+          <p className="mt-3 t-label">Оновлено: {lastUpdated}</p>
+
+          <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-left">
+            {[
+              { label: "Лідер", value: season.leader?.name ?? "—", meta: season.leader?.club ?? "" },
+              { label: "Зіграно", value: `${season.playedMatches}/${season.totalMatches}`, meta: "матчів" },
+              { label: "Голів", value: season.totalGoals, meta: "у сезоні" },
+              { label: "Атака", value: season.bestAttack?.name ?? "—", meta: `${season.bestAttackGoals} голів` },
+            ].map(item => (
+              <div key={item.label} className="bg-card/80 border border-border rounded-lg p-3 sm:p-4 min-w-0">
+                <div className="t-label mb-1">{item.label}</div>
+                <div className="h-card text-accent truncate">{item.value}</div>
+                <div className="t-meta truncate">{item.meta}</div>
+              </div>
+            ))}
+          </div>
 
           {/* Next Match */}
           {next && (
-            <div className="mt-12">
+            <div className="mt-10 md:mt-12">
               <p className="t-label mb-4">
                 Наступний матч — Тур {next.matchday.number}
               </p>
-              <div className="inline-flex items-center gap-4 md:gap-6 bg-card rounded-2xl px-5 md:px-8 py-4 md:py-6 border border-border">
-                <div className="text-right">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 bg-card rounded-xl md:rounded-2xl px-4 md:px-8 py-4 md:py-6 border border-border w-full max-w-[520px] mx-auto">
+                <div className="text-right min-w-0">
                   <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
-                    <span className="h-card">{getPlayer(next.match.home).name}</span>
-                    <span className="t-meta block md:inline">{getPlayer(next.match.home).club}</span>
+                    <span className="h-card block truncate">{getPlayer(next.match.home).name}</span>
+                    <span className="t-meta block md:inline truncate">{getPlayer(next.match.home).club}</span>
                   </div>
                 </div>
                 <span className="text-accent h-section">VS</span>
-                <div className="text-left">
+                <div className="text-left min-w-0">
                   <div className="md:flex md:items-baseline md:gap-2">
-                    <span className="h-card">{getPlayer(next.match.away).name}</span>
-                    <span className="t-meta block md:inline">{getPlayer(next.match.away).club}</span>
+                    <span className="h-card block truncate">{getPlayer(next.match.away).name}</span>
+                    <span className="t-meta block md:inline truncate">{getPlayer(next.match.away).club}</span>
                   </div>
                 </div>
               </div>
@@ -138,27 +155,27 @@ export default function Home() {
           const away = getPlayer(match.away);
           const time = nextMd.number === 1 ? md1Times[`${match.home}-${match.away}`] : undefined;
           return (
-            <div className="px-3 md:px-6 py-3 md:py-5 flex items-center justify-between">
-              <div className="flex-1 text-right">
+            <div className="px-3 md:px-6 py-3 md:py-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-5">
+              <div className="min-w-0 text-right">
                 <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
-                  <span className="h-card">{home.name}</span>
-                  <span className="t-meta block md:inline">{home.club}</span>
+                  <span className="h-card block truncate">{home.name}</span>
+                  <span className="t-meta block md:inline truncate">{home.club}</span>
                 </div>
               </div>
-              <div className="mx-2 md:mx-5 min-w-[40px] md:min-w-[70px] text-center">
+              <div className="min-w-[42px] md:min-w-[70px] text-center">
                 {time ? (
                   <div>
-                    <div className="text-muted-foreground h-section">VS</div>
+                    <div className="text-muted-foreground h-card md:h-section">VS</div>
                     <div className="t-meta text-accent mt-1">{time}</div>
                   </div>
                 ) : (
-                  <span className="text-muted-foreground h-section">VS</span>
+                  <span className="text-muted-foreground h-card md:h-section">VS</span>
                 )}
               </div>
-              <div className="flex-1 text-left">
+              <div className="min-w-0 text-left">
                 <div className="md:flex md:items-baseline md:gap-2">
-                  <span className="h-card">{away.name}</span>
-                  <span className="t-meta block md:inline">{away.club}</span>
+                  <span className="h-card block truncate">{away.name}</span>
+                  <span className="t-meta block md:inline truncate">{away.club}</span>
                 </div>
               </div>
             </div>
@@ -184,12 +201,12 @@ export default function Home() {
 
               {/* Rest of matchday */}
               <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <Calendar className="h-7 w-7 text-primary" />
-                  <h2 className="h-section">
-                    {openingMatch ? `Матчі ${nextMd.number} Туру` : `Ігри ${nextMd.number} Туру`}
-                  </h2>
-                  <span className="t-meta ml-auto">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Calendar className="h-7 w-7 text-primary" />
+                    <h2 className="h-section">
+                      {openingMatch ? `Матчі ${nextMd.number} Туру` : `Ігри ${nextMd.number} Туру`}
+                    </h2>
+                  <span className="t-meta ml-auto text-right">
                     {openingMatch ? "Сб 18.04" : nextMd.label}
                   </span>
                 </div>
@@ -323,6 +340,9 @@ export default function Home() {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="mt-3 t-meta leading-relaxed">
+            І — ігри, В — перемоги, Н — нічиї, П — поразки, ГЗ — голи забиті, ГП — голи пропущені, РГ — різниця голів, О — очки.
           </div>
         </div>
       </section>
