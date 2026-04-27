@@ -43,7 +43,7 @@ export default function Players() {
                     { label: "О", value: s.points },
                   ].map(stat => (
                     <div key={stat.label} className="bg-secondary rounded-lg py-2">
-                      <div className="font-heading text-xl text-accent">{stat.value}</div>
+                      <div className="font-heading text-lg sm:text-xl text-accent">{stat.value}</div>
                       <div className="t-label">{stat.label}</div>
                     </div>
                   ))}
