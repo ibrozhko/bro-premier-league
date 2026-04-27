@@ -19,7 +19,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2">
           <img src={logo} alt="BPL" className="h-10 w-10 rounded-full object-cover" />
-          <span className="font-heading text-2xl tracking-wider text-foreground">BPL</span>
+          <span className="font-heading text-xl sm:text-2xl tracking-wider text-foreground">BPL</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
