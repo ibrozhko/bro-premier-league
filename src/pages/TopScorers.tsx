@@ -48,7 +48,7 @@ export default function TopScorers() {
                       <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: `hsl(${p.clubColor})` }} />
                       {p.club}
                     </td>
-                    <td className="py-3 px-2 sm:px-4 text-center font-heading text-xl text-accent">{s.goals}</td>
+                    <td className="py-3 px-2 sm:px-4 text-center font-heading text-lg sm:text-xl text-accent">{s.goals}</td>
                   </tr>
                 );
               })}
