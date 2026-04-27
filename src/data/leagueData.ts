@@ -33,11 +33,9 @@ export const players: Player[] = [
   { id: 9, name: "Сергій", club: "Марсель", platform: "PS5", clubColor: "200 70% 55%" },
 ];
 
-function m(home: number, away: number): Match {
-  return { home, away, homeScore: null, awayScore: null };
-}
-
 export const matchdays: Matchday[] = [
+  // Щотижневе оновлення: міняйте тільки homeScore та awayScore.
+  // Якщо матч ще не зіграний, залишайте обидва значення null.
   // === ПЕРШЕ КОЛО ===
   {
     number: 1, date: "2026-04-17", label: "Пт–Сб 17–18.04 · Перше коло",
@@ -62,83 +60,163 @@ export const matchdays: Matchday[] = [
   {
     number: 3, date: "2026-04-25", label: "Сб 25.04 · Перше коло",
     bye: 4,
-    matches: [{ home: 1, away: 8, homeScore: null, awayScore: null }, { home: 5, away: 6, homeScore: null, awayScore: null }, { home: 3, away: 9, homeScore: 5, awayScore: 4 }, { home: 7, away: 2, homeScore: 2, awayScore: 6 }],
+    matches: [
+      { home: 1, away: 8, homeScore: null, awayScore: null },
+      { home: 5, away: 6, homeScore: null, awayScore: null },
+      { home: 3, away: 9, homeScore: 5, awayScore: 4 },
+      { home: 7, away: 2, homeScore: 2, awayScore: 6 },
+    ],
   },
   {
     number: 4, date: "2026-04-26", label: "Нд 26.04 · Перше коло",
     bye: 1,
-    matches: [m(3, 4), { home: 8, away: 9, homeScore: 6, awayScore: 2 }, m(6, 2), m(5, 7)],
+    matches: [
+      { home: 3, away: 4, homeScore: null, awayScore: null },
+      { home: 8, away: 9, homeScore: 6, awayScore: 2 },
+      { home: 6, away: 2, homeScore: null, awayScore: null },
+      { home: 5, away: 7, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 5, date: "2026-05-02", label: "Сб 02.05 · Перше коло",
     bye: 7,
-    matches: [m(1, 9), m(3, 5), m(2, 6), m(4, 8)],
+    matches: [
+      { home: 1, away: 9, homeScore: null, awayScore: null },
+      { home: 3, away: 5, homeScore: null, awayScore: null },
+      { home: 2, away: 6, homeScore: null, awayScore: null },
+      { home: 4, away: 8, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 6, date: "2026-05-03", label: "Нд 03.05 · Перше коло",
     bye: 6,
-    matches: [m(1, 3), m(7, 4), m(5, 9), m(2, 8)],
+    matches: [
+      { home: 1, away: 3, homeScore: null, awayScore: null },
+      { home: 7, away: 4, homeScore: null, awayScore: null },
+      { home: 5, away: 9, homeScore: null, awayScore: null },
+      { home: 2, away: 8, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 7, date: "2026-05-09", label: "Сб 09.05 · Перше коло",
     bye: 8,
-    matches: [m(9, 6), m(4, 5), m(1, 2), m(7, 3)],
+    matches: [
+      { home: 9, away: 6, homeScore: null, awayScore: null },
+      { home: 4, away: 5, homeScore: null, awayScore: null },
+      { home: 1, away: 2, homeScore: null, awayScore: null },
+      { home: 7, away: 3, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 8, date: "2026-05-10", label: "Нд 10.05 · Перше коло",
     bye: 4,
-    matches: [m(6, 1), m(8, 7), m(5, 3), m(9, 2)],
+    matches: [
+      { home: 6, away: 1, homeScore: null, awayScore: null },
+      { home: 8, away: 7, homeScore: null, awayScore: null },
+      { home: 5, away: 3, homeScore: null, awayScore: null },
+      { home: 9, away: 2, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 9, date: "2026-05-16", label: "Сб 16.05 · Перше коло",
     bye: 6,
-    matches: [m(1, 4), m(8, 5), m(7, 9), m(2, 3)],
+    matches: [
+      { home: 1, away: 4, homeScore: null, awayScore: null },
+      { home: 8, away: 5, homeScore: null, awayScore: null },
+      { home: 7, away: 9, homeScore: null, awayScore: null },
+      { home: 2, away: 3, homeScore: null, awayScore: null },
+    ],
   },
   // === ДРУГЕ КОЛО ===
   {
     number: 10, date: "2026-05-17", label: "Нд 17.05 · Друге коло",
     bye: 8,
-    matches: [m(6, 9), m(2, 4), m(5, 1), m(3, 7)],
+    matches: [
+      { home: 6, away: 9, homeScore: null, awayScore: null },
+      { home: 2, away: 4, homeScore: null, awayScore: null },
+      { home: 5, away: 1, homeScore: null, awayScore: null },
+      { home: 3, away: 7, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 11, date: "2026-05-23", label: "Сб 23.05 · Друге коло",
     bye: 2,
-    matches: [m(5, 8), m(6, 3), m(7, 1), m(9, 4)],
+    matches: [
+      { home: 5, away: 8, homeScore: null, awayScore: null },
+      { home: 6, away: 3, homeScore: null, awayScore: null },
+      { home: 7, away: 1, homeScore: null, awayScore: null },
+      { home: 9, away: 4, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 12, date: "2026-05-24", label: "Нд 24.05 · Друге коло",
     bye: 1,
-    matches: [m(4, 2), m(9, 3), m(7, 5), m(6, 8)],
+    matches: [
+      { home: 4, away: 2, homeScore: null, awayScore: null },
+      { home: 9, away: 3, homeScore: null, awayScore: null },
+      { home: 7, away: 5, homeScore: null, awayScore: null },
+      { home: 6, away: 8, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 13, date: "2026-05-30", label: "Сб 30.05 · Друге коло",
     bye: 3,
-    matches: [m(9, 8), m(4, 6), m(2, 5), m(1, 7)],
+    matches: [
+      { home: 9, away: 8, homeScore: null, awayScore: null },
+      { home: 4, away: 6, homeScore: null, awayScore: null },
+      { home: 2, away: 5, homeScore: null, awayScore: null },
+      { home: 1, away: 7, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 14, date: "2026-05-31", label: "Нд 31.05 · Друге коло",
     bye: 7,
-    matches: [m(3, 8), m(1, 6), m(5, 4), m(2, 9)],
+    matches: [
+      { home: 3, away: 8, homeScore: null, awayScore: null },
+      { home: 1, away: 6, homeScore: null, awayScore: null },
+      { home: 5, away: 4, homeScore: null, awayScore: null },
+      { home: 2, away: 9, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 15, date: "2026-06-06", label: "Сб 06.06 · Друге коло",
     bye: 2,
-    matches: [m(4, 7), m(8, 1), m(3, 6), m(9, 5)],
+    matches: [
+      { home: 4, away: 7, homeScore: null, awayScore: null },
+      { home: 8, away: 1, homeScore: null, awayScore: null },
+      { home: 3, away: 6, homeScore: null, awayScore: null },
+      { home: 9, away: 5, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 16, date: "2026-06-07", label: "Нд 07.06 · Друге коло",
     bye: 9,
-    matches: [m(4, 3), m(7, 6), m(8, 2), m(1, 5)],
+    matches: [
+      { home: 4, away: 3, homeScore: null, awayScore: null },
+      { home: 7, away: 6, homeScore: null, awayScore: null },
+      { home: 8, away: 2, homeScore: null, awayScore: null },
+      { home: 1, away: 5, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 17, date: "2026-06-13", label: "Сб 13.06 · Друге коло",
     bye: 9,
-    matches: [m(2, 7), m(8, 4), m(3, 1), m(6, 5)],
+    matches: [
+      { home: 2, away: 7, homeScore: null, awayScore: null },
+      { home: 8, away: 4, homeScore: null, awayScore: null },
+      { home: 3, away: 1, homeScore: null, awayScore: null },
+      { home: 6, away: 5, homeScore: null, awayScore: null },
+    ],
   },
   {
     number: 18, date: "2026-06-14", label: "Нд 14.06 · Друге коло",
     bye: 3,
-    matches: [m(9, 1), m(5, 2), m(7, 8), m(6, 4)],
+    matches: [
+      { home: 9, away: 1, homeScore: null, awayScore: null },
+      { home: 5, away: 2, homeScore: null, awayScore: null },
+      { home: 7, away: 8, homeScore: null, awayScore: null },
+      { home: 6, away: 4, homeScore: null, awayScore: null },
+    ],
   },
 ];
 
