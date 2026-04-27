@@ -21,6 +21,8 @@ export interface Matchday {
   bye: number;
 }
 
+export const lastUpdated = "27.04.2026";
+
 export const players: Player[] = [
   { id: 1, name: "Андрій", club: "Динамо Київ", platform: "PC", clubColor: "217 78% 57%" },
   { id: 2, name: "Влад", club: "Аль Наср", platform: "PS5", clubColor: "42 87% 55%" },
@@ -301,6 +303,26 @@ export function getTopScorers(): { playerId: number; goals: number }[] {
   return Object.entries(goals)
     .map(([id, g]) => ({ playerId: Number(id), goals: g }))
     .sort((a, b) => b.goals - a.goals);
+}
+
+export function getSeasonSummary() {
+  const playedMatches = matchdays.flatMap(md => md.matches).filter(match => match.homeScore !== null && match.awayScore !== null);
+  const totalMatches = matchdays.reduce((sum, md) => sum + md.matches.length, 0);
+  const totalGoals = playedMatches.reduce((sum, match) => sum + match.homeScore! + match.awayScore!, 0);
+  const standings = calculateStandings();
+  const leader = standings[0] ? getPlayer(standings[0].playerId) : null;
+  const bestAttack = standings.length > 0
+    ? standings.reduce((best, current) => current.goalsFor > best.goalsFor ? current : best)
+    : null;
+
+  return {
+    leader,
+    bestAttack: bestAttack ? getPlayer(bestAttack.playerId) : null,
+    bestAttackGoals: bestAttack?.goalsFor ?? 0,
+    playedMatches: playedMatches.length,
+    totalMatches,
+    totalGoals,
+  };
 }
 
 export function getNextMatchday(): Matchday | null {
