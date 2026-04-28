@@ -113,11 +113,26 @@ export default function Home() {
           {next && (
             <div className="mt-10 md:mt-12">
               <div className="bg-card rounded-xl md:rounded-2xl border border-border w-full overflow-hidden">
-                <div className="grid lg:grid-cols-[minmax(185px,0.8fr)_minmax(0,1.45fr)_auto] items-center gap-4 md:gap-6 px-4 md:px-8 py-4 md:py-6">
-                  <div className="h-card text-foreground text-left lg:text-right whitespace-nowrap">
-                    {t("home.nextMatch")} — {language === "uk" ? "Тур" : "Matchday"} {next.matchday.number}
+                <div className="px-4 md:px-8 py-4 md:py-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="h-card text-foreground text-left">
+                      {t("home.nextMatch")} — {language === "uk" ? "Тур" : "Matchday"} {next.matchday.number}
+                    </div>
+                    <Countdown
+                      compact
+                      targetIso={
+                        next.matchday.number === 1
+                          ? ({
+                              "9-7": "2026-04-18T21:00:00+03:00",
+                              "8-6": "2026-04-18T22:00:00+03:00",
+                              "3-2": "2026-04-18T23:00:00+03:00",
+                            } as Record<string, string>)[`${next.match.home}-${next.match.away}`] ?? `${next.matchday.date}T21:00:00+03:00`
+                          : `${next.matchday.date}T21:00:00+03:00`
+                      }
+                    />
                   </div>
-                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 min-w-0">
+
+                  <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 min-w-0">
                     <div className="text-right min-w-0">
                       <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
                         <span className="h-card block truncate">{player(getPlayer(next.match.home)).name}</span>
@@ -131,20 +146,6 @@ export default function Home() {
                         <span className="t-meta block md:inline truncate">{player(getPlayer(next.match.away)).club}</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="lg:justify-self-end">
-                    <Countdown
-                      compact
-                      targetIso={
-                        next.matchday.number === 1
-                          ? ({
-                              "9-7": "2026-04-18T21:00:00+03:00",
-                              "8-6": "2026-04-18T22:00:00+03:00",
-                              "3-2": "2026-04-18T23:00:00+03:00",
-                            } as Record<string, string>)[`${next.match.home}-${next.match.away}`] ?? `${next.matchday.date}T21:00:00+03:00`
-                          : `${next.matchday.date}T21:00:00+03:00`
-                      }
-                    />
                   </div>
                 </div>
               </div>
