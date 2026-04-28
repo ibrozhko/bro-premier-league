@@ -80,4 +80,6 @@
   .t-body    { @apply text-sm sm:text-base; }
   .t-meta    { @apply text-xs sm:text-sm text-muted-foreground; }
   .t-label   { @apply text-[0.68rem] sm:text-xs uppercase tracking-wide text-muted-foreground; }
+
+  .content-shell { @apply w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8; }
 }
