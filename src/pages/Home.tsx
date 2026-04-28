@@ -8,7 +8,7 @@ import {
 import logo from "@/assets/logo.svg";
 import { useLanguage } from "@/lib/i18n";
 
-function Countdown({ targetIso }: { targetIso: string }) {
+function Countdown({ targetIso, compact = false }: { targetIso: string; compact?: boolean }) {
   const { t } = useLanguage();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
@@ -36,10 +36,15 @@ function Countdown({ targetIso }: { targetIso: string }) {
   ];
 
   return (
-    <div className="flex gap-2 sm:gap-4 justify-center">
+    <div className={`flex justify-center ${compact ? "gap-1.5 sm:gap-2" : "gap-2 sm:gap-4"}`}>
       {units.map(u => (
-        <div key={u.label} className="bg-secondary rounded-lg sm:rounded-xl p-2.5 md:p-4 min-w-[58px] md:min-w-[80px] text-center">
-          <div className="h-stat text-accent">{u.value}</div>
+        <div
+          key={u.label}
+          className={`bg-secondary rounded-lg sm:rounded-xl text-center ${
+            compact ? "p-2 min-w-[50px] sm:min-w-[58px]" : "p-2.5 md:p-4 min-w-[58px] md:min-w-[80px]"
+          }`}
+        >
+          <div className={`${compact ? "font-heading text-xl sm:text-2xl leading-none" : "h-stat"} text-accent`}>{u.value}</div>
           <div className="t-label mt-1">{u.label}</div>
         </div>
       ))}
@@ -108,8 +113,8 @@ export default function Home() {
           {next && (
             <div className="mt-10 md:mt-12">
               <div className="bg-card rounded-xl md:rounded-2xl border border-border w-full overflow-hidden">
-                <div className="grid md:grid-cols-[minmax(180px,0.85fr)_minmax(0,2fr)] items-center gap-4 px-4 md:px-8 py-4 md:py-6">
-                  <div className="t-label text-left md:text-right whitespace-nowrap">
+                <div className="grid lg:grid-cols-[minmax(185px,0.8fr)_minmax(0,1.45fr)_auto] items-center gap-4 md:gap-6 px-4 md:px-8 py-4 md:py-6">
+                  <div className="h-card text-foreground text-left lg:text-right whitespace-nowrap">
                     {t("home.nextMatch")} — {language === "uk" ? "Тур" : "Matchday"} {next.matchday.number}
                   </div>
                   <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 min-w-0">
@@ -127,18 +132,21 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
+                  <div className="lg:justify-self-end">
+                    <Countdown
+                      compact
+                      targetIso={
+                        next.matchday.number === 1
+                          ? ({
+                              "9-7": "2026-04-18T21:00:00+03:00",
+                              "8-6": "2026-04-18T22:00:00+03:00",
+                              "3-2": "2026-04-18T23:00:00+03:00",
+                            } as Record<string, string>)[`${next.match.home}-${next.match.away}`] ?? `${next.matchday.date}T21:00:00+03:00`
+                          : `${next.matchday.date}T21:00:00+03:00`
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="mt-8">
-                <Countdown targetIso={
-                  next.matchday.number === 1
-                    ? ({
-                        "9-7": "2026-04-18T21:00:00+03:00",
-                        "8-6": "2026-04-18T22:00:00+03:00",
-                        "3-2": "2026-04-18T23:00:00+03:00",
-                      } as Record<string, string>)[`${next.match.home}-${next.match.away}`] ?? `${next.matchday.date}T21:00:00+03:00`
-                    : `${next.matchday.date}T21:00:00+03:00`
-                } />
               </div>
             </div>
           )}
