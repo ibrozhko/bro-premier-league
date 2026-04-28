@@ -13,8 +13,8 @@ export default function TopScorers() {
   ];
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="container mx-auto max-w-3xl">
+    <div className="min-h-screen py-12">
+      <div className="content-shell">
         <h1 className="h-page mb-8 flex items-center gap-3">
           <Trophy className="h-8 w-8 md:h-10 md:w-10 text-accent shrink-0" /> {t("topScorers.title")}
         </h1>

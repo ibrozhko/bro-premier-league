@@ -8,8 +8,8 @@ export default function Players() {
   const scorers = getTopScorers();
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="container mx-auto max-w-5xl">
+    <div className="min-h-screen py-12">
+      <div className="content-shell">
         <h1 className="h-page mb-8">{t("players.title")}</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

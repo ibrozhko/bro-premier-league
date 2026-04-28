@@ -24,8 +24,8 @@ export default function Fixtures() {
         .filter(md => md.matches.length > 0);
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="container mx-auto max-w-4xl">
+    <div className="min-h-screen py-12">
+      <div className="content-shell">
         <h1 className="h-page mb-8">{t("fixtures.title")}</h1>
 
         <div className="mb-6">

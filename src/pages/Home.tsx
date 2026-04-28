@@ -77,9 +77,9 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative py-10 sm:py-14 md:py-24 px-4 text-center overflow-hidden">
+      <section className="relative py-10 sm:py-14 md:py-24 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
-        <div className="relative z-10 max-w-4xl mx-auto">
+        <div className="content-shell relative z-10">
           <img src={logo} alt="BPL Logo" className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 mx-auto mb-5 md:mb-6 rounded-full object-cover" />
           <h1 className="h-page text-foreground">
             Bro Premier League
@@ -107,21 +107,25 @@ export default function Home() {
           {/* Next Match */}
           {next && (
             <div className="mt-10 md:mt-12">
-              <p className="t-label mb-4">
-                {t("home.nextMatch")} — {language === "uk" ? "Тур" : "Matchday"} {next.matchday.number}
-              </p>
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 bg-card rounded-xl md:rounded-2xl px-4 md:px-8 py-4 md:py-6 border border-border w-full max-w-[520px] mx-auto">
-                <div className="text-right min-w-0">
-                  <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
-                    <span className="h-card block truncate">{player(getPlayer(next.match.home)).name}</span>
-                    <span className="t-meta block md:inline truncate">{player(getPlayer(next.match.home)).club}</span>
+              <div className="bg-card rounded-xl md:rounded-2xl border border-border w-full overflow-hidden">
+                <div className="grid md:grid-cols-[minmax(180px,0.85fr)_minmax(0,2fr)] items-center gap-4 px-4 md:px-8 py-4 md:py-6">
+                  <div className="t-label text-left md:text-right whitespace-nowrap">
+                    {t("home.nextMatch")} — {language === "uk" ? "Тур" : "Matchday"} {next.matchday.number}
                   </div>
-                </div>
-                <span className="text-accent h-section">VS</span>
-                <div className="text-left min-w-0">
-                  <div className="md:flex md:items-baseline md:gap-2">
-                    <span className="h-card block truncate">{player(getPlayer(next.match.away)).name}</span>
-                    <span className="t-meta block md:inline truncate">{player(getPlayer(next.match.away)).club}</span>
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 min-w-0">
+                    <div className="text-right min-w-0">
+                      <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
+                        <span className="h-card block truncate">{player(getPlayer(next.match.home)).name}</span>
+                        <span className="t-meta block md:inline truncate">{player(getPlayer(next.match.home)).club}</span>
+                      </div>
+                    </div>
+                    <span className="text-accent h-section">VS</span>
+                    <div className="text-left min-w-0">
+                      <div className="md:flex md:items-baseline md:gap-2">
+                        <span className="h-card block truncate">{player(getPlayer(next.match.away)).name}</span>
+                        <span className="t-meta block md:inline truncate">{player(getPlayer(next.match.away)).club}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -190,8 +194,8 @@ export default function Home() {
         };
 
         return (
-          <section className="py-10 px-4">
-            <div className="container mx-auto max-w-4xl space-y-6">
+          <section className="py-10">
+            <div className="content-shell space-y-6">
               {/* Opening Match */}
               {openingMatch && (
                 <div>
@@ -211,7 +215,7 @@ export default function Home() {
                   <div className="flex items-center gap-3 mb-4">
                     <Calendar className="h-7 w-7 text-primary" />
                     <h2 className="h-section min-w-0">
-                      {openingMatch ? `${t("home.matchdayGames")} ${nextMd.number}` : `${t("home.games")} ${nextMd.number}`}
+                      {language === "uk" ? `Тур ${nextMd.number}` : `Round ${nextMd.number}`}
                     </h2>
                   <span className="t-meta ml-auto text-right">
                     {openingMatch ? (language === "uk" ? "Сб 18.04" : "Sat 18.04") : matchdayLabel(nextMd.label)}
@@ -235,8 +239,8 @@ export default function Home() {
 
       {/* Recent Results — slider */}
       {recent.length > 0 && (
-        <section className="py-10 px-4">
-          <div className="container mx-auto max-w-5xl">
+        <section className="py-10">
+          <div className="content-shell">
             <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
               <h2 className="h-section">{t("home.recentResults")} · {language === "uk" ? "Тур" : "Matchday"} {activeTour!.number}</h2>
               <Link to="/fixtures" className="text-primary text-sm flex items-center gap-1 hover:underline whitespace-nowrap">
@@ -282,8 +286,8 @@ export default function Home() {
       )}
 
       {/* Full Standings Table */}
-      <section className="py-10 px-4">
-        <div className="container mx-auto max-w-5xl">
+      <section className="py-10">
+        <div className="content-shell">
           <div className="flex items-center justify-between mb-6">
             <h2 className="h-section flex items-center gap-3">
               <Trophy className="h-7 w-7 md:h-8 md:w-8 text-accent" /> {t("home.table")}
