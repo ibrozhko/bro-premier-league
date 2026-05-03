@@ -1,17 +1,21 @@
 import { FormEvent, useMemo, useState } from "react";
-import { Save, Trash2 } from "lucide-react";
+import { RotateCcw, Save, Trash2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { matchdays, getPlayer } from "@/data/leagueData";
+import { currentSeason, matchdays, getPlayer, players, type Player } from "@/data/leagueData";
 
 type Status = {
   type: "idle" | "success" | "error";
   message: string;
 };
 
+type AdminTab = "results" | "players" | "season";
+
 const savedPasswordKey = "bro-admin-password";
+const platforms: Player["platform"][] = ["PS5", "Xbox", "PC"];
 
 export default function Admin() {
   const [password, setPassword] = useState(() => localStorage.getItem(savedPasswordKey) ?? "");
+  const [activeTab, setActiveTab] = useState<AdminTab>("results");
   const [matchdayNumber, setMatchdayNumber] = useState(matchdays.find(md => md.matches.some(m => m.homeScore === null))?.number ?? matchdays[0].number);
   const selectedMatchday = useMemo(
     () => matchdays.find(md => md.number === matchdayNumber) ?? matchdays[0],
@@ -21,11 +25,14 @@ export default function Admin() {
   const selectedMatch = selectedMatchday.matches[Math.min(matchIndex, selectedMatchday.matches.length - 1)];
   const [homeScore, setHomeScore] = useState(selectedMatch.homeScore?.toString() ?? "");
   const [awayScore, setAwayScore] = useState(selectedMatch.awayScore?.toString() ?? "");
+  const [editablePlayers, setEditablePlayers] = useState<Player[]>(() => players.map(player => ({ ...player })));
+  const [seasonConfirmation, setSeasonConfirmation] = useState("");
   const [status, setStatus] = useState<Status>({ type: "idle", message: "" });
   const [isSaving, setIsSaving] = useState(false);
 
   const homePlayer = getPlayer(selectedMatch.home);
   const awayPlayer = getPlayer(selectedMatch.away);
+  const nextSeason = currentSeason + 1;
 
   function chooseMatchday(value: number) {
     const nextMatchday = matchdays.find(md => md.number === value) ?? matchdays[0];
@@ -47,7 +54,7 @@ export default function Admin() {
     setAwayScore(nextMatch.awayScore?.toString() ?? "");
   }
 
-  async function updateResult(nextHomeScore: number | null, nextAwayScore: number | null) {
+  async function sendAdminAction(body: Record<string, unknown>) {
     setIsSaving(true);
     setStatus({ type: "idle", message: "" });
 
@@ -55,19 +62,12 @@ export default function Admin() {
       const response = await fetch("/api/update-result", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          password,
-          matchdayNumber,
-          home: selectedMatch.home,
-          away: selectedMatch.away,
-          homeScore: nextHomeScore,
-          awayScore: nextAwayScore,
-        }),
+        body: JSON.stringify({ password, ...body }),
       });
       const payload = await response.json();
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Не вдалося оновити результат");
+        throw new Error(payload.error ?? "Не вдалося оновити дані");
       }
 
       localStorage.setItem(savedPasswordKey, password);
@@ -85,7 +85,18 @@ export default function Admin() {
     }
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function updateResult(nextHomeScore: number | null, nextAwayScore: number | null) {
+    await sendAdminAction({
+      action: "updateResult",
+      matchdayNumber,
+      home: selectedMatch.home,
+      away: selectedMatch.away,
+      homeScore: nextHomeScore,
+      awayScore: nextAwayScore,
+    });
+  }
+
+  async function handleResultSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const parsedHomeScore = Number(homeScore);
@@ -99,147 +110,277 @@ export default function Admin() {
     await updateResult(parsedHomeScore, parsedAwayScore);
   }
 
+  async function handlePlayersSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await sendAdminAction({
+      action: "updatePlayers",
+      players: editablePlayers,
+    });
+  }
+
+  async function handleSeasonSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await sendAdminAction({
+      action: "startSeason",
+      confirmation: seasonConfirmation,
+      season: nextSeason,
+    });
+  }
+
+  function updatePlayer(playerId: number, patch: Partial<Player>) {
+    setEditablePlayers(current =>
+      current.map(player => player.id === playerId ? { ...player, ...patch } : player),
+    );
+  }
+
   return (
     <div className="min-h-screen py-10 sm:py-12">
       <div className="content-shell">
         <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="h-page">Адмінка</h1>
-            <p className="t-body text-muted-foreground">Оновлення рахунків через GitHub commit.</p>
+            <p className="t-body text-muted-foreground">Сезон {currentSeason}: результати, гравці та підготовка нового сезону.</p>
           </div>
           <a className="t-body text-accent hover:underline" href="/fixtures">
             До календаря
           </a>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
-            <label className="t-label mb-2 block" htmlFor="admin-password">
-              Пароль
-            </label>
-            <input
-              id="admin-password"
-              className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={event => setPassword(event.target.value)}
-              placeholder="ADMIN_PASSWORD"
-            />
-          </section>
+        <section className="mb-6 rounded-lg border border-border bg-card p-4 sm:p-6">
+          <label className="t-label mb-2 block" htmlFor="admin-password">
+            Пароль
+          </label>
+          <input
+            id="admin-password"
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={event => setPassword(event.target.value)}
+            placeholder="ADMIN_PASSWORD"
+          />
+        </section>
 
-          <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
-            <div className="mb-5 grid gap-4 sm:grid-cols-[160px_1fr]">
-              <div>
-                <label className="t-label mb-2 block" htmlFor="matchday">
-                  Тур
-                </label>
-                <select
-                  id="matchday"
-                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-                  value={matchdayNumber}
-                  onChange={event => chooseMatchday(Number(event.target.value))}
-                >
-                  {matchdays.map(md => (
-                    <option key={md.number} value={md.number}>
-                      Тур {md.number}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="t-label mb-2 block" htmlFor="match">
-                  Матч
-                </label>
-                <select
-                  id="match"
-                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-                  value={matchIndex}
-                  onChange={event => chooseMatch(Number(event.target.value))}
-                >
-                  {selectedMatchday.matches.map((match, index) => {
-                    const home = getPlayer(match.home);
-                    const away = getPlayer(match.away);
-                    const score = match.homeScore === null || match.awayScore === null
-                      ? "не зіграно"
-                      : `${match.homeScore}-${match.awayScore}`;
-
-                    return (
-                      <option key={`${match.home}-${match.away}`} value={index}>
-                        {home.name} - {away.name} · {score}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            </div>
-
-            <div className="rounded-md bg-secondary/50 p-4">
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                <div className="min-w-0 text-right">
-                  <div className="h-card truncate">{homePlayer.name}</div>
-                  <div className="t-meta truncate">{homePlayer.club}</div>
-                </div>
-                <div className="font-heading text-2xl text-accent">VS</div>
-                <div className="min-w-0 text-left">
-                  <div className="h-card truncate">{awayPlayer.name}</div>
-                  <div className="t-meta truncate">{awayPlayer.club}</div>
-                </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                <input
-                  className="h-14 min-w-0 rounded-md border border-input bg-background px-3 text-center font-heading text-3xl outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-                  inputMode="numeric"
-                  min={0}
-                  type="number"
-                  value={homeScore}
-                  onChange={event => setHomeScore(event.target.value)}
-                />
-                <span className="text-2xl text-muted-foreground">:</span>
-                <input
-                  className="h-14 min-w-0 rounded-md border border-input bg-background px-3 text-center font-heading text-3xl outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-                  inputMode="numeric"
-                  min={0}
-                  type="number"
-                  value={awayScore}
-                  onChange={event => setAwayScore(event.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <Button className="w-full sm:w-auto" type="submit" disabled={isSaving || !password}>
-                <Save />
-                {isSaving ? "Оновлюю..." : "Оновити"}
-              </Button>
-              <Button
-                className="w-full sm:w-auto"
-                type="button"
-                variant="secondary"
-                disabled={isSaving || !password}
-                onClick={() => updateResult(null, null)}
-              >
-                <Trash2 />
-                Очистити результат
-              </Button>
-            </div>
-          </section>
-
-          {status.message && (
-            <div
-              className={`rounded-md border p-4 t-body ${
-                status.type === "success"
-                  ? "border-accent/50 bg-accent/10 text-accent"
-                  : "border-destructive/50 bg-destructive/10 text-destructive-foreground"
+        <div className="mb-6 grid grid-cols-3 gap-2 rounded-lg bg-secondary/50 p-1">
+          {[
+            { value: "results", label: "Результати" },
+            { value: "players", label: "Гравці" },
+            { value: "season", label: "Сезон" },
+          ].map(tab => (
+            <button
+              key={tab.value}
+              className={`h-10 rounded-md px-2 text-sm font-medium transition-colors ${
+                activeTab === tab.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
+              type="button"
+              onClick={() => setActiveTab(tab.value as AdminTab)}
             >
-              {status.message}
-            </div>
-          )}
-        </form>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "results" && (
+          <form onSubmit={handleResultSubmit} className="space-y-6">
+            <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
+              <div className="mb-5 grid gap-4 sm:grid-cols-[160px_1fr]">
+                <div>
+                  <label className="t-label mb-2 block" htmlFor="matchday">
+                    Тур
+                  </label>
+                  <select
+                    id="matchday"
+                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    value={matchdayNumber}
+                    onChange={event => chooseMatchday(Number(event.target.value))}
+                  >
+                    {matchdays.map(md => (
+                      <option key={md.number} value={md.number}>
+                        Тур {md.number}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="t-label mb-2 block" htmlFor="match">
+                    Матч
+                  </label>
+                  <select
+                    id="match"
+                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    value={matchIndex}
+                    onChange={event => chooseMatch(Number(event.target.value))}
+                  >
+                    {selectedMatchday.matches.map((match, index) => {
+                      const home = getPlayer(match.home);
+                      const away = getPlayer(match.away);
+                      const score = match.homeScore === null || match.awayScore === null
+                        ? "не зіграно"
+                        : `${match.homeScore}-${match.awayScore}`;
+
+                      return (
+                        <option key={`${match.home}-${match.away}`} value={index}>
+                          {home.name} - {away.name} · {score}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+
+              <div className="rounded-md bg-secondary/50 p-4">
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                  <div className="min-w-0 text-right">
+                    <div className="h-card truncate">{homePlayer.name}</div>
+                    <div className="t-meta truncate">{homePlayer.club}</div>
+                  </div>
+                  <div className="font-heading text-2xl text-accent">VS</div>
+                  <div className="min-w-0 text-left">
+                    <div className="h-card truncate">{awayPlayer.name}</div>
+                    <div className="t-meta truncate">{awayPlayer.club}</div>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                  <input
+                    className="h-14 min-w-0 rounded-md border border-input bg-background px-3 text-center font-heading text-3xl outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    inputMode="numeric"
+                    min={0}
+                    type="number"
+                    value={homeScore}
+                    onChange={event => setHomeScore(event.target.value)}
+                  />
+                  <span className="text-2xl text-muted-foreground">:</span>
+                  <input
+                    className="h-14 min-w-0 rounded-md border border-input bg-background px-3 text-center font-heading text-3xl outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    inputMode="numeric"
+                    min={0}
+                    type="number"
+                    value={awayScore}
+                    onChange={event => setAwayScore(event.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <Button className="w-full sm:w-auto" type="submit" disabled={isSaving || !password}>
+                  <Save />
+                  {isSaving ? "Оновлюю..." : "Оновити"}
+                </Button>
+                <Button
+                  className="w-full sm:w-auto"
+                  type="button"
+                  variant="secondary"
+                  disabled={isSaving || !password}
+                  onClick={() => updateResult(null, null)}
+                >
+                  <Trash2 />
+                  Очистити результат
+                </Button>
+              </div>
+            </section>
+          </form>
+        )}
+
+        {activeTab === "players" && (
+          <form onSubmit={handlePlayersSubmit} className="space-y-4">
+            {editablePlayers.map(player => (
+              <section key={player.id} className="rounded-lg border border-border bg-card p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="h-card">ID {player.id}</div>
+                    <div className="t-meta">Гравець сезону {currentSeason}</div>
+                  </div>
+                  <div className="h-8 w-8 rounded-md border border-border" style={{ backgroundColor: `hsl(${player.clubColor})` }} />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <AdminInput label="Імʼя" value={player.name} onChange={value => updatePlayer(player.id, { name: value })} />
+                  <AdminInput label="Клуб" value={player.club} onChange={value => updatePlayer(player.id, { club: value })} />
+                  <div>
+                    <label className="t-label mb-2 block">Платформа</label>
+                    <select
+                      className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                      value={player.platform}
+                      onChange={event => updatePlayer(player.id, { platform: event.target.value as Player["platform"] })}
+                    >
+                      {platforms.map(platform => (
+                        <option key={platform} value={platform}>{platform}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <AdminInput label="Колір HSL" value={player.clubColor} onChange={value => updatePlayer(player.id, { clubColor: value })} />
+                </div>
+              </section>
+            ))}
+
+            <Button className="w-full sm:w-auto" type="submit" disabled={isSaving || !password}>
+              <Users />
+              {isSaving ? "Зберігаю..." : "Зберегти гравців"}
+            </Button>
+          </form>
+        )}
+
+        {activeTab === "season" && (
+          <form onSubmit={handleSeasonSubmit} className="space-y-6">
+            <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
+              <div className="mb-4">
+                <h2 className="h-card">Почати сезон {nextSeason}</h2>
+                <p className="t-body text-muted-foreground">
+                  Поточний сезон {currentSeason} буде збережений в архів, а всі рахунки в календарі стануть порожніми.
+                </p>
+              </div>
+
+              <label className="t-label mb-2 block" htmlFor="season-confirmation">
+                Підтвердження
+              </label>
+              <input
+                id="season-confirmation"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                value={seasonConfirmation}
+                onChange={event => setSeasonConfirmation(event.target.value)}
+                placeholder={`Введи SEASON ${nextSeason}`}
+              />
+
+              <Button
+                className="mt-5 w-full sm:w-auto"
+                type="submit"
+                variant="destructive"
+                disabled={isSaving || !password || seasonConfirmation !== `SEASON ${nextSeason}`}
+              >
+                <RotateCcw />
+                {isSaving ? "Готую..." : `Архівувати і почати сезон ${nextSeason}`}
+              </Button>
+            </section>
+          </form>
+        )}
+
+        {status.message && (
+          <div
+            className={`mt-6 rounded-md border p-4 t-body ${
+              status.type === "success"
+                ? "border-accent/50 bg-accent/10 text-accent"
+                : "border-destructive/50 bg-destructive/10 text-destructive-foreground"
+            }`}
+          >
+            {status.message}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function AdminInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div>
+      <label className="t-label mb-2 block">{label}</label>
+      <input
+        className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+        value={value}
+        onChange={event => onChange(event.target.value)}
+      />
     </div>
   );
 }

@@ -8,7 +8,23 @@
 https://bro-premier-league.vercel.app/admin
 ```
 
-Введи пароль адмінки, вибери тур, матч, рахунок і натисни `Оновити`.
+Введи пароль адмінки. В адмінці є три вкладки:
+
+```text
+Результати
+Гравці
+Сезон
+```
+
+У `Результати` вибери тур, матч, рахунок і натисни `Оновити`.
+
+У `Гравці` можна змінити імʼя, клуб, платформу і колір гравця.
+
+У `Сезон` можна заархівувати поточний сезон і почати наступний. Для захисту від випадкового натискання треба ввести підтвердження, наприклад:
+
+```text
+SEASON 2
+```
 
 Після цього сайт сам створить commit у GitHub. Vercel автоматично запустить новий deploy, і через 1-2 хвилини сайт оновиться.
 
@@ -23,6 +39,8 @@ GITHUB_BRANCH
 GITHUB_RESULTS_PATH
 ```
 
+`GITHUB_RESULTS_PATH` може залишатися `src/data/leagueData.ts`: адмінка автоматично оновлює JSON-файл `src/data/leagueData.json`.
+
 ## Вручну через GitHub
 
 Сайт автоматично оновлюється через Vercel після кожного commit у GitHub.
@@ -32,31 +50,31 @@ GITHUB_RESULTS_PATH
 Відкрий файл:
 
 ```text
-src/data/leagueData.ts
+src/data/leagueData.json
 ```
 
 Знайди потрібний тур у масиві `matchdays` і зміни тільки поля:
 
-```ts
-homeScore: null,
-awayScore: null,
+```json
+"homeScore": null,
+"awayScore": null
 ```
 
 Наприклад, якщо матч завершився 3:2:
 
-```ts
-{ home: 1, away: 8, homeScore: 3, awayScore: 2 },
+```json
+{ "home": 1, "away": 8, "homeScore": 3, "awayScore": 2 }
 ```
 
 Якщо матч ще не зіграний, залишай:
 
-```ts
-{ home: 1, away: 8, homeScore: null, awayScore: null },
+```json
+{ "home": 1, "away": 8, "homeScore": null, "awayScore": null }
 ```
 
 ## Як зрозуміти, хто є хто
 
-ID гравців вказані на початку файлу `src/data/leagueData.ts`:
+ID гравців вказані на початку файлу `src/data/leagueData.json`:
 
 ```text
 1 - Андрій
@@ -72,8 +90,8 @@ ID гравців вказані на початку файлу `src/data/league
 
 У матчі:
 
-```ts
-{ home: 1, away: 8, homeScore: 3, awayScore: 2 },
+```json
+{ "home": 1, "away": 8, "homeScore": 3, "awayScore": 2 }
 ```
 
 це означає: Андрій 3:2 Олексій.

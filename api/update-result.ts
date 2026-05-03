@@ -8,13 +8,49 @@ type ApiResponse = {
   json: (body: unknown) => void;
 };
 
+type Platform = "PS5" | "Xbox" | "PC";
+
+type Player = {
+  id: number;
+  name: string;
+  club: string;
+  platform: Platform;
+  clubColor: string;
+};
+
+type Match = {
+  home: number;
+  away: number;
+  homeScore: number | null;
+  awayScore: number | null;
+};
+
+type Matchday = {
+  number: number;
+  date: string;
+  label: string;
+  matches: Match[];
+  bye: number;
+};
+
+type LeagueData = {
+  season: number;
+  lastUpdated: string;
+  players: Player[];
+  matchdays: Matchday[];
+};
+
 type UpdatePayload = {
   password?: string;
+  action?: "updateResult" | "updatePlayers" | "startSeason";
   matchdayNumber?: number;
   home?: number;
   away?: number;
   homeScore?: number | null;
   awayScore?: number | null;
+  players?: Player[];
+  confirmation?: string;
+  season?: number;
 };
 
 type GitHubFile = {
@@ -28,7 +64,6 @@ const requiredEnvVars = [
   "GITHUB_OWNER",
   "GITHUB_REPO",
   "GITHUB_BRANCH",
-  "GITHUB_RESULTS_PATH",
 ] as const;
 
 export default async function handler(request: ApiRequest, response: ApiResponse) {
@@ -54,34 +89,98 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     return;
   }
 
-  const validationError = validatePayload(payload);
-  if (validationError) {
-    response.status(400).json({ error: validationError });
-    return;
-  }
-
   try {
-    const file = await getGitHubFile();
-    const currentContent = Buffer.from(file.content, "base64").toString("utf8");
-    const nextContent = updateLeagueData(currentContent, payload as Required<UpdatePayload>);
+    const file = await getGitHubFile(dataPath());
+    const currentData = JSON.parse(Buffer.from(file.content, "base64").toString("utf8")) as LeagueData;
+    const action = payload.action ?? "updateResult";
+    const today = formatToday();
 
-    if (nextContent === currentContent) {
-      response.status(200).json({ message: "Результат вже був таким самим" });
+    if (action === "updateResult") {
+      const validationError = validateResultPayload(payload);
+      if (validationError) {
+        response.status(400).json({ error: validationError });
+        return;
+      }
+
+      const nextData = updateResult(currentData, payload as Required<UpdatePayload>, today);
+      await commitFiles(
+        [{ path: dataPath(), content: formatJson(nextData) }],
+        `Update matchday ${payload.matchdayNumber}: ${payload.home} ${scoreText(payload.homeScore)}-${scoreText(payload.awayScore)} ${payload.away}`,
+      );
+
+      response.status(200).json({ message: "Результат оновлено" });
       return;
     }
 
-    const homeScoreText = payload.homeScore === null ? "null" : payload.homeScore;
-    const awayScoreText = payload.awayScore === null ? "null" : payload.awayScore;
-    const message = `Update matchday ${payload.matchdayNumber}: ${payload.home} ${homeScoreText}-${awayScoreText} ${payload.away}`;
-    const commit = await putGitHubFile(nextContent, file.sha, message);
+    if (action === "updatePlayers") {
+      const validationError = validatePlayersPayload(payload.players, currentData.matchdays);
+      if (validationError) {
+        response.status(400).json({ error: validationError });
+        return;
+      }
 
-    response.status(200).json({
-      message: "Результат оновлено",
-      commitUrl: commit.content?.html_url,
-    });
+      const nextData = {
+        ...currentData,
+        players: payload.players!,
+        lastUpdated: today,
+      };
+
+      await commitFiles(
+        [{ path: dataPath(), content: formatJson(nextData) }],
+        `Update season ${currentData.season} players`,
+      );
+
+      response.status(200).json({ message: "Гравців оновлено" });
+      return;
+    }
+
+    if (action === "startSeason") {
+      const expectedConfirmation = `SEASON ${currentData.season + 1}`;
+      if (payload.confirmation !== expectedConfirmation) {
+        response.status(400).json({ error: `Для підтвердження введи ${expectedConfirmation}.` });
+        return;
+      }
+
+      const nextSeason = payload.season && Number.isInteger(payload.season)
+        ? payload.season
+        : currentData.season + 1;
+
+      if (nextSeason <= currentData.season) {
+        response.status(400).json({ error: "Новий сезон має бути більшим за поточний." });
+        return;
+      }
+
+      const archivePath = `src/data/archive/season-${currentData.season}.json`;
+      const nextData: LeagueData = {
+        ...currentData,
+        season: nextSeason,
+        lastUpdated: today,
+        matchdays: currentData.matchdays.map(matchday => ({
+          ...matchday,
+          matches: matchday.matches.map(match => ({
+            ...match,
+            homeScore: null,
+            awayScore: null,
+          })),
+        })),
+      };
+
+      await commitFiles(
+        [
+          { path: archivePath, content: formatJson(currentData) },
+          { path: dataPath(), content: formatJson(nextData) },
+        ],
+        `Start season ${nextSeason}`,
+      );
+
+      response.status(200).json({ message: `Сезон ${nextSeason} створено, попередній сезон заархівовано` });
+      return;
+    }
+
+    response.status(400).json({ error: "Невідома дія адмінки." });
   } catch (error) {
     response.status(500).json({
-      error: error instanceof Error ? error.message : "Не вдалося оновити результат.",
+      error: error instanceof Error ? error.message : "Не вдалося оновити дані.",
     });
   }
 }
@@ -102,7 +201,7 @@ function parseBody(body: unknown): UpdatePayload | null {
   return null;
 }
 
-function validatePayload(payload: UpdatePayload): string | null {
+function validateResultPayload(payload: UpdatePayload): string | null {
   if (!Number.isInteger(payload.matchdayNumber) || !Number.isInteger(payload.home) || !Number.isInteger(payload.away)) {
     return "Не вистачає даних матчу.";
   }
@@ -118,55 +217,157 @@ function validatePayload(payload: UpdatePayload): string | null {
   return null;
 }
 
+function validatePlayersPayload(players: Player[] | undefined, matchdays: Matchday[]): string | null {
+  if (!Array.isArray(players) || players.length === 0) {
+    return "Список гравців порожній.";
+  }
+
+  const ids = new Set<number>();
+  const usedIds = new Set<number>();
+  matchdays.forEach(matchday => {
+    usedIds.add(matchday.bye);
+    matchday.matches.forEach(match => {
+      usedIds.add(match.home);
+      usedIds.add(match.away);
+    });
+  });
+
+  for (const player of players) {
+    if (!Number.isInteger(player.id) || player.id <= 0) return "ID гравця має бути додатним числом.";
+    if (ids.has(player.id)) return `ID ${player.id} повторюється.`;
+    if (!player.name.trim()) return `Гравець ${player.id}: імʼя не може бути порожнім.`;
+    if (!player.club.trim()) return `Гравець ${player.id}: клуб не може бути порожнім.`;
+    if (!["PS5", "Xbox", "PC"].includes(player.platform)) return `Гравець ${player.id}: невідома платформа.`;
+    if (!player.clubColor.trim()) return `Гравець ${player.id}: колір не може бути порожнім.`;
+    ids.add(player.id);
+  }
+
+  for (const usedId of usedIds) {
+    if (!ids.has(usedId)) {
+      return `Гравця з ID ${usedId} не можна видалити, бо він є в календарі.`;
+    }
+  }
+
+  return null;
+}
+
 function isValidScore(value: unknown): value is number | null {
   return value === null || (Number.isInteger(value) && Number(value) >= 0);
 }
 
-async function getGitHubFile(): Promise<GitHubFile> {
-  const url = githubContentsUrl();
-  const result = await fetch(url, {
+function updateResult(data: LeagueData, payload: Required<UpdatePayload>, today: string): LeagueData {
+  let found = false;
+
+  const matchdays = data.matchdays.map(matchday => {
+    if (matchday.number !== payload.matchdayNumber) return matchday;
+
+    return {
+      ...matchday,
+      matches: matchday.matches.map(match => {
+        if (match.home !== payload.home || match.away !== payload.away) return match;
+
+        found = true;
+        return {
+          ...match,
+          homeScore: payload.homeScore,
+          awayScore: payload.awayScore,
+        };
+      }),
+    };
+  });
+
+  if (!found) {
+    throw new Error(`Матч ${payload.home} - ${payload.away} не знайдено у турі ${payload.matchdayNumber}.`);
+  }
+
+  return {
+    ...data,
+    lastUpdated: today,
+    matchdays,
+  };
+}
+
+async function getGitHubFile(path: string): Promise<GitHubFile> {
+  const result = await fetch(githubContentsUrl(path), {
     headers: githubHeaders(),
   });
   const payload = await result.json();
 
   if (!result.ok) {
-    throw new Error(payload.message ?? "GitHub не віддав файл з результатами.");
+    throw new Error(payload.message ?? `GitHub не віддав файл ${path}.`);
   }
 
   return payload as GitHubFile;
 }
 
-async function putGitHubFile(content: string, sha: string, message: string) {
-  const url = githubContentsUrl();
+async function commitFiles(files: { path: string; content: string }[], message: string) {
+  const ref = await githubJson(`https://api.github.com/repos/${owner()}/${repo()}/git/ref/heads/${branch()}`);
+  const baseCommit = await githubJson(ref.object.url);
+  const treeItems = await Promise.all(files.map(async file => {
+    const blob = await githubJson(`https://api.github.com/repos/${owner()}/${repo()}/git/blobs`, {
+      method: "POST",
+      body: JSON.stringify({
+        content: file.content,
+        encoding: "utf-8",
+      }),
+    });
+
+    return {
+      path: file.path,
+      mode: "100644",
+      type: "blob",
+      sha: blob.sha,
+    };
+  }));
+
+  const tree = await githubJson(`https://api.github.com/repos/${owner()}/${repo()}/git/trees`, {
+    method: "POST",
+    body: JSON.stringify({
+      base_tree: baseCommit.tree.sha,
+      tree: treeItems,
+    }),
+  });
+
+  const commit = await githubJson(`https://api.github.com/repos/${owner()}/${repo()}/git/commits`, {
+    method: "POST",
+    body: JSON.stringify({
+      message,
+      tree: tree.sha,
+      parents: [baseCommit.sha],
+    }),
+  });
+
+  await githubJson(`https://api.github.com/repos/${owner()}/${repo()}/git/refs/heads/${branch()}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      sha: commit.sha,
+      force: false,
+    }),
+  });
+
+  return commit;
+}
+
+async function githubJson(url: string, init: RequestInit = {}) {
   const result = await fetch(url, {
-    method: "PUT",
+    ...init,
     headers: {
       ...githubHeaders(),
       "Content-Type": "application/json",
+      ...(init.headers ?? {}),
     },
-    body: JSON.stringify({
-      message,
-      content: Buffer.from(content, "utf8").toString("base64"),
-      sha,
-      branch: process.env.GITHUB_BRANCH,
-    }),
   });
   const payload = await result.json();
 
   if (!result.ok) {
-    throw new Error(payload.message ?? "GitHub не прийняв commit.");
+    throw new Error(payload.message ?? "GitHub не прийняв запит.");
   }
 
   return payload;
 }
 
-function githubContentsUrl() {
-  const owner = process.env.GITHUB_OWNER;
-  const repo = process.env.GITHUB_REPO;
-  const branch = process.env.GITHUB_BRANCH;
-  const path = process.env.GITHUB_RESULTS_PATH;
-
-  return `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+function githubContentsUrl(path: string) {
+  return `https://api.github.com/repos/${owner()}/${repo()}/contents/${path}?ref=${branch()}`;
 }
 
 function githubHeaders() {
@@ -177,46 +378,40 @@ function githubHeaders() {
   };
 }
 
-function updateLeagueData(content: string, payload: Required<UpdatePayload>) {
-  const lines = content.split("\n");
-  const matchdayLineIndex = lines.findIndex(line => line.includes(`number: ${payload.matchdayNumber},`));
+function owner() {
+  return process.env.GITHUB_OWNER;
+}
 
-  if (matchdayLineIndex === -1) {
-    throw new Error(`Тур ${payload.matchdayNumber} не знайдено.`);
-  }
+function repo() {
+  return process.env.GITHUB_REPO;
+}
 
-  const matchesStartIndex = lines.findIndex((line, index) => index > matchdayLineIndex && line.includes("matches: ["));
-  const matchesEndIndex = lines.findIndex((line, index) => index > matchesStartIndex && line.trim() === "],");
+function branch() {
+  return process.env.GITHUB_BRANCH;
+}
 
-  if (matchesStartIndex === -1 || matchesEndIndex === -1) {
-    throw new Error(`Матчі туру ${payload.matchdayNumber} не знайдені.`);
-  }
+function dataPath() {
+  const configuredPath = process.env.GITHUB_DATA_PATH ?? process.env.GITHUB_RESULTS_PATH;
+  if (!configuredPath) return "src/data/leagueData.json";
 
-  const matchLineIndex = lines.findIndex((line, index) => {
-    if (index <= matchesStartIndex || index >= matchesEndIndex) return false;
+  return configuredPath.endsWith(".ts")
+    ? configuredPath.replace(/leagueData\.ts$/, "leagueData.json")
+    : configuredPath;
+}
 
-    return line.includes(`home: ${payload.home},`)
-      && line.includes(`away: ${payload.away},`)
-      && line.includes("homeScore:")
-      && line.includes("awayScore:");
-  });
+function formatJson(data: unknown) {
+  return `${JSON.stringify(data, null, 2)}\n`;
+}
 
-  if (matchLineIndex === -1) {
-    throw new Error(`Матч ${payload.home} - ${payload.away} не знайдено у турі ${payload.matchdayNumber}.`);
-  }
+function scoreText(score: number | null | undefined) {
+  return score === null || score === undefined ? "null" : score;
+}
 
-  const indent = lines[matchLineIndex].match(/^\s*/)?.[0] ?? "      ";
-  const nextHomeScore = payload.homeScore === null ? "null" : String(payload.homeScore);
-  const nextAwayScore = payload.awayScore === null ? "null" : String(payload.awayScore);
-
-  lines[matchLineIndex] = `${indent}{ home: ${payload.home}, away: ${payload.away}, homeScore: ${nextHomeScore}, awayScore: ${nextAwayScore} },`;
-
-  const today = new Intl.DateTimeFormat("uk-UA", {
+function formatToday() {
+  return new Intl.DateTimeFormat("uk-UA", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     timeZone: "Europe/Kyiv",
   }).format(new Date());
-
-  return lines.join("\n").replace(/export const lastUpdated = ".*?";/, `export const lastUpdated = "${today}";`);
 }

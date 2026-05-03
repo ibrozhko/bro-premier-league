@@ -1,0 +1,647 @@
+{
+  "season": 1,
+  "lastUpdated": "03.05.2026",
+  "players": [
+    {
+      "id": 1,
+      "name": "Андрій",
+      "club": "Динамо Київ",
+      "platform": "PC",
+      "clubColor": "217 78% 57%"
+    },
+    {
+      "id": 2,
+      "name": "Влад",
+      "club": "Аль Наср",
+      "platform": "PS5",
+      "clubColor": "42 87% 55%"
+    },
+    {
+      "id": 3,
+      "name": "Коля",
+      "club": "Брайтон",
+      "platform": "Xbox",
+      "clubColor": "217 90% 50%"
+    },
+    {
+      "id": 4,
+      "name": "Міша",
+      "club": "Атлетіко Мадрид",
+      "platform": "PS5",
+      "clubColor": "0 70% 50%"
+    },
+    {
+      "id": 5,
+      "name": "Жека",
+      "club": "Бенфіка",
+      "platform": "PS5",
+      "clubColor": "0 80% 45%"
+    },
+    {
+      "id": 6,
+      "name": "Ігор",
+      "club": "Ліон",
+      "platform": "PS5",
+      "clubColor": "217 60% 45%"
+    },
+    {
+      "id": 7,
+      "name": "Сашко",
+      "club": "Реал Мадрид",
+      "platform": "PS5",
+      "clubColor": "0 0% 95%"
+    },
+    {
+      "id": 8,
+      "name": "Олексій",
+      "club": "Ліль",
+      "platform": "PS5",
+      "clubColor": "0 75% 40%"
+    },
+    {
+      "id": 9,
+      "name": "Сергій",
+      "club": "Марсель",
+      "platform": "PS5",
+      "clubColor": "200 70% 55%"
+    }
+  ],
+  "matchdays": [
+    {
+      "number": 1,
+      "date": "2026-04-17",
+      "label": "Пт–Сб 17–18.04 · Перше коло",
+      "bye": 5,
+      "matches": [
+        {
+          "home": 4,
+          "away": 1,
+          "homeScore": 2,
+          "awayScore": 6
+        },
+        {
+          "home": 9,
+          "away": 7,
+          "homeScore": 5,
+          "awayScore": 3
+        },
+        {
+          "home": 6,
+          "away": 8,
+          "homeScore": 6,
+          "awayScore": 6
+        },
+        {
+          "home": 3,
+          "away": 2,
+          "homeScore": 1,
+          "awayScore": 7
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "date": "2026-04-19",
+      "label": "Нд 19.04 · Перше коло",
+      "bye": 5,
+      "matches": [
+        {
+          "home": 2,
+          "away": 1,
+          "homeScore": 4,
+          "awayScore": 5
+        },
+        {
+          "home": 8,
+          "away": 3,
+          "homeScore": 5,
+          "awayScore": 2
+        },
+        {
+          "home": 4,
+          "away": 9,
+          "homeScore": 2,
+          "awayScore": 2
+        },
+        {
+          "home": 6,
+          "away": 7,
+          "homeScore": 4,
+          "awayScore": 4
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "date": "2026-04-25",
+      "label": "Сб 25.04 · Перше коло",
+      "bye": 4,
+      "matches": [
+        {
+          "home": 1,
+          "away": 8,
+          "homeScore": 6,
+          "awayScore": 2
+        },
+        {
+          "home": 5,
+          "away": 6,
+          "homeScore": 1,
+          "awayScore": 7
+        },
+        {
+          "home": 3,
+          "away": 9,
+          "homeScore": 5,
+          "awayScore": 4
+        },
+        {
+          "home": 7,
+          "away": 2,
+          "homeScore": 2,
+          "awayScore": 6
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "date": "2026-04-26",
+      "label": "Нд 26.04 · Перше коло",
+      "bye": 1,
+      "matches": [
+        {
+          "home": 3,
+          "away": 4,
+          "homeScore": 5,
+          "awayScore": 7
+        },
+        {
+          "home": 8,
+          "away": 9,
+          "homeScore": 6,
+          "awayScore": 2
+        },
+        {
+          "home": 6,
+          "away": 2,
+          "homeScore": 0,
+          "awayScore": 2
+        },
+        {
+          "home": 5,
+          "away": 7,
+          "homeScore": 1,
+          "awayScore": 2
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "date": "2026-05-02",
+      "label": "Сб 02.05 · Перше коло",
+      "bye": 7,
+      "matches": [
+        {
+          "home": 1,
+          "away": 9,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 3,
+          "away": 5,
+          "homeScore": 10,
+          "awayScore": 2
+        },
+        {
+          "home": 2,
+          "away": 6,
+          "homeScore": 7,
+          "awayScore": 2
+        },
+        {
+          "home": 4,
+          "away": 8,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "date": "2026-05-03",
+      "label": "Нд 03.05 · Перше коло",
+      "bye": 6,
+      "matches": [
+        {
+          "home": 1,
+          "away": 3,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 7,
+          "away": 4,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 5,
+          "away": 9,
+          "homeScore": 1,
+          "awayScore": 5
+        },
+        {
+          "home": 2,
+          "away": 8,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "date": "2026-05-09",
+      "label": "Сб 09.05 · Перше коло",
+      "bye": 8,
+      "matches": [
+        {
+          "home": 9,
+          "away": 6,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 4,
+          "away": 5,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 1,
+          "away": 2,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 7,
+          "away": 3,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "date": "2026-05-10",
+      "label": "Нд 10.05 · Перше коло",
+      "bye": 4,
+      "matches": [
+        {
+          "home": 6,
+          "away": 1,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 8,
+          "away": 7,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 5,
+          "away": 3,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 9,
+          "away": 2,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "date": "2026-05-16",
+      "label": "Сб 16.05 · Перше коло",
+      "bye": 6,
+      "matches": [
+        {
+          "home": 1,
+          "away": 4,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 8,
+          "away": 5,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 7,
+          "away": 9,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 2,
+          "away": 3,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "date": "2026-05-17",
+      "label": "Нд 17.05 · Друге коло",
+      "bye": 8,
+      "matches": [
+        {
+          "home": 6,
+          "away": 9,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 2,
+          "away": 4,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 5,
+          "away": 1,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 3,
+          "away": 7,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "date": "2026-05-23",
+      "label": "Сб 23.05 · Друге коло",
+      "bye": 2,
+      "matches": [
+        {
+          "home": 5,
+          "away": 8,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 6,
+          "away": 3,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 7,
+          "away": 1,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 9,
+          "away": 4,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "date": "2026-05-24",
+      "label": "Нд 24.05 · Друге коло",
+      "bye": 1,
+      "matches": [
+        {
+          "home": 4,
+          "away": 2,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 9,
+          "away": 3,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 7,
+          "away": 5,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 6,
+          "away": 8,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "date": "2026-05-30",
+      "label": "Сб 30.05 · Друге коло",
+      "bye": 3,
+      "matches": [
+        {
+          "home": 9,
+          "away": 8,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 4,
+          "away": 6,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 2,
+          "away": 5,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 1,
+          "away": 7,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "date": "2026-05-31",
+      "label": "Нд 31.05 · Друге коло",
+      "bye": 7,
+      "matches": [
+        {
+          "home": 3,
+          "away": 8,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 1,
+          "away": 6,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 5,
+          "away": 4,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 2,
+          "away": 9,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "date": "2026-06-06",
+      "label": "Сб 06.06 · Друге коло",
+      "bye": 2,
+      "matches": [
+        {
+          "home": 4,
+          "away": 7,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 8,
+          "away": 1,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 3,
+          "away": 6,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 9,
+          "away": 5,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "date": "2026-06-07",
+      "label": "Нд 07.06 · Друге коло",
+      "bye": 9,
+      "matches": [
+        {
+          "home": 4,
+          "away": 3,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 7,
+          "away": 6,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 8,
+          "away": 2,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 1,
+          "away": 5,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "date": "2026-06-13",
+      "label": "Сб 13.06 · Друге коло",
+      "bye": 9,
+      "matches": [
+        {
+          "home": 2,
+          "away": 7,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 8,
+          "away": 4,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 3,
+          "away": 1,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 6,
+          "away": 5,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "date": "2026-06-14",
+      "label": "Нд 14.06 · Друге коло",
+      "bye": 3,
+      "matches": [
+        {
+          "home": 9,
+          "away": 1,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 5,
+          "away": 2,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 7,
+          "away": 8,
+          "homeScore": null,
+          "awayScore": null
+        },
+        {
+          "home": 6,
+          "away": 4,
+          "homeScore": null,
+          "awayScore": null
+        }
+      ]
+    }
+  ]
+}
