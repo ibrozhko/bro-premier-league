@@ -21,7 +21,7 @@ export interface Matchday {
   bye: number;
 }
 
-export const lastUpdated = "27.04.2026";
+export const lastUpdated = "03.05.2026";
 
 export const players: Player[] = [
   { id: 1, name: "Андрій", club: "Динамо Київ", platform: "PC", clubColor: "217 78% 57%" },
@@ -84,7 +84,7 @@ export const matchdays: Matchday[] = [
     bye: 7,
     matches: [
       { home: 1, away: 9, homeScore: null, awayScore: null },
-      { home: 3, away: 5, homeScore: null, awayScore: null },
+      { home: 3, away: 5, homeScore: 10, awayScore: 2 },
       { home: 2, away: 6, homeScore: null, awayScore: null },
       { home: 4, away: 8, homeScore: null, awayScore: null },
     ],
