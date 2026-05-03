@@ -1,5 +1,30 @@
 # Як оновлювати результати
 
+## Через адмінку
+
+Відкрий сторінку:
+
+```text
+https://bro-premier-league.vercel.app/admin
+```
+
+Введи пароль адмінки, вибери тур, матч, рахунок і натисни `Оновити`.
+
+Після цього сайт сам створить commit у GitHub. Vercel автоматично запустить новий deploy, і через 1-2 хвилини сайт оновиться.
+
+Для роботи адмінки у Vercel мають бути додані змінні:
+
+```text
+ADMIN_PASSWORD
+GITHUB_TOKEN
+GITHUB_OWNER
+GITHUB_REPO
+GITHUB_BRANCH
+GITHUB_RESULTS_PATH
+```
+
+## Вручну через GitHub
+
 Сайт автоматично оновлюється через Vercel після кожного commit у GitHub.
 
 ## Де міняти рахунки

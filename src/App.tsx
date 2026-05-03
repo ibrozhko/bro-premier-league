@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Fixtures from "./pages/Fixtures";
 import Players from "./pages/Players";
 import TopScorers from "./pages/TopScorers";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { LanguageProvider } from "./lib/i18n";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/fixtures" element={<Fixtures />} />
             <Route path="/players" element={<Players />} />
             <Route path="/top-scorers" element={<TopScorers />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />
