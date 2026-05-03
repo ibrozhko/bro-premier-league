@@ -85,7 +85,7 @@ export const matchdays: Matchday[] = [
     matches: [
       { home: 1, away: 9, homeScore: null, awayScore: null },
       { home: 3, away: 5, homeScore: 10, awayScore: 2 },
-      { home: 2, away: 6, homeScore: null, awayScore: null },
+      { home: 2, away: 6, homeScore: 7, awayScore: 2 },
       { home: 4, away: 8, homeScore: null, awayScore: null },
     ],
   },
