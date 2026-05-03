@@ -51,6 +51,8 @@ type UpdatePayload = {
   players?: Player[];
   confirmation?: string;
   season?: number;
+  generateSchedule?: boolean;
+  startDate?: string;
 };
 
 type GitHubFile = {
@@ -141,6 +143,13 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         return;
       }
 
+      const nextPlayers = payload.players ?? currentData.players;
+      const playersValidationError = validatePlayersPayload(nextPlayers, payload.generateSchedule ? [] : currentData.matchdays);
+      if (playersValidationError) {
+        response.status(400).json({ error: playersValidationError });
+        return;
+      }
+
       const nextSeason = payload.season && Number.isInteger(payload.season)
         ? payload.season
         : currentData.season + 1;
@@ -151,18 +160,22 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       }
 
       const archivePath = `src/data/archive/season-${currentData.season}.json`;
-      const nextData: LeagueData = {
-        ...currentData,
-        season: nextSeason,
-        lastUpdated: today,
-        matchdays: currentData.matchdays.map(matchday => ({
+      const nextMatchdays = payload.generateSchedule
+        ? generateSchedule(nextPlayers, nextSeason, payload.startDate)
+        : currentData.matchdays.map(matchday => ({
           ...matchday,
           matches: matchday.matches.map(match => ({
             ...match,
             homeScore: null,
             awayScore: null,
           })),
-        })),
+        }));
+      const nextData: LeagueData = {
+        ...currentData,
+        season: nextSeason,
+        players: nextPlayers,
+        lastUpdated: today,
+        matchdays: nextMatchdays,
       };
 
       await commitFiles(
@@ -173,7 +186,11 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         `Start season ${nextSeason}`,
       );
 
-      response.status(200).json({ message: `Сезон ${nextSeason} створено, попередній сезон заархівовано` });
+      response.status(200).json({
+        message: payload.generateSchedule
+          ? `Сезон ${nextSeason} створено з новим календарем, попередній сезон заархівовано`
+          : `Сезон ${nextSeason} створено, попередній сезон заархівовано`,
+      });
       return;
     }
 
@@ -249,6 +266,92 @@ function validatePlayersPayload(players: Player[] | undefined, matchdays: Matchd
   }
 
   return null;
+}
+
+function generateSchedule(players: Player[], season: number, startDate?: string): Matchday[] {
+  const orderedIds = players.map(player => player.id);
+  const hasBye = orderedIds.length % 2 === 1;
+  const ids = hasBye ? [...orderedIds, 0] : [...orderedIds];
+  const roundsPerCircle = ids.length - 1;
+  const matchesPerRound = ids.length / 2;
+  const firstCircle: Matchday[] = [];
+
+  let rotation = [...ids];
+  for (let round = 1; round <= roundsPerCircle; round++) {
+    const matches: Match[] = [];
+    let bye = 0;
+
+    for (let index = 0; index < matchesPerRound; index++) {
+      const first = rotation[index];
+      const second = rotation[rotation.length - 1 - index];
+
+      if (first === 0 || second === 0) {
+        bye = first === 0 ? second : first;
+        continue;
+      }
+
+      const home = round % 2 === 1 ? first : second;
+      const away = round % 2 === 1 ? second : first;
+      matches.push({ home, away, homeScore: null, awayScore: null });
+    }
+
+    firstCircle.push({
+      number: round,
+      date: getMatchdayDate(startDate, round),
+      label: buildMatchdayLabel(season, round, startDate),
+      bye,
+      matches,
+    });
+
+    rotation = [
+      rotation[0],
+      rotation[rotation.length - 1],
+      ...rotation.slice(1, rotation.length - 1),
+    ];
+  }
+
+  const secondCircle = firstCircle.map((matchday, index) => {
+    const number = firstCircle.length + index + 1;
+
+    return {
+      number,
+      date: getMatchdayDate(startDate, number),
+      label: buildMatchdayLabel(season, number, startDate),
+      bye: matchday.bye,
+      matches: matchday.matches.map(match => ({
+        home: match.away,
+        away: match.home,
+        homeScore: null,
+        awayScore: null,
+      })),
+    };
+  });
+
+  return [...firstCircle, ...secondCircle];
+}
+
+function getMatchdayDate(startDate: string | undefined, matchdayNumber: number) {
+  const base = parseStartDate(startDate);
+  const weekendOffset = Math.floor((matchdayNumber - 1) / 2) * 7 + ((matchdayNumber - 1) % 2);
+  base.setUTCDate(base.getUTCDate() + weekendOffset);
+
+  return base.toISOString().slice(0, 10);
+}
+
+function buildMatchdayLabel(season: number, matchdayNumber: number, startDate: string | undefined) {
+  const date = getMatchdayDate(startDate, matchdayNumber);
+  const [, month, day] = date.split("-");
+
+  return `${day}.${month} · Сезон ${season}`;
+}
+
+function parseStartDate(startDate: string | undefined) {
+  if (startDate && /^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+    return new Date(`${startDate}T00:00:00.000Z`);
+  }
+
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
 
 function isValidScore(value: unknown): value is number | null {

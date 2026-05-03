@@ -1,5 +1,5 @@
 import { FormEvent, useMemo, useState } from "react";
-import { RotateCcw, Save, Trash2, Users } from "lucide-react";
+import { Plus, RotateCcw, Save, Trash2, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { currentSeason, matchdays, getPlayer, players, type Player } from "@/data/leagueData";
 
@@ -12,6 +12,14 @@ type AdminTab = "results" | "players" | "season";
 
 const savedPasswordKey = "bro-admin-password";
 const platforms: Player["platform"][] = ["PS5", "Xbox", "PC"];
+const defaultClubColors = [
+  "217 78% 57%",
+  "42 87% 55%",
+  "0 70% 50%",
+  "145 63% 42%",
+  "280 65% 60%",
+  "190 76% 48%",
+];
 
 export default function Admin() {
   const [password, setPassword] = useState(() => localStorage.getItem(savedPasswordKey) ?? "");
@@ -27,12 +35,15 @@ export default function Admin() {
   const [awayScore, setAwayScore] = useState(selectedMatch.awayScore?.toString() ?? "");
   const [editablePlayers, setEditablePlayers] = useState<Player[]>(() => players.map(player => ({ ...player })));
   const [seasonConfirmation, setSeasonConfirmation] = useState("");
+  const [generateSchedule, setGenerateSchedule] = useState(true);
+  const [seasonStartDate, setSeasonStartDate] = useState(() => getDefaultSeasonStartDate());
   const [status, setStatus] = useState<Status>({ type: "idle", message: "" });
   const [isSaving, setIsSaving] = useState(false);
 
   const homePlayer = getPlayer(selectedMatch.home);
   const awayPlayer = getPlayer(selectedMatch.away);
   const nextSeason = currentSeason + 1;
+  const usedPlayerIds = useMemo(() => getUsedPlayerIds(), []);
 
   function chooseMatchday(value: number) {
     const nextMatchday = matchdays.find(md => md.number === value) ?? matchdays[0];
@@ -124,6 +135,9 @@ export default function Admin() {
       action: "startSeason",
       confirmation: seasonConfirmation,
       season: nextSeason,
+      players: editablePlayers,
+      generateSchedule,
+      startDate: seasonStartDate,
     });
   }
 
@@ -131,6 +145,27 @@ export default function Admin() {
     setEditablePlayers(current =>
       current.map(player => player.id === playerId ? { ...player, ...patch } : player),
     );
+  }
+
+  function addPlayer() {
+    setEditablePlayers(current => {
+      const nextId = Math.max(0, ...current.map(player => player.id)) + 1;
+
+      return [
+        ...current,
+        {
+          id: nextId,
+          name: `Гравець ${nextId}`,
+          club: "Новий клуб",
+          platform: "PS5",
+          clubColor: defaultClubColors[nextId % defaultClubColors.length],
+        },
+      ];
+    });
+  }
+
+  function removePlayer(playerId: number) {
+    setEditablePlayers(current => current.filter(player => player.id !== playerId));
   }
 
   return (
@@ -285,6 +320,21 @@ export default function Admin() {
 
         {activeTab === "players" && (
           <form onSubmit={handlePlayersSubmit} className="space-y-4">
+            <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="h-card">Склад ліги</h2>
+                  <p className="t-body text-muted-foreground">
+                    Зараз у списку {editablePlayers.length} гравців. Нові гравці отримують наступний вільний ID.
+                  </p>
+                </div>
+                <Button className="w-full sm:w-auto" type="button" variant="secondary" onClick={addPlayer}>
+                  <Plus />
+                  Додати гравця
+                </Button>
+              </div>
+            </section>
+
             {editablePlayers.map(player => (
               <section key={player.id} className="rounded-lg border border-border bg-card p-4 sm:p-5">
                 <div className="mb-4 flex items-center justify-between gap-3">
@@ -292,7 +342,18 @@ export default function Admin() {
                     <div className="h-card">ID {player.id}</div>
                     <div className="t-meta">Гравець сезону {currentSeason}</div>
                   </div>
-                  <div className="h-8 w-8 rounded-md border border-border" style={{ backgroundColor: `hsl(${player.clubColor})` }} />
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-md border border-border" style={{ backgroundColor: `hsl(${player.clubColor})` }} />
+                    <button
+                      aria-label={`Видалити ${player.name}`}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                      type="button"
+                      onClick={() => removePlayer(player.id)}
+                      title={usedPlayerIds.has(player.id) ? "Для нового сезону з генерацією календаря" : "Видалити"}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -328,9 +389,39 @@ export default function Admin() {
               <div className="mb-4">
                 <h2 className="h-card">Почати сезон {nextSeason}</h2>
                 <p className="t-body text-muted-foreground">
-                  Поточний сезон {currentSeason} буде збережений в архів, а всі рахунки в календарі стануть порожніми.
+                  Поточний сезон {currentSeason} буде збережений в архів. Новий сезон можна створити з календарем під {editablePlayers.length} гравців.
                 </p>
               </div>
+
+              <label className="mb-4 flex items-start gap-3 rounded-md border border-border bg-secondary/40 p-3">
+                <input
+                  className="mt-1 h-4 w-4 accent-primary"
+                  checked={generateSchedule}
+                  type="checkbox"
+                  onChange={event => setGenerateSchedule(event.target.checked)}
+                />
+                <span>
+                  <span className="t-body block font-medium">Згенерувати календар під актуальний список гравців</span>
+                  <span className="t-meta block">
+                    Double round-robin: кожен з кожним вдома і на виїзді. Якщо гравців непарна кількість, буде автоматичний пропуск туру.
+                  </span>
+                </span>
+              </label>
+
+              {generateSchedule && (
+                <div className="mb-4">
+                  <label className="t-label mb-2 block" htmlFor="season-start-date">
+                    Дата першого туру
+                  </label>
+                  <input
+                    id="season-start-date"
+                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    type="date"
+                    value={seasonStartDate}
+                    onChange={event => setSeasonStartDate(event.target.value)}
+                  />
+                </div>
+              )}
 
               <label className="t-label mb-2 block" htmlFor="season-confirmation">
                 Підтвердження
@@ -383,4 +474,28 @@ function AdminInput({ label, value, onChange }: { label: string; value: string; 
       />
     </div>
   );
+}
+
+function getUsedPlayerIds() {
+  const ids = new Set<number>();
+
+  matchdays.forEach(matchday => {
+    ids.add(matchday.bye);
+    matchday.matches.forEach(match => {
+      ids.add(match.home);
+      ids.add(match.away);
+    });
+  });
+
+  ids.delete(0);
+  return ids;
+}
+
+function getDefaultSeasonStartDate() {
+  const date = new Date();
+  const day = date.getDay();
+  const daysUntilSaturday = (6 - day + 7) % 7 || 7;
+  date.setDate(date.getDate() + daysUntilSaturday);
+
+  return date.toISOString().slice(0, 10);
 }
