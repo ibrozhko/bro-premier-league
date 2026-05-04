@@ -222,8 +222,8 @@
         {
           "home": 4,
           "away": 8,
-          "homeScore": null,
-          "awayScore": null
+          "homeScore": 3,
+          "awayScore": 4
         }
       ]
     },
