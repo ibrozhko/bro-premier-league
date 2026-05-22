@@ -22,19 +22,24 @@ export default function Fixtures() {
           matches: md.matches.filter(m => statusFilter === "played" ? m.homeScore !== null : m.homeScore === null),
         }))
         .filter(md => md.matches.length > 0);
+  const activeFilterClass = "filter-chip-active";
+  const inactiveFilterClass = "filter-chip";
 
   return (
-    <div className="min-h-screen py-12">
+    <div className="coax-light min-h-screen py-12">
       <div className="content-shell">
-        <h1 className="h-page mb-8">{t("fixtures.title")}</h1>
+        <div className="page-header">
+          <div className="page-kicker">{language === "uk" ? "Календар ліги" : "League schedule"}</div>
+          <h1 className="h-page">{t("fixtures.title")}</h1>
+        </div>
 
         <div className="mb-6">
           <div className="t-label mb-2">{t("fixtures.playerFilter")}</div>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
             <button
               onClick={() => setPlayerFilter("all")}
-              className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                playerFilter === "all" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                className={`${
+                playerFilter === "all" ? activeFilterClass : inactiveFilterClass
               }`}
             >
               {language === "uk" ? "Всі гравці" : "All players"}
@@ -43,8 +48,8 @@ export default function Fixtures() {
               <button
                 key={p.id}
                 onClick={() => setPlayerFilter(p.id)}
-                className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  playerFilter === p.id ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                className={`${
+                  playerFilter === p.id ? activeFilterClass : inactiveFilterClass
                 }`}
               >
                 {player(p).name}
@@ -64,8 +69,8 @@ export default function Fixtures() {
               <button
                 key={item.value}
                 onClick={() => setStatusFilter(item.value as typeof statusFilter)}
-                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
-                  statusFilter === item.value ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                className={`${
+                  statusFilter === item.value ? activeFilterClass : inactiveFilterClass
                 }`}
               >
                 {item.label}
@@ -79,8 +84,8 @@ export default function Fixtures() {
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
             <button
               onClick={() => setFilter("all")}
-              className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                filter === "all" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                className={`${
+                filter === "all" ? activeFilterClass : inactiveFilterClass
               }`}
             >
               {t("common.all")}
@@ -89,8 +94,8 @@ export default function Fixtures() {
               <button
                 key={md.number}
                 onClick={() => setFilter(md.number)}
-                className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  filter === md.number ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                className={`${
+                  filter === md.number ? activeFilterClass : inactiveFilterClass
                 }`}
               >
                 {md.number}
@@ -118,7 +123,7 @@ export default function Fixtures() {
                   </div>
                   <div className="min-w-[56px] sm:min-w-[70px] text-center">
                     {played ? (
-                      <span className="font-heading text-lg sm:text-2xl text-accent">{m.homeScore} - {m.awayScore}</span>
+                      <span className="font-heading text-lg sm:text-2xl text-primary">{m.homeScore} - {m.awayScore}</span>
                     ) : (
                       <div className="text-muted-foreground font-heading text-lg sm:text-2xl">VS</div>
                     )}
@@ -133,8 +138,9 @@ export default function Fixtures() {
 
             return (
               <div key={md.number} className="space-y-4">
-                <div className="bg-card rounded-xl border overflow-hidden border-border">
-                  <div className="px-3 sm:px-6 py-4 flex items-center justify-between gap-3 bg-secondary/50">
+                <div className="light-panel overflow-hidden rounded-md">
+                  <div className="h-px bg-primary" />
+                  <div className="px-3 sm:px-6 py-4 flex items-center justify-between gap-3 bg-[#f3f3f6]">
                     <span className="h-card">{language === "uk" ? "Тур" : "Matchday"} {md.number}</span>
                     <span className="t-meta text-right">{matchdayLabel(md.label)}</span>
                   </div>
@@ -143,7 +149,7 @@ export default function Fixtures() {
                       <MatchRow key={mi} m={m} />
                     ))}
                   </div>
-                  <div className="px-3 sm:px-6 py-3 bg-secondary/30 t-meta">
+                  <div className="px-3 sm:px-6 py-3 border-t border-[#2937da]/15 bg-[#f3f3f6] t-meta">
                     {t("fixtures.bye")}: {displayByePlayer.name} ({displayByePlayer.club})
                   </div>
                 </div>

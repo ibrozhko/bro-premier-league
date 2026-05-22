@@ -3,23 +3,27 @@ import { Trophy } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 
 export default function TopScorers() {
-  const { player, t } = useLanguage();
+  const { language, player, t } = useLanguage();
   const scorers = getTopScorers();
 
   const medalColors = [
-    "text-accent",
-    "text-gray-300",
+    "text-primary",
+    "text-[#343434]/70",
     "text-amber-700",
   ];
 
   return (
-    <div className="min-h-screen py-12">
+    <div className="coax-light min-h-screen py-12">
       <div className="content-shell">
-        <h1 className="h-page mb-8 flex items-center gap-3">
-          <Trophy className="h-8 w-8 md:h-10 md:w-10 text-accent shrink-0" /> {t("topScorers.title")}
-        </h1>
+        <div className="page-header">
+          <div className="page-kicker">{language === "uk" ? "Гонка за голи" : "Goal race"}</div>
+          <h1 className="h-page flex items-center gap-3">
+            <Trophy className="h-8 w-8 md:h-10 md:w-10 text-primary shrink-0" /> {t("topScorers.title")}
+          </h1>
+        </div>
 
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
+        <div className="light-panel overflow-hidden rounded-md">
+          <div className="h-px bg-primary" />
           <table className="w-full text-sm table-fixed">
             <thead>
               <tr className="border-b border-border">
@@ -34,7 +38,7 @@ export default function TopScorers() {
                 const p = getPlayer(s.playerId);
                 const displayPlayer = player(p);
                 return (
-                  <tr key={s.playerId} className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors">
+                  <tr key={s.playerId} className="border-b border-border last:border-0 transition-colors">
                     <td className="py-3 px-2 sm:px-4">
                       <span className={`font-heading text-lg ${i < 3 ? medalColors[i] : ""}`}>
                         {i + 1}
@@ -51,7 +55,7 @@ export default function TopScorers() {
                       <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: `hsl(${p.clubColor})` }} />
                       {displayPlayer.club}
                     </td>
-                    <td className="py-3 px-2 sm:px-4 text-center font-heading text-lg sm:text-xl text-accent">{s.goals}</td>
+                    <td className="py-3 px-2 sm:px-4 text-center font-heading text-lg sm:text-xl text-primary">{s.goals}</td>
                   </tr>
                 );
               })}

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trophy, ChevronRight, Calendar } from "lucide-react";
+import { Calendar, ChevronRight, Trophy } from "lucide-react";
 import {
   calculateStandings, getNextMatch, getNextMatchday,
   getSeasonSummary, lastUpdated, matchdays, getPlayer,
 } from "@/data/leagueData";
-import logo from "@/assets/logo.svg";
+import logoFull from "@/assets/logo-full.png";
 import { useLanguage } from "@/lib/i18n";
 
 function Countdown({ targetIso, compact = false }: { targetIso: string; compact?: boolean }) {
@@ -40,7 +40,7 @@ function Countdown({ targetIso, compact = false }: { targetIso: string; compact?
       {units.map(u => (
         <div
           key={u.label}
-          className={`bg-secondary rounded-lg sm:rounded-xl text-center ${
+          className={`bg-secondary/80 border border-cyan/15 rounded-lg sm:rounded-xl text-center ${
             compact ? "p-2 min-w-[50px] sm:min-w-[58px]" : "p-2.5 md:p-4 min-w-[58px] md:min-w-[80px]"
           }`}
         >
@@ -82,37 +82,43 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative py-10 sm:py-14 md:py-24 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
+      <section className="relative py-9 text-center overflow-hidden sm:py-12 md:py-16">
+        <div className="absolute inset-0 bg-background" />
+        <div className="absolute left-0 right-0 top-0 h-px bg-white/20" />
         <div className="content-shell relative z-10">
-          <img src={logo} alt="BPL Logo" className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 mx-auto mb-5 md:mb-6 rounded-full object-cover" />
-          <h1 className="h-page text-foreground">
-            Bro Premier League
+          <div className="mx-auto mb-6 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-white p-3 shadow-[0_18px_38px_rgba(0,0,0,0.18)] sm:h-40 sm:w-40 sm:p-4 md:h-48 md:w-48 md:p-5">
+            <img src={logoFull} alt="Bro Premier League Logo" className="h-[124%] w-[124%] max-w-none object-contain" />
+          </div>
+          <h1 className="font-heading text-[2.35rem] leading-none text-white sm:text-[3.4rem] md:text-[4.5rem]">
+            Bro Premier <span className="text-accent">League</span>
           </h1>
-          <p className="mt-4 t-body md:text-lg text-muted-foreground max-w-[280px] sm:max-w-none mx-auto">
+          <p className="mx-auto mt-4 max-w-[320px] text-base text-white/82 sm:max-w-none sm:text-xl md:text-2xl">
             {t("hero.subtitle")}
           </p>
-          <p className="mt-3 t-label">{t("common.updated")}: {lastUpdated}</p>
+          <p className="mt-3 inline-flex rounded-full border border-accent/40 px-3 py-1 text-xs uppercase tracking-wide text-accent sm:text-sm">
+            {t("common.updated")}: {lastUpdated}
+          </p>
 
-          <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-left">
+          <div className="mt-7 grid grid-cols-2 lg:grid-cols-4 gap-px text-left">
             {[
               { label: t("home.leader"), value: leader?.name ?? "—", meta: leader?.club ?? "" },
               { label: t("home.played"), value: `${season.playedMatches}/${season.totalMatches}`, meta: t("home.matches") },
               { label: t("home.goals"), value: season.totalGoals, meta: t("home.seasonGoals") },
               { label: t("home.attack"), value: bestAttack?.name ?? "—", meta: `${season.bestAttackGoals} ${t("home.goals").toLowerCase()}` },
             ].map(item => (
-              <div key={item.label} className="bg-card/80 border border-border rounded-lg p-3 sm:p-4 min-w-0">
-                <div className="t-label mb-1">{item.label}</div>
+              <div key={item.label} className="border border-white/15 bg-white/[0.08] p-3 shadow-none sm:p-4 min-w-0">
+                <div className="t-label mb-1 text-white/70">{item.label}</div>
                 <div className="h-card text-accent truncate">{item.value}</div>
-                <div className="t-meta truncate">{item.meta}</div>
+                <div className="t-meta truncate text-white/80">{item.meta}</div>
               </div>
             ))}
           </div>
 
           {/* Next Match */}
           {next && (
-            <div className="mt-10 md:mt-12">
-              <div className="bg-card rounded-xl md:rounded-2xl border border-border w-full overflow-hidden">
+            <div className="mt-8 md:mt-10">
+              <div className="overflow-hidden border border-white/20 bg-white/[0.08]">
+                <div className="h-px bg-accent" />
                 <div className="px-4 md:px-8 py-4 md:py-6">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="h-card text-foreground text-left">
@@ -139,7 +145,7 @@ export default function Home() {
                         <span className="t-meta block md:inline truncate">{player(getPlayer(next.match.home)).club}</span>
                       </div>
                     </div>
-                    <span className="text-accent h-section">VS</span>
+                    <span className="text-cyan h-section">VS</span>
                     <div className="text-left min-w-0">
                       <div className="md:flex md:items-baseline md:gap-2">
                         <span className="h-card block truncate">{player(getPlayer(next.match.away)).name}</span>
@@ -203,7 +209,7 @@ export default function Home() {
         };
 
         return (
-          <section className="py-10">
+          <section className="coax-light border-t border-[#2937da]/20 py-12">
             <div className="content-shell space-y-6">
               {/* Opening Match */}
               {openingMatch && (
@@ -213,7 +219,7 @@ export default function Home() {
                     <h2 className="h-section">{t("home.openingMatch")}</h2>
                     <span className="t-meta ml-auto">{language === "uk" ? "Пт" : "Fri"} 17.04 · 21:00</span>
                   </div>
-                  <div className="bg-card rounded-xl border-2 border-accent overflow-hidden">
+                  <div className="light-panel overflow-hidden rounded-md border-2 border-accent">
                     <MatchRow match={openingMatch} />
                   </div>
                 </div>
@@ -230,13 +236,13 @@ export default function Home() {
                     {openingMatch ? (language === "uk" ? "Сб 18.04" : "Sat 18.04") : matchdayLabel(nextMd.label)}
                   </span>
                 </div>
-                <div className="bg-card rounded-xl border border-border overflow-hidden">
+                <div className="light-panel overflow-hidden rounded-md">
                   <div className="divide-y divide-border">
                     {restMatches.map((match, mi) => (
                       <MatchRow key={mi} match={match} />
                     ))}
                   </div>
-                  <div className="px-6 py-3 bg-secondary/30 t-meta">
+                  <div className="px-6 py-3 border-t border-[#2937da]/15 bg-[#f3f3f6] t-meta">
                     {t("fixtures.bye")}: {player(getPlayer(nextMd.bye)).name} ({player(getPlayer(nextMd.bye)).club})
                   </div>
                 </div>
@@ -248,11 +254,11 @@ export default function Home() {
 
       {/* Recent Results — slider */}
       {recent.length > 0 && (
-        <section className="py-10">
+        <section className="coax-light py-12">
           <div className="content-shell">
             <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
               <h2 className="h-section">{t("home.recentResults")} · {language === "uk" ? "Тур" : "Matchday"} {activeTour!.number}</h2>
-              <Link to="/fixtures" className="text-primary text-sm flex items-center gap-1 hover:underline whitespace-nowrap">
+              <Link to="/fixtures" className="text-cyan text-sm flex items-center gap-1 hover:underline whitespace-nowrap">
                 {t("home.allMatches")} <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
@@ -265,7 +271,7 @@ export default function Home() {
                 return (
                   <div
                     key={i}
-                    className="bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3"
+                    className="light-panel flex items-center gap-3 rounded-md px-4 py-3"
                   >
                     <div className="flex-1 min-w-0 text-right">
                       <div className="md:flex md:items-baseline md:gap-2 md:justify-end">
@@ -275,7 +281,7 @@ export default function Home() {
                       <div className="t-meta truncate md:hidden">{displayHome.club}</div>
                     </div>
                     <div className="shrink-0 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/30">
-                      <span className="font-heading text-lg sm:text-xl text-accent tabular-nums">
+                      <span className="font-heading text-lg sm:text-xl text-primary tabular-nums">
                         {r.match.homeScore}:{r.match.awayScore}
                       </span>
                     </div>
@@ -295,14 +301,14 @@ export default function Home() {
       )}
 
       {/* Full Standings Table */}
-      <section className="py-10">
+      <section className="coax-light py-12">
         <div className="content-shell">
           <div className="flex items-center justify-between mb-6">
             <h2 className="h-section flex items-center gap-3">
-              <Trophy className="h-7 w-7 md:h-8 md:w-8 text-accent" /> {t("home.table")}
+              <Trophy className="h-7 w-7 md:h-8 md:w-8 text-primary" /> {t("home.table")}
             </h2>
           </div>
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="light-panel overflow-hidden rounded-md">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
@@ -325,9 +331,9 @@ export default function Home() {
                   const p = getPlayer(s.playerId);
                   const displayPlayer = player(p);
                   return (
-                    <tr key={s.playerId} className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors">
+                    <tr key={s.playerId} className="border-b border-border last:border-0 transition-colors">
                       <td className="py-3 px-2 sm:px-4">
-                        <span className={`font-heading text-base sm:text-lg ${i === 0 ? "text-accent" : i < 3 ? "text-primary" : ""}`}>
+                        <span className={`font-heading text-base sm:text-lg ${i === 0 ? "text-primary" : i < 3 ? "text-[#2937da]/80" : ""}`}>
                           {i + 1}
                         </span>
                       </td>
@@ -349,7 +355,7 @@ export default function Home() {
                       <td className="py-3 px-2 sm:px-4 text-center hidden md:table-cell">{s.goalsFor}</td>
                       <td className="py-3 px-2 sm:px-4 text-center hidden md:table-cell">{s.goalsAgainst}</td>
                       <td className="py-3 px-2 sm:px-4 text-center">{s.goalDifference > 0 ? "+" : ""}{s.goalDifference}</td>
-                      <td className="py-3 px-2 sm:px-4 text-center font-bold text-accent">{s.points}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center font-bold text-primary">{s.points}</td>
                       <td className="py-3 px-2 sm:px-4 hidden lg:table-cell">
                         <div className="flex gap-1 justify-center">
                           {s.form.length > 0

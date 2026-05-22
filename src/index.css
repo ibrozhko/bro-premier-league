@@ -6,49 +6,51 @@
 
 @layer base {
   :root {
-    --background: 222 60% 15%;
+    --background: 236 72% 51%;
     --foreground: 0 0% 100%;
 
-    --card: 224 55% 17%;
+    --card: 0 0% 20%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 224 55% 17%;
+    --popover: 0 0% 20%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 217 78% 57%;
+    --primary: 236 72% 51%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 40% 22%;
+    --secondary: 236 64% 44%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 222 30% 25%;
-    --muted-foreground: 217 30% 65%;
+    --muted: 236 58% 40%;
+    --muted-foreground: 0 0% 88%;
 
-    --accent: 42 87% 55%;
-    --accent-foreground: 222 60% 15%;
+    --accent: 74 96% 49%;
+    --accent-foreground: 0 0% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 30% 25%;
-    --input: 222 30% 25%;
-    --ring: 217 78% 57%;
+    --border: 0 0% 100%;
+    --input: 236 58% 40%;
+    --ring: 184 100% 58%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 222 60% 12%;
+    --sidebar-background: 236 72% 51%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 217 78% 57%;
+    --sidebar-primary: 236 72% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 40% 22%;
+    --sidebar-accent: 236 64% 44%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 222 30% 25%;
-    --sidebar-ring: 217 78% 57%;
+    --sidebar-border: 0 0% 100%;
+    --sidebar-ring: 184 100% 58%;
 
-    --navy: 222 68% 15%;
-    --navy-light: 224 55% 17%;
-    --electric: 217 78% 57%;
-    --gold: 42 87% 55%;
+    --navy: 236 72% 51%;
+    --navy-light: 236 64% 44%;
+    --electric: 236 72% 51%;
+    --gold: 74 96% 49%;
+    --cyan: 184 100% 58%;
+    --graphite: 0 0% 20%;
   }
 }
 
@@ -60,6 +62,7 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Montserrat', sans-serif;
+    background: #2937da;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -72,7 +75,7 @@
 
 @layer components {
   /* Typography hierarchy — use these classes everywhere for consistency */
-  .h-page    { @apply font-heading text-[2rem] sm:text-5xl md:text-6xl leading-none break-words; }
+  .h-page    { @apply font-heading text-[2rem] sm:text-5xl md:text-6xl leading-none break-words text-[#343434]; }
   .h-section { @apply font-heading text-2xl sm:text-3xl md:text-4xl leading-tight; }
   .h-card    { @apply font-heading text-lg sm:text-xl md:text-2xl leading-tight; }
   .h-stat    { @apply font-heading text-xl sm:text-2xl md:text-3xl leading-none; }
@@ -82,4 +85,90 @@
   .t-label   { @apply text-[0.68rem] sm:text-xs uppercase tracking-wide text-muted-foreground; }
 
   .content-shell { @apply w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8; }
+
+  .page-header {
+    @apply mb-8 border-b border-[#2937da]/20 pb-6;
+  }
+
+  .page-kicker {
+    @apply mb-2 text-xs font-semibold uppercase tracking-wide text-[#2937da];
+  }
+
+  .filter-chip {
+    @apply shrink-0 rounded-none border border-[#2937da]/25 bg-white px-3 py-1.5 text-sm font-medium text-[#2937da] transition-colors hover:bg-[#2937da] hover:text-white;
+  }
+
+  .filter-chip-active {
+    @apply border-[#bbf903] bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .brand-card {
+    @apply bg-card/85 border border-white/15 shadow-[0_18px_45px_rgba(0,0,0,0.18)];
+  }
+
+  .brand-glow {
+    box-shadow: 0 0 0 1px hsl(var(--accent) / 0.4), 0 18px 36px rgb(0 0 0 / 0.18);
+  }
+
+  .brand-stripe {
+    background: linear-gradient(90deg, #bbf903, #2af2ff, #2937da);
+  }
+
+  .coax-light {
+    background: #f3f3f6;
+    color: #343434;
+  }
+
+  .coax-light .t-label,
+  .coax-light .t-meta,
+  .coax-light .text-muted-foreground {
+    color: rgb(52 52 52 / 0.68);
+  }
+
+  .coax-light .border-border,
+  .coax-light .divide-border > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgb(41 55 218 / 0.18);
+  }
+
+  .coax-light table,
+  .coax-light .light-panel {
+    background: white;
+  }
+
+  .coax-light .light-panel {
+    border: 1px solid rgb(41 55 218 / 0.16);
+    box-shadow: none;
+  }
+
+  .coax-light table thead tr {
+    background: white;
+  }
+
+  .coax-light table tbody tr {
+    background: white;
+  }
+
+  .coax-light table tbody tr:hover {
+    background: #f7f7fb;
+  }
+
+  .coax-light th,
+  .coax-light td {
+    color: #343434;
+  }
+
+  .coax-light th {
+    font-weight: 600;
+  }
+
+  .coax-light .bg-white\/10,
+  .coax-light .bg-secondary\/30,
+  .coax-light .bg-secondary\/50,
+  .coax-light .hover\:bg-secondary\/50:hover {
+    background-color: white;
+  }
+
+  .coax-light .text-foreground {
+    color: #343434;
+  }
 }

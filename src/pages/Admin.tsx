@@ -168,26 +168,30 @@ export default function Admin() {
     setEditablePlayers(current => current.filter(player => player.id !== playerId));
   }
 
+  const inputClass = "h-11 w-full border border-[#2937da]/20 bg-white px-3 text-base text-[#343434] outline-none placeholder:text-[#343434]/40 focus-visible:ring-2 focus-visible:ring-primary";
+  const adminPanelClass = "light-panel rounded-md p-4 sm:p-6";
+
   return (
-    <div className="min-h-screen py-10 sm:py-12">
+    <div className="coax-light min-h-screen py-10 sm:py-12">
       <div className="content-shell">
-        <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
+            <div className="page-kicker">Операційна панель</div>
             <h1 className="h-page">Адмінка</h1>
             <p className="t-body text-muted-foreground">Сезон {currentSeason}: результати, гравці та підготовка нового сезону.</p>
           </div>
-          <a className="t-body text-accent hover:underline" href="/fixtures">
+          <a className="t-body font-medium text-primary hover:underline" href="/fixtures">
             До календаря
           </a>
         </div>
 
-        <section className="mb-6 rounded-lg border border-border bg-card p-4 sm:p-6">
+        <section className={`${adminPanelClass} mb-6`}>
           <label className="t-label mb-2 block" htmlFor="admin-password">
             Пароль
           </label>
           <input
             id="admin-password"
-            className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className={inputClass}
             type="password"
             autoComplete="current-password"
             value={password}
@@ -196,7 +200,7 @@ export default function Admin() {
           />
         </section>
 
-        <div className="mb-6 grid grid-cols-3 gap-2 rounded-lg bg-secondary/50 p-1">
+        <div className="mb-6 grid grid-cols-3 gap-px border border-[#2937da]/20 bg-[#2937da]/20">
           {[
             { value: "results", label: "Результати" },
             { value: "players", label: "Гравці" },
@@ -204,8 +208,8 @@ export default function Admin() {
           ].map(tab => (
             <button
               key={tab.value}
-              className={`h-10 rounded-md px-2 text-sm font-medium transition-colors ${
-                activeTab === tab.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              className={`h-10 bg-white px-2 text-sm font-medium transition-colors ${
+                activeTab === tab.value ? "bg-accent text-accent-foreground" : "text-primary hover:bg-[#f3f3f6]"
               }`}
               type="button"
               onClick={() => setActiveTab(tab.value as AdminTab)}
@@ -217,7 +221,7 @@ export default function Admin() {
 
         {activeTab === "results" && (
           <form onSubmit={handleResultSubmit} className="space-y-6">
-            <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
+            <section className={adminPanelClass}>
               <div className="mb-5 grid gap-4 sm:grid-cols-[160px_1fr]">
                 <div>
                   <label className="t-label mb-2 block" htmlFor="matchday">
@@ -225,7 +229,7 @@ export default function Admin() {
                   </label>
                   <select
                     id="matchday"
-                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    className={inputClass}
                     value={matchdayNumber}
                     onChange={event => chooseMatchday(Number(event.target.value))}
                   >
@@ -243,7 +247,7 @@ export default function Admin() {
                   </label>
                   <select
                     id="match"
-                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    className={inputClass}
                     value={matchIndex}
                     onChange={event => chooseMatch(Number(event.target.value))}
                   >
@@ -264,13 +268,13 @@ export default function Admin() {
                 </div>
               </div>
 
-              <div className="rounded-md bg-secondary/50 p-4">
+              <div className="border border-[#2937da]/15 bg-[#f3f3f6] p-4">
                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                   <div className="min-w-0 text-right">
                     <div className="h-card truncate">{homePlayer.name}</div>
                     <div className="t-meta truncate">{homePlayer.club}</div>
                   </div>
-                  <div className="font-heading text-2xl text-accent">VS</div>
+                  <div className="font-heading text-2xl text-primary">VS</div>
                   <div className="min-w-0 text-left">
                     <div className="h-card truncate">{awayPlayer.name}</div>
                     <div className="t-meta truncate">{awayPlayer.club}</div>
@@ -279,7 +283,7 @@ export default function Admin() {
 
                 <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                   <input
-                    className="h-14 min-w-0 rounded-md border border-input bg-background px-3 text-center font-heading text-3xl outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    className={`${inputClass} h-14 min-w-0 text-center font-heading text-3xl`}
                     inputMode="numeric"
                     min={0}
                     type="number"
@@ -288,7 +292,7 @@ export default function Admin() {
                   />
                   <span className="text-2xl text-muted-foreground">:</span>
                   <input
-                    className="h-14 min-w-0 rounded-md border border-input bg-background px-3 text-center font-heading text-3xl outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    className={`${inputClass} h-14 min-w-0 text-center font-heading text-3xl`}
                     inputMode="numeric"
                     min={0}
                     type="number"
@@ -320,7 +324,7 @@ export default function Admin() {
 
         {activeTab === "players" && (
           <form onSubmit={handlePlayersSubmit} className="space-y-4">
-            <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
+            <section className="light-panel rounded-md p-4 sm:p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="h-card">Склад ліги</h2>
@@ -336,17 +340,17 @@ export default function Admin() {
             </section>
 
             {editablePlayers.map(player => (
-              <section key={player.id} className="rounded-lg border border-border bg-card p-4 sm:p-5">
+              <section key={player.id} className="light-panel rounded-md p-4 sm:p-5">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
                     <div className="h-card">ID {player.id}</div>
                     <div className="t-meta">Гравець сезону {currentSeason}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-md border border-border" style={{ backgroundColor: `hsl(${player.clubColor})` }} />
+                    <div className="h-8 w-8 border border-[#2937da]/20" style={{ backgroundColor: `hsl(${player.clubColor})` }} />
                     <button
                       aria-label={`Видалити ${player.name}`}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex h-9 w-9 items-center justify-center border border-[#2937da]/20 text-[#343434]/60 transition-colors hover:bg-[#f3f3f6] hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                       type="button"
                       onClick={() => removePlayer(player.id)}
                       title={usedPlayerIds.has(player.id) ? "Для нового сезону з генерацією календаря" : "Видалити"}
@@ -362,7 +366,7 @@ export default function Admin() {
                   <div>
                     <label className="t-label mb-2 block">Платформа</label>
                     <select
-                      className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                      className={inputClass}
                       value={player.platform}
                       onChange={event => updatePlayer(player.id, { platform: event.target.value as Player["platform"] })}
                     >
@@ -385,7 +389,7 @@ export default function Admin() {
 
         {activeTab === "season" && (
           <form onSubmit={handleSeasonSubmit} className="space-y-6">
-            <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
+            <section className={adminPanelClass}>
               <div className="mb-4">
                 <h2 className="h-card">Почати сезон {nextSeason}</h2>
                 <p className="t-body text-muted-foreground">
@@ -393,7 +397,7 @@ export default function Admin() {
                 </p>
               </div>
 
-              <label className="mb-4 flex items-start gap-3 rounded-md border border-border bg-secondary/40 p-3">
+              <label className="mb-4 flex items-start gap-3 border border-[#2937da]/15 bg-[#f3f3f6] p-3">
                 <input
                   className="mt-1 h-4 w-4 accent-primary"
                   checked={generateSchedule}
@@ -415,7 +419,7 @@ export default function Admin() {
                   </label>
                   <input
                     id="season-start-date"
-                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    className={inputClass}
                     type="date"
                     value={seasonStartDate}
                     onChange={event => setSeasonStartDate(event.target.value)}
@@ -428,7 +432,7 @@ export default function Admin() {
               </label>
               <input
                 id="season-confirmation"
-                className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                className={inputClass}
                 value={seasonConfirmation}
                 onChange={event => setSeasonConfirmation(event.target.value)}
                 placeholder={`Введи SEASON ${nextSeason}`}
@@ -451,8 +455,8 @@ export default function Admin() {
           <div
             className={`mt-6 rounded-md border p-4 t-body ${
               status.type === "success"
-                ? "border-accent/50 bg-accent/10 text-accent"
-                : "border-destructive/50 bg-destructive/10 text-destructive-foreground"
+                ? "border-primary/30 bg-white text-primary"
+                : "border-destructive/50 bg-white text-destructive"
             }`}
           >
             {status.message}
@@ -468,7 +472,7 @@ function AdminInput({ label, value, onChange }: { label: string; value: string; 
     <div>
       <label className="t-label mb-2 block">{label}</label>
       <input
-        className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+        className="h-11 w-full border border-[#2937da]/20 bg-white px-3 text-base text-[#343434] outline-none focus-visible:ring-2 focus-visible:ring-primary"
         value={value}
         onChange={event => onChange(event.target.value)}
       />
