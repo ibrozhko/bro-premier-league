@@ -71,6 +71,15 @@ export default function Home() {
   const nextMd = getNextMatchday();
   const leader = season.leader ? player(season.leader) : null;
   const bestAttack = season.bestAttack ? player(season.bestAttack) : null;
+  const bestDefense = standings
+    .filter(s => s.played > 0)
+    .sort((a, b) =>
+      a.goalsAgainst - b.goalsAgainst ||
+      b.played - a.played ||
+      b.goalDifference - a.goalDifference ||
+      b.points - a.points
+    )[0];
+  const bestDefensePlayer = bestDefense ? player(getPlayer(bestDefense.playerId)) : null;
   // Show results from the current/last active tour: latest matchday that has at least one played match
   const activeTour = [...matchdays].reverse().find(md => md.matches.some(m => m.homeScore !== null));
   const recent = activeTour
@@ -99,19 +108,41 @@ export default function Home() {
             {t("common.updated")}: {lastUpdated}
           </p>
 
-          <div className="mt-7 grid grid-cols-2 lg:grid-cols-4 gap-px text-left">
+          <div className="mt-7 grid grid-cols-2 lg:grid-cols-5 gap-px text-left">
             {[
               { label: t("home.leader"), value: leader?.name ?? "—", meta: leader?.club ?? "" },
               { label: t("home.played"), value: `${season.playedMatches}/${season.totalMatches}`, meta: t("home.matches") },
               { label: t("home.goals"), value: season.totalGoals, meta: t("home.seasonGoals") },
               { label: t("home.attack"), value: bestAttack?.name ?? "—", meta: `${season.bestAttackGoals} ${t("home.goals").toLowerCase()}` },
-            ].map(item => (
-              <div key={item.label} className="border border-white/15 bg-white/[0.08] p-3 shadow-none sm:p-4 min-w-0">
+              {
+                label: t("home.defense"),
+                value: bestDefensePlayer?.name ?? "—",
+                meta: bestDefense ? `${bestDefense.goalsAgainst} ${t("home.conceded").toLowerCase()}` : "",
+                href: "/best-defense",
+              },
+            ].map(item => {
+              const content = (
+                <>
                 <div className="t-label mb-1 text-white/70">{item.label}</div>
                 <div className="h-card text-accent truncate">{item.value}</div>
                 <div className="t-meta truncate text-white/80">{item.meta}</div>
-              </div>
-            ))}
+                </>
+              );
+
+              return item.href ? (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className="border border-white/15 bg-white/[0.08] p-3 shadow-none transition-colors hover:bg-white/[0.14] sm:p-4 min-w-0"
+                >
+                  {content}
+                </Link>
+              ) : (
+                <div key={item.label} className="border border-white/15 bg-white/[0.08] p-3 shadow-none sm:p-4 min-w-0">
+                  {content}
+                </div>
+              );
+            })}
           </div>
 
           {/* Next Match */}

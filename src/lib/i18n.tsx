@@ -9,6 +9,7 @@ type TranslationKey =
   | "nav.fixtures"
   | "nav.players"
   | "nav.topScorers"
+  | "nav.bestDefense"
   | "hero.subtitle"
   | "common.updated"
   | "common.all"
@@ -20,6 +21,8 @@ type TranslationKey =
   | "home.played"
   | "home.goals"
   | "home.attack"
+  | "home.defense"
+  | "home.conceded"
   | "home.matches"
   | "home.seasonGoals"
   | "home.nextMatch"
@@ -42,6 +45,8 @@ type TranslationKey =
   | "players.title"
   | "topScorers.title"
   | "topScorers.goals"
+  | "bestDefense.title"
+  | "bestDefense.goalsAgainst"
   | "footer.about"
   | "footer.rules"
   | "footer.ruleWin"
@@ -64,6 +69,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "nav.fixtures": "Матчі",
     "nav.players": "Гравці",
     "nav.topScorers": "Бомбардири",
+    "nav.bestDefense": "Захист",
     "hero.subtitle": "FC 26 · Приватна Ліга · Сезон 1 · 9 Гравців · 72 Матчі",
     "common.updated": "Оновлено",
     "common.all": "Всі",
@@ -75,6 +81,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "home.played": "Зіграно",
     "home.goals": "Голів",
     "home.attack": "Атака",
+    "home.defense": "Захист",
+    "home.conceded": "Пропущено",
     "home.matches": "матчів",
     "home.seasonGoals": "у сезоні",
     "home.nextMatch": "Наступний матч",
@@ -97,6 +105,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "players.title": "Гравці",
     "topScorers.title": "Бомбардири",
     "topScorers.goals": "Голи",
+    "bestDefense.title": "Найкращий захист",
+    "bestDefense.goalsAgainst": "Пропущені",
     "footer.about": "Приватна ліга FC 26 · Сезон 1 · 9 гравців · 18 турів · 72 матчі. Подвійне коло · Квітень – Червень 2026.",
     "footer.rules": "Правила",
     "footer.ruleWin": "Перемога — 3 очки",
@@ -118,6 +128,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "nav.fixtures": "Fixtures",
     "nav.players": "Players",
     "nav.topScorers": "Top Scorers",
+    "nav.bestDefense": "Defense",
     "hero.subtitle": "FC 26 · Private League · Season 1 · 9 Players · 72 Matches",
     "common.updated": "Updated",
     "common.all": "All",
@@ -129,6 +140,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "home.played": "Played",
     "home.goals": "Goals",
     "home.attack": "Attack",
+    "home.defense": "Defense",
+    "home.conceded": "Conceded",
     "home.matches": "matches",
     "home.seasonGoals": "this season",
     "home.nextMatch": "Next match",
@@ -151,6 +164,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "players.title": "Players",
     "topScorers.title": "Top Scorers",
     "topScorers.goals": "Goals",
+    "bestDefense.title": "Best Defense",
+    "bestDefense.goalsAgainst": "Conceded",
     "footer.about": "Private FC 26 league · Season 1 · 9 players · 18 matchdays · 72 matches. Double round-robin · April – June 2026.",
     "footer.rules": "Rules",
     "footer.ruleWin": "Win — 3 points",

@@ -9,6 +9,7 @@ const navLinks = [
   { path: "/fixtures", labelKey: "nav.fixtures" },
   { path: "/players", labelKey: "nav.players" },
   { path: "/top-scorers", labelKey: "nav.topScorers" },
+  { path: "/best-defense", labelKey: "nav.bestDefense" },
 ] as const;
 
 export default function Navbar() {
