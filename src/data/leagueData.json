@@ -1,6 +1,6 @@
 {
   "season": 1,
-  "lastUpdated": "19.05.2026",
+  "lastUpdated": "24.05.2026",
   "players": [
     {
       "id": 1,
@@ -338,8 +338,8 @@
         {
           "home": 8,
           "away": 5,
-          "homeScore": null,
-          "awayScore": null
+          "homeScore": 6,
+          "awayScore": 2
         },
         {
           "home": 7,
@@ -350,8 +350,8 @@
         {
           "home": 2,
           "away": 3,
-          "homeScore": null,
-          "awayScore": null
+          "homeScore": 7,
+          "awayScore": 7
         }
       ]
     },
@@ -396,8 +396,8 @@
         {
           "home": 5,
           "away": 8,
-          "homeScore": null,
-          "awayScore": null
+          "homeScore": 4,
+          "awayScore": 9
         },
         {
           "home": 6,
@@ -414,8 +414,8 @@
         {
           "home": 9,
           "away": 4,
-          "homeScore": null,
-          "awayScore": null
+          "homeScore": 3,
+          "awayScore": 2
         }
       ]
     },
@@ -434,8 +434,8 @@
         {
           "home": 9,
           "away": 3,
-          "homeScore": null,
-          "awayScore": null
+          "homeScore": 4,
+          "awayScore": 6
         },
         {
           "home": 7,
