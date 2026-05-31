@@ -1,6 +1,6 @@
 {
   "season": 1,
-  "lastUpdated": "29.05.2026",
+  "lastUpdated": "31.05.2026",
   "players": [
     {
       "id": 1,
@@ -510,8 +510,8 @@
         {
           "home": 2,
           "away": 9,
-          "homeScore": null,
-          "awayScore": null
+          "homeScore": 7,
+          "awayScore": 0
         }
       ]
     },
