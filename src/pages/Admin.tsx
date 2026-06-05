@@ -1,6 +1,14 @@
-import { FormEvent, useMemo, useState } from "react";
-import { Plus, RotateCcw, Save, Trash2, Users, X } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { ClipboardList, Plus, RotateCcw, Save, Trash2, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  applicationStatuses,
+  deleteApplication,
+  getApplications,
+  updateApplicationStatus as saveApplicationStatus,
+  type ApplicationStatus,
+  type SeasonApplication,
+} from "@/lib/applications";
 import { currentSeason, matchdays, getPlayer, players, type Player } from "@/data/leagueData";
 
 type Status = {
@@ -8,7 +16,7 @@ type Status = {
   message: string;
 };
 
-type AdminTab = "results" | "players" | "season";
+type AdminTab = "results" | "players" | "season" | "applications";
 
 const savedPasswordKey = "bro-admin-password";
 const platforms: Player["platform"][] = ["PS5", "Xbox", "PC"];
@@ -34,6 +42,9 @@ export default function Admin() {
   const [homeScore, setHomeScore] = useState(selectedMatch.homeScore?.toString() ?? "");
   const [awayScore, setAwayScore] = useState(selectedMatch.awayScore?.toString() ?? "");
   const [editablePlayers, setEditablePlayers] = useState<Player[]>(() => players.map(player => ({ ...player })));
+  const [applications, setApplicationList] = useState<SeasonApplication[]>([]);
+  const [applicationsStatus, setApplicationsStatus] = useState<Status>({ type: "idle", message: "" });
+  const [isLoadingApplications, setIsLoadingApplications] = useState(false);
   const [seasonConfirmation, setSeasonConfirmation] = useState("");
   const [generateSchedule, setGenerateSchedule] = useState(true);
   const [seasonStartDate, setSeasonStartDate] = useState(() => getDefaultSeasonStartDate());
@@ -44,6 +55,11 @@ export default function Admin() {
   const awayPlayer = getPlayer(selectedMatch.away);
   const nextSeason = currentSeason + 1;
   const usedPlayerIds = useMemo(() => getUsedPlayerIds(), []);
+
+  useEffect(() => {
+    if (activeTab !== "applications" || !password) return;
+    void loadApplications();
+  }, [activeTab, password]);
 
   function chooseMatchday(value: number) {
     const nextMatchday = matchdays.find(md => md.number === value) ?? matchdays[0];
@@ -168,6 +184,57 @@ export default function Admin() {
     setEditablePlayers(current => current.filter(player => player.id !== playerId));
   }
 
+  async function loadApplications() {
+    if (!password) {
+      setApplicationsStatus({ type: "error", message: "Введи пароль адмінки, щоб побачити заявки." });
+      return;
+    }
+
+    setIsLoadingApplications(true);
+    setApplicationsStatus({ type: "idle", message: "" });
+
+    try {
+      setApplicationList(await getApplications(password));
+    } catch (error) {
+      setApplicationsStatus({
+        type: "error",
+        message: error instanceof Error ? error.message : "Не вдалося завантажити заявки.",
+      });
+    } finally {
+      setIsLoadingApplications(false);
+    }
+  }
+
+  async function updateApplicationStatus(applicationId: string, nextStatus: ApplicationStatus) {
+    try {
+      const updatedApplication = await saveApplicationStatus(password, applicationId, nextStatus);
+      setApplicationList(current =>
+        current.map(application =>
+          application.id === applicationId ? updatedApplication : application,
+        ),
+      );
+      setApplicationsStatus({ type: "success", message: "Статус заявки оновлено." });
+    } catch (error) {
+      setApplicationsStatus({
+        type: "error",
+        message: error instanceof Error ? error.message : "Не вдалося оновити статус.",
+      });
+    }
+  }
+
+  async function removeApplication(applicationId: string) {
+    try {
+      await deleteApplication(password, applicationId);
+      setApplicationList(current => current.filter(application => application.id !== applicationId));
+      setApplicationsStatus({ type: "success", message: "Заявку видалено." });
+    } catch (error) {
+      setApplicationsStatus({
+        type: "error",
+        message: error instanceof Error ? error.message : "Не вдалося видалити заявку.",
+      });
+    }
+  }
+
   const inputClass = "h-11 w-full border border-[#2937da]/20 bg-white px-3 text-base text-[#343434] outline-none placeholder:text-[#343434]/40 focus-visible:ring-2 focus-visible:ring-primary";
   const adminPanelClass = "light-panel rounded-md p-4 sm:p-6";
 
@@ -200,11 +267,12 @@ export default function Admin() {
           />
         </section>
 
-        <div className="mb-6 grid grid-cols-3 gap-px border border-[#2937da]/20 bg-[#2937da]/20">
+        <div className="mb-6 grid grid-cols-2 gap-px border border-[#2937da]/20 bg-[#2937da]/20 sm:grid-cols-4">
           {[
             { value: "results", label: "Результати" },
             { value: "players", label: "Гравці" },
             { value: "season", label: "Сезон" },
+            { value: "applications", label: `Заявки${applications.length ? ` · ${applications.length}` : ""}` },
           ].map(tab => (
             <button
               key={tab.value}
@@ -451,6 +519,108 @@ export default function Admin() {
           </form>
         )}
 
+        {activeTab === "applications" && (
+          <section className={adminPanelClass}>
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="h-card flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5 text-primary" />
+                  Заявки на сезон 2
+                </h2>
+                <p className="t-body text-muted-foreground">
+                  Кандидати зберігаються в Supabase. Для перегляду потрібен пароль адмінки.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  className="w-full sm:w-auto"
+                  type="button"
+                  variant="secondary"
+                  disabled={isLoadingApplications || !password}
+                  onClick={loadApplications}
+                >
+                  <RotateCcw />
+                  {isLoadingApplications ? "Оновлюю..." : "Оновити список"}
+                </Button>
+                <a className="inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-medium text-primary hover:underline" href="/apply">
+                  Відкрити форму
+                </a>
+              </div>
+            </div>
+
+            {applicationsStatus.message && (
+              <div
+                className={`mb-4 rounded-md border p-3 t-body ${
+                  applicationsStatus.type === "success"
+                    ? "border-primary/30 bg-white text-primary"
+                    : "border-destructive/50 bg-white text-destructive"
+                }`}
+              >
+                {applicationsStatus.message}
+              </div>
+            )}
+
+            {applications.length === 0 ? (
+              <div className="border border-[#2937da]/15 bg-[#f3f3f6] p-5">
+                <div className="h-card">{isLoadingApplications ? "Завантажую заявки..." : "Заявок поки немає"}</div>
+                <p className="t-body mt-1 text-muted-foreground">Коли кандидат заповнить форму, заявка зʼявиться в цьому списку.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {applications.map(application => (
+                  <article key={application.id} className="border border-[#2937da]/15 bg-white p-4">
+                    <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
+                      <div className="min-w-0">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <div className="h-card">{application.name}</div>
+                            <div className="t-meta">
+                              {application.platform} · {application.eaId} · {formatApplicationDate(application.createdAt)}
+                            </div>
+                          </div>
+                          <span className="t-body font-medium text-primary">
+                            {application.contact}
+                          </span>
+                        </div>
+
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <ApplicationMeta label="Улюблений клуб" value={application.preferredClub || "Не вказано"} />
+                          <ApplicationMeta label="Доступність" value={application.availability} />
+                          <ApplicationMeta label="Досвід" value={application.experience} wide />
+                          {application.comment && <ApplicationMeta label="Коментар" value={application.comment} wide />}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-3">
+                        <label>
+                          <span className="t-label mb-2 block">Статус</span>
+                          <select
+                            className={inputClass}
+                            value={application.status}
+                            onChange={event => updateApplicationStatus(application.id, event.target.value as ApplicationStatus)}
+                          >
+                            {applicationStatuses.map(status => (
+                              <option key={status.value} value={status.value}>{status.label}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => removeApplication(application.id)}
+                        >
+                          <Trash2 />
+                          Видалити
+                        </Button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
         {status.message && (
           <div
             className={`mt-6 rounded-md border p-4 t-body ${
@@ -478,6 +648,25 @@ function AdminInput({ label, value, onChange }: { label: string; value: string; 
       />
     </div>
   );
+}
+
+function ApplicationMeta({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
+  return (
+    <div className={wide ? "sm:col-span-2" : ""}>
+      <div className="t-label mb-1">{label}</div>
+      <div className="t-body whitespace-pre-wrap text-[#343434]">{value}</div>
+    </div>
+  );
+}
+
+function formatApplicationDate(value: string) {
+  return new Intl.DateTimeFormat("uk-UA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function getUsedPlayerIds() {

@@ -191,6 +191,33 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="coax-light border-t border-[#2937da]/20 py-10">
+        <div className="content-shell">
+          <div className="overflow-hidden rounded-md bg-primary text-white">
+            <div className="h-px bg-accent" />
+            <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div>
+                <div className="mb-3 inline-flex rounded-full border border-accent/50 bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wide text-accent-foreground">
+                  Season 2
+                </div>
+                <h2 className="font-heading text-3xl leading-none text-accent sm:text-4xl md:text-5xl">
+                  Хочеш у наступний сезон?
+                </h2>
+                <p className="t-body mt-3 max-w-2xl text-white/80">
+                  Залиш заявку на участь у Bro Premier League. Ми звʼяжемось і розкажемо деталі формату, календаря та відбору.
+                </p>
+              </div>
+              <Link
+                to="/apply"
+                className="inline-flex h-12 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+              >
+                Подати заявку
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Next Matchday Games */}
       {nextMd && (() => {
         const unplayed = nextMd.matches.filter(m => m.homeScore === null);
