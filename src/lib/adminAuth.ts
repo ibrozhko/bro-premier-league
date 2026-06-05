@@ -28,11 +28,23 @@ async function authRequest(body: Record<string, unknown>): Promise<AuthResponse>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const payload = await response.json() as AuthResponse;
+  const payload = await parseAuthResponse(response);
 
   if (!response.ok) {
     throw new Error(payload.error ?? "Не вдалося авторизуватися.");
   }
 
   return payload;
+}
+
+async function parseAuthResponse(response: Response): Promise<AuthResponse> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    return response.json() as Promise<AuthResponse>;
+  }
+
+  await response.text();
+  return {
+    error: "Сервер авторизації тимчасово не відповідає. Перевір env змінні у Vercel і redeploy.",
+  };
 }

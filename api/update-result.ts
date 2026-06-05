@@ -1,4 +1,4 @@
-import { isAdminRequest, type AdminRequest } from "../server/adminAuth";
+import { isAdminRequest, type AdminRequest } from "./_utils/adminAuth";
 
 type ApiRequest = {
   method?: string;
