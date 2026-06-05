@@ -57,12 +57,9 @@ export default function Apply() {
             <p className="t-body mx-auto mt-3 max-w-xl text-muted-foreground">
               {submittedName}, заявка вже в адмінці. Ми переглянемо кандидатів і звʼяжемось ближче до старту сезону.
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <div className="mt-7 flex justify-center">
               <Button asChild>
                 <Link to="/">На головну</Link>
-              </Button>
-              <Button asChild variant="secondary">
-                <Link to="/admin">В адмінку</Link>
               </Button>
             </div>
           </div>
