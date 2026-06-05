@@ -5,7 +5,7 @@ import {
   validateAdminCredentials,
   type AdminRequest,
   type AdminResponse,
-} from "./_utils/adminAuth";
+} from "./_utils/adminAuth.js";
 
 type ApiRequest = AdminRequest & {
   method?: string;
