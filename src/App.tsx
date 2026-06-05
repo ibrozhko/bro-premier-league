@@ -12,6 +12,7 @@ import TopScorers from "./pages/TopScorers";
 import BestDefense from "./pages/BestDefense";
 import Apply from "./pages/Apply";
 import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 import { LanguageProvider } from "./lib/i18n";
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/top-scorers" element={<TopScorers />} />
             <Route path="/best-defense" element={<BestDefense />} />
             <Route path="/apply" element={<Apply />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

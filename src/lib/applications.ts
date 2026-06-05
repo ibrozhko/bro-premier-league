@@ -44,15 +44,14 @@ export async function submitApplication(application: NewSeasonApplication, websi
   return payload.application;
 }
 
-export async function getApplications(password: string): Promise<SeasonApplication[]> {
-  const payload = await applicationRequest<SeasonApplication>({ action: "list", password });
+export async function getApplications(): Promise<SeasonApplication[]> {
+  const payload = await applicationRequest<SeasonApplication>({ action: "list" });
   return payload.applications ?? [];
 }
 
-export async function updateApplicationStatus(password: string, id: string, status: ApplicationStatus): Promise<SeasonApplication> {
+export async function updateApplicationStatus(id: string, status: ApplicationStatus): Promise<SeasonApplication> {
   const payload = await applicationRequest<SeasonApplication>({
     action: "updateStatus",
-    password,
     id,
     status,
   });
@@ -64,10 +63,9 @@ export async function updateApplicationStatus(password: string, id: string, stat
   return payload.application;
 }
 
-export async function deleteApplication(password: string, id: string): Promise<void> {
+export async function deleteApplication(id: string): Promise<void> {
   await applicationRequest<SeasonApplication>({
     action: "delete",
-    password,
     id,
   });
 }
@@ -75,6 +73,7 @@ export async function deleteApplication(password: string, id: string): Promise<v
 async function applicationRequest<T>(body: Record<string, unknown>): Promise<ApiResponse<T>> {
   const response = await fetch("/api/applications", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });

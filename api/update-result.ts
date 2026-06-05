@@ -1,7 +1,9 @@
+import { isAdminRequest, type AdminRequest } from "../server/adminAuth";
+
 type ApiRequest = {
   method?: string;
   body?: unknown;
-};
+} & AdminRequest;
 
 type ApiResponse = {
   status: (code: number) => ApiResponse;
@@ -86,7 +88,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     return;
   }
 
-  if (payload.password !== process.env.ADMIN_PASSWORD) {
+  if (!isAdminRequest(request, payload.password)) {
     response.status(401).json({ error: "Неправильний пароль." });
     return;
   }

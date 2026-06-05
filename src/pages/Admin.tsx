@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ClipboardList, Plus, RotateCcw, Save, Trash2, Users, X } from "lucide-react";
+import { ClipboardList, LogOut, Plus, RotateCcw, Save, Trash2, Users, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { getAdminSession, logoutAdmin, type AdminUser } from "@/lib/adminAuth";
 import {
   applicationStatuses,
   deleteApplication,
@@ -18,7 +20,6 @@ type Status = {
 
 type AdminTab = "results" | "players" | "season" | "applications";
 
-const savedPasswordKey = "bro-admin-password";
 const platforms: Player["platform"][] = ["PS5", "Xbox", "PC"];
 const defaultClubColors = [
   "217 78% 57%",
@@ -30,7 +31,9 @@ const defaultClubColors = [
 ];
 
 export default function Admin() {
-  const [password, setPassword] = useState(() => localStorage.getItem(savedPasswordKey) ?? "");
+  const navigate = useNavigate();
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [activeTab, setActiveTab] = useState<AdminTab>("results");
   const [matchdayNumber, setMatchdayNumber] = useState(matchdays.find(md => md.matches.some(m => m.homeScore === null))?.number ?? matchdays[0].number);
   const selectedMatchday = useMemo(
@@ -57,9 +60,23 @@ export default function Admin() {
   const usedPlayerIds = useMemo(() => getUsedPlayerIds(), []);
 
   useEffect(() => {
-    if (activeTab !== "applications" || !password) return;
+    if (activeTab !== "applications" || !adminUser) return;
     void loadApplications();
-  }, [activeTab, password]);
+  }, [activeTab, adminUser]);
+
+  useEffect(() => {
+    getAdminSession()
+      .then(session => {
+        if (!session.authenticated || !session.user) {
+          navigate("/admin/login", { replace: true });
+          return;
+        }
+
+        setAdminUser(session.user);
+      })
+      .catch(() => navigate("/admin/login", { replace: true }))
+      .finally(() => setIsCheckingSession(false));
+  }, [navigate]);
 
   function chooseMatchday(value: number) {
     const nextMatchday = matchdays.find(md => md.number === value) ?? matchdays[0];
@@ -88,8 +105,9 @@ export default function Admin() {
     try {
       const response = await fetch("/api/update-result", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password, ...body }),
+        body: JSON.stringify(body),
       });
       const payload = await response.json();
 
@@ -97,7 +115,6 @@ export default function Admin() {
         throw new Error(payload.error ?? "Не вдалося оновити дані");
       }
 
-      localStorage.setItem(savedPasswordKey, password);
       setStatus({
         type: "success",
         message: `${payload.message}. Vercel вже запускає оновлення сайту.`,
@@ -185,8 +202,8 @@ export default function Admin() {
   }
 
   async function loadApplications() {
-    if (!password) {
-      setApplicationsStatus({ type: "error", message: "Введи пароль адмінки, щоб побачити заявки." });
+    if (!adminUser) {
+      setApplicationsStatus({ type: "error", message: "Увійди в адмінку, щоб побачити заявки." });
       return;
     }
 
@@ -194,7 +211,7 @@ export default function Admin() {
     setApplicationsStatus({ type: "idle", message: "" });
 
     try {
-      setApplicationList(await getApplications(password));
+      setApplicationList(await getApplications());
     } catch (error) {
       setApplicationsStatus({
         type: "error",
@@ -207,7 +224,7 @@ export default function Admin() {
 
   async function updateApplicationStatus(applicationId: string, nextStatus: ApplicationStatus) {
     try {
-      const updatedApplication = await saveApplicationStatus(password, applicationId, nextStatus);
+      const updatedApplication = await saveApplicationStatus(applicationId, nextStatus);
       setApplicationList(current =>
         current.map(application =>
           application.id === applicationId ? updatedApplication : application,
@@ -224,7 +241,7 @@ export default function Admin() {
 
   async function removeApplication(applicationId: string) {
     try {
-      await deleteApplication(password, applicationId);
+      await deleteApplication(applicationId);
       setApplicationList(current => current.filter(application => application.id !== applicationId));
       setApplicationsStatus({ type: "success", message: "Заявку видалено." });
     } catch (error) {
@@ -238,6 +255,25 @@ export default function Admin() {
   const inputClass = "h-11 w-full border border-[#2937da]/20 bg-white px-3 text-base text-[#343434] outline-none placeholder:text-[#343434]/40 focus-visible:ring-2 focus-visible:ring-primary";
   const adminPanelClass = "light-panel rounded-md p-4 sm:p-6";
 
+  async function handleLogout() {
+    await logoutAdmin();
+    navigate("/admin/login", { replace: true });
+  }
+
+  if (isCheckingSession) {
+    return (
+      <div className="coax-light min-h-screen py-12">
+        <div className="content-shell">
+          <div className="light-panel rounded-md p-6">
+            <div className="h-card">Перевіряю доступ...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminUser) return null;
+
   return (
     <div className="coax-light min-h-screen py-10 sm:py-12">
       <div className="content-shell">
@@ -247,25 +283,19 @@ export default function Admin() {
             <h1 className="h-page">Адмінка</h1>
             <p className="t-body text-muted-foreground">Сезон {currentSeason}: результати, гравці та підготовка нового сезону.</p>
           </div>
-          <a className="t-body font-medium text-primary hover:underline" href="/fixtures">
-            До календаря
-          </a>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <div className="t-meta">{adminUser.name ?? adminUser.username}</div>
+            <div className="flex gap-2">
+              <a className="inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-primary hover:underline" href="/fixtures">
+                До календаря
+              </a>
+              <Button type="button" variant="secondary" onClick={handleLogout}>
+                <LogOut />
+                Вийти
+              </Button>
+            </div>
+          </div>
         </div>
-
-        <section className={`${adminPanelClass} mb-6`}>
-          <label className="t-label mb-2 block" htmlFor="admin-password">
-            Пароль
-          </label>
-          <input
-            id="admin-password"
-            className={inputClass}
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={event => setPassword(event.target.value)}
-            placeholder="ADMIN_PASSWORD"
-          />
-        </section>
 
         <div className="mb-6 grid grid-cols-2 gap-px border border-[#2937da]/20 bg-[#2937da]/20 sm:grid-cols-4">
           {[
@@ -371,7 +401,7 @@ export default function Admin() {
               </div>
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Button className="w-full sm:w-auto" type="submit" disabled={isSaving || !password}>
+                <Button className="w-full sm:w-auto" type="submit" disabled={isSaving}>
                   <Save />
                   {isSaving ? "Оновлюю..." : "Оновити"}
                 </Button>
@@ -379,7 +409,7 @@ export default function Admin() {
                   className="w-full sm:w-auto"
                   type="button"
                   variant="secondary"
-                  disabled={isSaving || !password}
+                  disabled={isSaving}
                   onClick={() => updateResult(null, null)}
                 >
                   <Trash2 />
@@ -448,7 +478,7 @@ export default function Admin() {
               </section>
             ))}
 
-            <Button className="w-full sm:w-auto" type="submit" disabled={isSaving || !password}>
+            <Button className="w-full sm:w-auto" type="submit" disabled={isSaving}>
               <Users />
               {isSaving ? "Зберігаю..." : "Зберегти гравців"}
             </Button>
@@ -510,7 +540,7 @@ export default function Admin() {
                 className="mt-5 w-full sm:w-auto"
                 type="submit"
                 variant="destructive"
-                disabled={isSaving || !password || seasonConfirmation !== `SEASON ${nextSeason}`}
+                disabled={isSaving || seasonConfirmation !== `SEASON ${nextSeason}`}
               >
                 <RotateCcw />
                 {isSaving ? "Готую..." : `Архівувати і почати сезон ${nextSeason}`}
@@ -528,7 +558,7 @@ export default function Admin() {
                   Заявки на сезон 2
                 </h2>
                 <p className="t-body text-muted-foreground">
-                  Кандидати зберігаються в Supabase. Для перегляду потрібен пароль адмінки.
+                  Кандидати зберігаються в Supabase. Для перегляду потрібен вхід в адмінку.
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -536,7 +566,7 @@ export default function Admin() {
                   className="w-full sm:w-auto"
                   type="button"
                   variant="secondary"
-                  disabled={isLoadingApplications || !password}
+                  disabled={isLoadingApplications}
                   onClick={loadApplications}
                 >
                   <RotateCcw />
