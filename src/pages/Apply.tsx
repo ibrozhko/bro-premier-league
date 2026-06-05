@@ -55,7 +55,7 @@ export default function Apply() {
             <div className="page-kicker">Сезон 2</div>
             <h1 className="h-page">Заявку прийнято</h1>
             <p className="t-body mx-auto mt-3 max-w-xl text-muted-foreground">
-              {submittedName}, заявка вже в адмінці. Ми переглянемо кандидатів і звʼяжемось ближче до старту сезону.
+              {submittedName}, дякуємо за інтерес до ліги. Ми переглянемо кандидатів і звʼяжемось ближче до старту сезону.
             </p>
             <div className="mt-7 flex justify-center">
               <Button asChild>
