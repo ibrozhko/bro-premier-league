@@ -59,6 +59,42 @@
     @apply border-border;
   }
 
+  @media (hover: hover) and (pointer: fine) {
+    html,
+    body {
+      cursor: url("/cursors/lion-paw.svg") 6 6, auto;
+    }
+
+    a,
+    button,
+    summary,
+    select,
+    label[for],
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    [data-radix-collection-item],
+    input[type="button"],
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="reset"],
+    input[type="submit"] {
+      cursor: url("/cursors/lion-claws.svg") 18 8, pointer;
+    }
+
+    input:not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="reset"]):not([type="submit"]),
+    textarea,
+    [contenteditable="true"] {
+      cursor: text;
+    }
+
+    button:disabled,
+    [aria-disabled="true"],
+    [disabled] {
+      cursor: not-allowed;
+    }
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Montserrat', sans-serif;
