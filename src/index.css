@@ -62,7 +62,7 @@
   @media (hover: hover) and (pointer: fine) {
     html,
     body {
-      cursor: url("/cursors/lion-paw.svg") 6 6, auto;
+      cursor: url("/cursors/lion-paw-lime.svg") 6 6, auto;
     }
 
     a,
@@ -79,7 +79,105 @@
     input[type="radio"],
     input[type="reset"],
     input[type="submit"] {
-      cursor: url("/cursors/lion-claws.svg") 18 8, pointer;
+      cursor: url("/cursors/lion-claws-lime.svg") 18 8, pointer;
+    }
+
+    .coax-light,
+    .coax-light * {
+      cursor: url("/cursors/lion-paw-blue.svg") 6 6, auto;
+    }
+
+    .coax-light a,
+    .coax-light button,
+    .coax-light summary,
+    .coax-light select,
+    .coax-light label[for],
+    .coax-light [role="button"],
+    .coax-light [role="tab"],
+    .coax-light [role="menuitem"],
+    .coax-light [data-radix-collection-item],
+    .coax-light input[type="button"],
+    .coax-light input[type="checkbox"],
+    .coax-light input[type="radio"],
+    .coax-light input[type="reset"],
+    .coax-light input[type="submit"] {
+      cursor: url("/cursors/lion-claws-blue.svg") 18 8, pointer;
+    }
+
+    .coax-light [class~="bg-primary"],
+    .coax-light [class~="bg-primary"] *,
+    .coax-light .brand-card,
+    .coax-light .brand-card * {
+      cursor: url("/cursors/lion-paw-lime.svg") 6 6, auto;
+    }
+
+    .coax-light [class~="bg-primary"] a,
+    .coax-light [class~="bg-primary"] button,
+    .coax-light [class~="bg-primary"] summary,
+    .coax-light [class~="bg-primary"] select,
+    .coax-light [class~="bg-primary"] label[for],
+    .coax-light [class~="bg-primary"] [role="button"],
+    .coax-light [class~="bg-primary"] [role="tab"],
+    .coax-light [class~="bg-primary"] [role="menuitem"],
+    .coax-light [class~="bg-primary"] [data-radix-collection-item],
+    .coax-light a[class~="bg-primary"],
+    .coax-light button[class~="bg-primary"],
+    .coax-light [role="button"][class~="bg-primary"],
+    .coax-light [role="tab"][class~="bg-primary"],
+    .coax-light .brand-card a,
+    .coax-light .brand-card button,
+    .coax-light .brand-card summary,
+    .coax-light .brand-card select,
+    .coax-light .brand-card label[for],
+    .coax-light .brand-card [role="button"],
+    .coax-light .brand-card [role="tab"],
+    .coax-light .brand-card [role="menuitem"],
+    .coax-light .brand-card [data-radix-collection-item] {
+      cursor: url("/cursors/lion-claws-lime.svg") 18 8, pointer;
+    }
+
+    .coax-light [class~="hover:bg-[#2937da]"]:hover,
+    .coax-light [class~="hover:bg-primary"]:hover,
+    .coax-light [class~="hover:bg-primary/90"]:hover {
+      cursor: url("/cursors/lion-claws-lime.svg") 18 8, pointer;
+    }
+
+    [class~="bg-accent"],
+    [class~="filter-chip-active"],
+    [data-state="on"][class~="bg-accent"],
+    [data-active="true"][class~="bg-accent"] {
+      cursor: url("/cursors/lion-paw-lime.svg") 6 6, auto;
+    }
+
+    a[class~="bg-accent"],
+    button[class~="bg-accent"],
+    [class~="filter-chip-active"],
+    [role="button"][class~="bg-accent"],
+    [role="tab"][class~="bg-accent"] {
+      cursor: url("/cursors/lion-paw-lime.svg") 6 6, pointer;
+    }
+
+    .coax-light [class~="bg-primary"] [class~="bg-accent"],
+    .coax-light .brand-card [class~="bg-accent"] {
+      cursor: url("/cursors/lion-paw-blue.svg") 6 6, auto;
+    }
+
+    .coax-light [class~="bg-primary"] a[class~="bg-accent"],
+    .coax-light [class~="bg-primary"] button[class~="bg-accent"],
+    .coax-light [class~="bg-primary"] [role="button"][class~="bg-accent"],
+    .coax-light .brand-card a[class~="bg-accent"],
+    .coax-light .brand-card button[class~="bg-accent"],
+    .coax-light .brand-card [role="button"][class~="bg-accent"] {
+      cursor: url("/cursors/lion-claws-blue.svg") 18 8, pointer;
+    }
+
+    .coax-light .filter-chip:hover {
+      cursor: url("/cursors/lion-claws-lime.svg") 18 8, pointer !important;
+    }
+
+    nav a[class~="bg-accent"],
+    nav button[class~="hover:bg-accent"]:hover {
+      cursor: url("/cursors/lion-claws-blue.svg") 18 8, pointer;
     }
 
     input:not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="reset"]):not([type="submit"]),
