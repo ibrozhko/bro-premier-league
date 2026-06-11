@@ -25,7 +25,7 @@ export default function PredictLeaderboard() {
       <div className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white">
         <div className="grid grid-cols-[56px_1fr_92px_110px_100px] gap-2 border-b border-[#2937da]/10 bg-[#f3f3f6] px-3 py-3 text-xs font-bold uppercase tracking-wide text-[#343434]/65">
           <span>#</span>
-          <span>Нікнейм</span>
+          <span>Ім'я</span>
           <span className="text-right">Бали</span>
           <span className="text-right">Турнірні</span>
           <span className="text-right">Вірні</span>
@@ -36,7 +36,7 @@ export default function PredictLeaderboard() {
               {index < 3 && <Medal className="h-4 w-4 text-[#2937da]" />}
               {index + 1}
             </span>
-            <span className="min-w-0 truncate font-semibold text-[#343434]">{user.username}</span>
+            <span className="min-w-0 truncate font-semibold text-[#343434]">{user.displayName || user.username}</span>
             <span className="text-right font-heading text-xl text-[#2937da]">{user.totalPoints}</span>
             <span className="text-right text-sm text-[#343434]/75">{getTournamentPoints(user)}</span>
             <span className="text-right text-sm text-[#343434]/75">{getCorrectPredictionCount(user)}</span>

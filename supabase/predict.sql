@@ -3,6 +3,7 @@ create extension if not exists pgcrypto;
 create table if not exists predict_users (
   id uuid primary key default gen_random_uuid(),
   username text unique not null,
+  display_name text,
   password_hash text not null,
   invite_code text unique not null,
   invited_by uuid references predict_users(id),
@@ -12,6 +13,8 @@ create table if not exists predict_users (
   total_points int default 0,
   created_at timestamptz default now()
 );
+
+alter table predict_users add column if not exists display_name text;
 
 create table if not exists predict_matches (
   id serial primary key,

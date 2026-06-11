@@ -54,7 +54,7 @@ export default function PredictProfile() {
     <main className="content-shell py-10">
       <div className="page-header">
         <div className="page-kicker">Особистий кабінет</div>
-        <h2 className="h-page">{user.username}</h2>
+        <h2 className="h-page">{user.displayName || user.username}</h2>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">

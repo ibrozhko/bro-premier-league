@@ -125,8 +125,8 @@ export default function PredictAdmin() {
           {users.map(item => (
             <div key={item.id} className="grid gap-2 p-4 sm:grid-cols-[1fr_120px_120px_120px] sm:items-center">
               <div>
-                <div className="font-semibold text-[#343434]">{item.username}{item.isAdmin ? " (admin)" : ""}</div>
-                <div className="t-meta">{item.inviteCode}</div>
+                <div className="font-semibold text-[#343434]">{item.displayName || item.username}{item.isAdmin ? " (admin)" : ""}</div>
+                <div className="t-meta">{item.username} · {item.inviteCode}</div>
               </div>
               <div className="text-sm text-[#343434]/75">Бали: {item.totalPoints}</div>
               <div className="text-sm text-[#343434]/75">Інвайти: {item.invitesRemaining}</div>

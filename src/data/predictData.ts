@@ -51,6 +51,7 @@ export type TournamentPrediction = {
 export type PredictUser = {
   id: string;
   username: string;
+  displayName?: string;
   password?: string;
   inviteCode: string;
   invitedBy?: string;

@@ -17,6 +17,7 @@ export type ApiResponse = {
 export type DbUser = {
   id: string;
   username: string;
+  display_name?: string | null;
   password_hash?: string;
   invite_code: string;
   invited_by: string | null;
@@ -166,7 +167,7 @@ export function inviteCodeFor(username: string) {
 
 export async function getUserBundle(userId: string) {
   const userRows = await supabaseGet<DbUser[]>(
-    `/predict_users?select=id,username,invite_code,invited_by,invites_remaining,is_admin,favorite_team,total_points,created_at&id=eq.${encodeURIComponent(userId)}&limit=1`,
+    `/predict_users?select=*&id=eq.${encodeURIComponent(userId)}&limit=1`,
   );
   const user = userRows[0];
   if (!user) return null;
@@ -183,6 +184,7 @@ export function toClientUser(user: DbUser, predictions: DbPrediction[] = [], tou
   return {
     id: user.id,
     username: user.username,
+    displayName: user.display_name ?? undefined,
     inviteCode: user.invite_code,
     invitedBy: user.invited_by ?? undefined,
     invitesRemaining: user.invites_remaining,

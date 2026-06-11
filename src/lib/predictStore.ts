@@ -52,6 +52,7 @@ export async function logoutPredictUser() {
 
 export async function registerPredictUser(input: {
   username: string;
+  displayName: string;
   password: string;
   inviteCode: string;
   tournamentPrediction: TournamentPrediction;

@@ -19,6 +19,7 @@ import {
 type AuthPayload = {
   action?: "login" | "logout" | "register";
   username?: string;
+  displayName?: string;
   password?: string;
   inviteCode?: string;
   tournamentPrediction?: {
@@ -61,7 +62,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       const username = payload.username?.trim() ?? "";
       const password = payload.password ?? "";
       const rows = await supabaseGet<DbUser[]>(
-        `/predict_users?select=id,username,password_hash,invite_code,invited_by,invites_remaining,is_admin,favorite_team,total_points,created_at&username=eq.${encodeURIComponent(username)}&limit=1`,
+        `/predict_users?select=*&username=eq.${encodeURIComponent(username)}&limit=1`,
       );
       const user = rows[0];
       if (!user?.password_hash || !verifyPassword(password, user.password_hash)) {
@@ -76,10 +77,12 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
     if (payload.action === "register") {
       const username = payload.username?.trim() ?? "";
+      const displayName = payload.displayName?.trim() ?? "";
       const password = payload.password ?? "";
       const inviteCode = payload.inviteCode?.trim().toUpperCase() ?? "";
       const tournament = payload.tournamentPrediction;
 
+      if (displayName.length < 2) throw new Error("Ім'я має містити щонайменше 2 символи.");
       if (username.length < 3) throw new Error("Нікнейм має містити щонайменше 3 символи.");
       if (password.length < 6) throw new Error("Пароль має містити щонайменше 6 символів.");
       if (!tournament) throw new Error("Заповни турнірні прогнози.");
@@ -98,6 +101,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
       const userRows = await supabasePost<DbUser[]>("/predict_users", {
         username,
+        display_name: displayName,
         password_hash: hashPassword(password),
         invite_code: inviteCodeFor(username),
         invited_by: inviter.id,

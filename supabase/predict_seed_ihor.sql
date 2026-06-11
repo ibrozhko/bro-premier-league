@@ -1,5 +1,6 @@
 insert into predict_users (
   username,
+  display_name,
   password_hash,
   invite_code,
   invites_remaining,
@@ -7,6 +8,7 @@ insert into predict_users (
   favorite_team
 ) values (
   'ihor',
+  'Ігор',
   'scrypt$Zma0mhm7LAYiWluAKPQTXA$Ven3qH-_oz-lBul5iKGdne_nFAKmF9vTcVKGiiKC6M90UtqY8_F1oLFDZ0cAb2L8OTC___kQI0kyuPu_6YJh9Q',
   'BPL-IHOR',
   99,
@@ -14,6 +16,7 @@ insert into predict_users (
   'Ukraine'
 )
 on conflict (username) do update set
+  display_name = excluded.display_name,
   password_hash = excluded.password_hash,
   invite_code = excluded.invite_code,
   invites_remaining = excluded.invites_remaining,

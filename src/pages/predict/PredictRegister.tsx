@@ -9,6 +9,7 @@ import { registerPredictUser } from "@/lib/predictStore";
 
 export default function PredictRegister() {
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
@@ -32,7 +33,7 @@ export default function PredictRegister() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
-      await registerPredictUser({ username, password, inviteCode, tournamentPrediction: prediction });
+      await registerPredictUser({ displayName, username, password, inviteCode, tournamentPrediction: prediction });
       navigate("/predict/predictions");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не вдалося зареєструватись.");
@@ -50,8 +51,9 @@ export default function PredictRegister() {
             <p className="t-meta mt-2">Турнірні прогнози зберігаються один раз і не редагуються після створення акаунта.</p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Нікнейм" value={username} onChange={setUsername} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Ім'я" value={displayName} onChange={setDisplayName} autoComplete="name" />
+            <Field label="Нікнейм для входу" value={username} onChange={setUsername} autoComplete="username" />
             <Field label="Пароль" value={password} onChange={setPassword} type="password" />
             <Field label="Інвайт-код" value={inviteCode} onChange={setInviteCode} placeholder="BPL-A7K2" />
           </div>
@@ -83,18 +85,19 @@ export default function PredictRegister() {
   );
 }
 
-function Field({ label, value, onChange, type = "text", placeholder = "" }: {
+function Field({ label, value, onChange, type = "text", placeholder = "", autoComplete }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
   placeholder?: string;
+  autoComplete?: string;
 }) {
   const id = label.toLowerCase().replace(/\s+/g, "-");
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
-      <Input id={id} value={value} onChange={event => onChange(event.target.value)} type={type} placeholder={placeholder} className="bg-white text-[#343434]" />
+      <Input id={id} value={value} onChange={event => onChange(event.target.value)} type={type} placeholder={placeholder} autoComplete={autoComplete} className="bg-white text-[#343434]" />
     </div>
   );
 }
