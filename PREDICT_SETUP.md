@@ -38,7 +38,16 @@ GET https://api.football-data.org/v4/competitions/WC/matches
 Header: X-Auth-Token: FOOTBALL_DATA_API_KEY
 ```
 
-Vercel runs it every 5 minutes via `vercel.json`:
+Vercel Hobby supports cron jobs once per day, so production currently runs it daily via `vercel.json`:
+
+```json
+{
+  "path": "/api/predict-sync-results",
+  "schedule": "0 6 * * *"
+}
+```
+
+On a Vercel Pro plan, this can be changed back to every 5 minutes:
 
 ```json
 {
