@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/predict-sync-results",
+      "schedule": "*/5 * * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/|assets/|favicon.ico|robots.txt|placeholder.svg).*)",

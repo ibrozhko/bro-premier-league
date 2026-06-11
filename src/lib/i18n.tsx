@@ -10,6 +10,7 @@ type TranslationKey =
   | "nav.players"
   | "nav.topScorers"
   | "nav.bestDefense"
+  | "nav.predict"
   | "nav.apply"
   | "hero.subtitle"
   | "common.updated"
@@ -71,6 +72,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "nav.players": "Гравці",
     "nav.topScorers": "Бомбардири",
     "nav.bestDefense": "Захист",
+    "nav.predict": "Predict",
     "nav.apply": "Заявка",
     "hero.subtitle": "FC 26 · Приватна Ліга · Сезон 1 · 9 Гравців · 72 Матчі",
     "common.updated": "Оновлено",
@@ -131,6 +133,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "nav.players": "Players",
     "nav.topScorers": "Top Scorers",
     "nav.bestDefense": "Defense",
+    "nav.predict": "Predict",
     "nav.apply": "Apply",
     "hero.subtitle": "FC 26 · Private League · Season 1 · 9 Players · 72 Matches",
     "common.updated": "Updated",

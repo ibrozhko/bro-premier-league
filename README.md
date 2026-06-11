@@ -14,6 +14,8 @@ src/data/leagueData.ts
 
 Коротка інструкція: [UPDATE_RESULTS.md](./UPDATE_RESULTS.md)
 
+Для BPL Predict і football-data.org дивись: [PREDICT_SETUP.md](./PREDICT_SETUP.md)
+
 Після commit у GitHub Vercel автоматично публікує нову версію сайту.
 
 ## Команди для локальної перевірки

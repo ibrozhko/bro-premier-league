@@ -15,6 +15,15 @@ import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 import { LanguageProvider } from "./lib/i18n";
+import PredictLayout from "./pages/predict/PredictLayout";
+import PredictLanding from "./pages/predict/PredictLanding";
+import PredictLogin from "./pages/predict/PredictLogin";
+import PredictRegister from "./pages/predict/PredictRegister";
+import PredictLeaderboard from "./pages/predict/PredictLeaderboard";
+import PredictPredictions from "./pages/predict/PredictPredictions";
+import PredictMatches from "./pages/predict/PredictMatches";
+import PredictProfile from "./pages/predict/PredictProfile";
+import PredictAdmin from "./pages/predict/PredictAdmin";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +44,16 @@ const App = () => (
             <Route path="/apply" element={<Apply />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/predict" element={<PredictLayout />}>
+              <Route index element={<PredictLanding />} />
+              <Route path="login" element={<PredictLogin />} />
+              <Route path="register" element={<PredictRegister />} />
+              <Route path="leaderboard" element={<PredictLeaderboard />} />
+              <Route path="predictions" element={<PredictPredictions />} />
+              <Route path="matches" element={<PredictMatches />} />
+              <Route path="profile" element={<PredictProfile />} />
+              <Route path="admin" element={<PredictAdmin />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />

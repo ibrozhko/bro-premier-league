@@ -34,7 +34,7 @@ export default function Navbar() {
               key={l.path}
               to={l.path}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                location.pathname === l.path
+                location.pathname === l.path || (l.path !== "/" && location.pathname.startsWith(l.path))
                   ? "bg-accent text-accent-foreground"
                   : "text-white/80 hover:text-foreground hover:bg-white/10 hover:shadow-[inset_0_-2px_0_hsl(var(--accent))]"
               }`}
@@ -64,7 +64,7 @@ export default function Navbar() {
               to={l.path}
               onClick={() => setOpen(false)}
               className={`block py-3 text-sm font-medium border-b border-border last:border-0 ${
-                location.pathname === l.path ? "text-accent" : "text-white/80"
+                location.pathname === l.path || (l.path !== "/" && location.pathname.startsWith(l.path)) ? "text-accent" : "text-white/80"
               }`}
             >
               {t(l.labelKey)}
