@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +27,39 @@ import PredictAdmin from "./pages/predict/PredictAdmin";
 
 const queryClient = new QueryClient();
 
+function AppFrame() {
+  const location = useLocation();
+  const isPredict = location.pathname === "/predict" || location.pathname.startsWith("/predict/");
+
+  return (
+    <>
+      {!isPredict && <Navbar />}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/fixtures" element={<Fixtures />} />
+        <Route path="/players" element={<Players />} />
+        <Route path="/top-scorers" element={<TopScorers />} />
+        <Route path="/best-defense" element={<BestDefense />} />
+        <Route path="/apply" element={<Apply />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/predict" element={<PredictLayout />}>
+          <Route index element={<PredictLanding />} />
+          <Route path="login" element={<PredictLogin />} />
+          <Route path="register" element={<PredictRegister />} />
+          <Route path="leaderboard" element={<PredictLeaderboard />} />
+          <Route path="predictions" element={<PredictPredictions />} />
+          <Route path="matches" element={<PredictMatches />} />
+          <Route path="profile" element={<PredictProfile />} />
+          <Route path="admin" element={<PredictAdmin />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      {!isPredict && <Footer />}
+    </>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -34,29 +67,7 @@ const App = () => (
       <Sonner />
       <LanguageProvider>
         <BrowserRouter>
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/fixtures" element={<Fixtures />} />
-            <Route path="/players" element={<Players />} />
-            <Route path="/top-scorers" element={<TopScorers />} />
-            <Route path="/best-defense" element={<BestDefense />} />
-            <Route path="/apply" element={<Apply />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/predict" element={<PredictLayout />}>
-              <Route index element={<PredictLanding />} />
-              <Route path="login" element={<PredictLogin />} />
-              <Route path="register" element={<PredictRegister />} />
-              <Route path="leaderboard" element={<PredictLeaderboard />} />
-              <Route path="predictions" element={<PredictPredictions />} />
-              <Route path="matches" element={<PredictMatches />} />
-              <Route path="profile" element={<PredictProfile />} />
-              <Route path="admin" element={<PredictAdmin />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Footer />
+          <AppFrame />
         </BrowserRouter>
       </LanguageProvider>
     </TooltipProvider>

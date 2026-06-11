@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ArrowRight, LockKeyhole, Medal, ShieldCheck, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCurrentPredictUser, getPredictUsers } from "@/lib/predictStore";
-import { predictMatches } from "@/data/predictData";
+import { predictMatches, type PredictUser } from "@/data/predictData";
 
 export default function PredictLanding() {
-  const navigate = useNavigate();
+  const [user, setUser] = useState<PredictUser | null>(null);
   const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
-    getCurrentPredictUser().then(user => {
-      if (user) navigate("/predict/predictions", { replace: true });
-    }).catch(() => undefined);
-    getPredictUsers().then(users => setUserCount(users.length)).catch(() => setUserCount(0));
-  }, [navigate]);
+    getCurrentPredictUser().then(setUser).catch(() => setUser(null));
+    getPredictUsers().then(users => setUserCount(users.filter(item => !item.isAdmin).length)).catch(() => setUserCount(0));
+  }, []);
 
   const stats = [
     { label: "Команд", value: "48" },
@@ -37,13 +35,15 @@ export default function PredictLanding() {
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild className="h-12 rounded-md bg-[#2937da] px-5 text-white hover:bg-[#1f2ab4]">
-              <Link to="/predict/login">
-                Увійти <ArrowRight className="ml-2 h-4 w-4" />
+              <Link to={user ? "/predict/predictions" : "/predict/login"}>
+                {user ? "Мої прогнози" : "Увійти"} <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" className="h-12 rounded-md border-[#2937da]/25 bg-white px-5 text-[#2937da] hover:bg-[#2937da] hover:text-white">
-              <Link to="/predict/register">Зареєструватись з кодом</Link>
-            </Button>
+            {!user && (
+              <Button asChild variant="outline" className="h-12 rounded-md border-[#2937da]/25 bg-white px-5 text-[#2937da] hover:bg-[#2937da] hover:text-white">
+                <Link to="/predict/register">Зареєструватись з кодом</Link>
+              </Button>
+            )}
           </div>
         </div>
 
