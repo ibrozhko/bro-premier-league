@@ -10,7 +10,7 @@ export default function PredictLeaderboard() {
 
   useEffect(() => {
     getPredictUsers()
-      .then(items => setUsers(items.sort((a, b) => b.totalPoints - a.totalPoints)))
+      .then(items => setUsers(items.filter(user => !user.isAdmin).sort((a, b) => b.totalPoints - a.totalPoints)))
       .catch(err => setError(err instanceof Error ? err.message : "Не вдалося завантажити лідерборд."));
   }, []);
 
