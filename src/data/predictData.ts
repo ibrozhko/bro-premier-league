@@ -218,11 +218,8 @@ function stageForKnockout(index: number): MatchStage {
   return "final";
 }
 
-function resultFor(id: number) {
-  if (id > 8) return { homeScore: null, awayScore: null, status: "scheduled" as const };
-  const homeScore = [2, 1, 0, 3, 1, 2, 1, 0][id - 1];
-  const awayScore = [0, 1, 2, 1, 0, 2, 3, 0][id - 1];
-  return { homeScore, awayScore, status: "finished" as const };
+function resultFor() {
+  return { homeScore: null, awayScore: null, status: "scheduled" as const };
 }
 
 export const predictMatches: PredictMatch[] = [
