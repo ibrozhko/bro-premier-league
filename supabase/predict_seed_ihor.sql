@@ -10,7 +10,7 @@ insert into predict_users (
   'ihor',
   'Ігор',
   'scrypt$Zma0mhm7LAYiWluAKPQTXA$Ven3qH-_oz-lBul5iKGdne_nFAKmF9vTcVKGiiKC6M90UtqY8_F1oLFDZ0cAb2L8OTC___kQI0kyuPu_6YJh9Q',
-  'BPL-IHOR',
+  'BPL-7KQ4M9',
   99,
   true,
   'Ukraine'

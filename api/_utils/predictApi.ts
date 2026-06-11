@@ -159,10 +159,12 @@ export function verifyPassword(password: string, storedHash: string) {
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
-export function inviteCodeFor(username: string) {
-  const cleaned = username.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3).padEnd(3, "X");
-  const random = randomBytes(3).toString("hex").toUpperCase();
-  return `BPL-${cleaned}${random}`.slice(0, 12);
+export function inviteCodeFor(username?: string) {
+  void username;
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = randomBytes(6);
+  const code = Array.from(bytes, byte => alphabet[byte % alphabet.length]).join("");
+  return `BPL-${code}`;
 }
 
 export async function getUserBundle(userId: string) {
