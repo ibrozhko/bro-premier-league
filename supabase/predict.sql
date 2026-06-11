@@ -33,6 +33,7 @@ create table if not exists predict_predictions (
   id serial primary key,
   user_id uuid references predict_users(id) not null,
   match_id int references predict_matches(id) not null,
+  local_match_id int,
   predicted_home_score int,
   predicted_away_score int,
   predicted_advancing text check (predicted_advancing in ('home', 'away')),
@@ -41,6 +42,8 @@ create table if not exists predict_predictions (
   created_at timestamptz default now(),
   unique(user_id, match_id)
 );
+
+alter table predict_predictions add column if not exists local_match_id int;
 
 create table if not exists predict_tournament_predictions (
   id serial primary key,

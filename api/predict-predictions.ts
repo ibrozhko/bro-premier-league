@@ -62,7 +62,6 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     const matchRows = await supabasePost<Array<{ id: number }>>(
       "/predict_matches?on_conflict=external_id",
       {
-        id: payload.match.id,
         external_id: payload.match.externalId,
         stage: payload.match.stage,
         group_name: payload.match.groupName ?? null,
@@ -87,6 +86,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     await supabasePost("/predict_predictions", {
       user_id: userId,
       match_id: matchId,
+      local_match_id: payload.match.id,
       predicted_home_score: payload.predictedHomeScore,
       predicted_away_score: payload.predictedAwayScore,
       predicted_advancing: payload.predictedAdvancing ?? null,

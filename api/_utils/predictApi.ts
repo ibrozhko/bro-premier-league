@@ -29,6 +29,7 @@ export type DbUser = {
 
 export type DbPrediction = {
   match_id: number;
+  local_match_id?: number | null;
   predicted_home_score: number;
   predicted_away_score: number;
   predicted_advancing: "home" | "away" | null;
@@ -171,7 +172,7 @@ export async function getUserBundle(userId: string) {
   if (!user) return null;
 
   const [predictionRows, tournamentRows] = await Promise.all([
-    supabaseGet<DbPrediction[]>(`/predict_predictions?select=match_id,predicted_home_score,predicted_away_score,predicted_advancing,points_outcome,points_advancing,created_at&user_id=eq.${encodeURIComponent(user.id)}`),
+    supabaseGet<DbPrediction[]>(`/predict_predictions?select=match_id,local_match_id,predicted_home_score,predicted_away_score,predicted_advancing,points_outcome,points_advancing,created_at&user_id=eq.${encodeURIComponent(user.id)}`),
     supabaseGet<DbTournamentPrediction[]>(`/predict_tournament_predictions?select=champion,finalist,top_scorer,dark_horse,points_champion,points_finalist,points_top_scorer,points_dark_horse&user_id=eq.${encodeURIComponent(user.id)}&limit=1`),
   ]);
 
@@ -189,9 +190,9 @@ export function toClientUser(user: DbUser, predictions: DbPrediction[] = [], tou
     createdAt: user.created_at,
     totalPoints: user.total_points,
     predictions: Object.fromEntries(predictions.map(prediction => [
-      prediction.match_id,
+      prediction.local_match_id ?? prediction.match_id,
       {
-        matchId: prediction.match_id,
+        matchId: prediction.local_match_id ?? prediction.match_id,
         predictedHomeScore: prediction.predicted_home_score,
         predictedAwayScore: prediction.predicted_away_score,
         predictedAdvancing: prediction.predicted_advancing ?? undefined,
