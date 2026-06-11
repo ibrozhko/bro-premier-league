@@ -10,6 +10,8 @@ type ApiResponse = {
 
 type FootballDataMatch = {
   id: number;
+  stage?: string;
+  group?: string;
   status: string;
   utcDate: string;
   homeTeam: { name?: string; shortName?: string };
@@ -63,18 +65,18 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       const awayScore = status === "finished" ? fullTime?.away ?? null : null;
       const winner = mapWinner(match.score.winner);
 
-      await supabasePatch(
-        `/rest/v1/predict_matches?external_id=eq.${encodeURIComponent(String(match.id))}`,
-        {
-          status,
-          match_date: match.utcDate,
-          home_team: match.homeTeam.shortName ?? match.homeTeam.name,
-          away_team: match.awayTeam.shortName ?? match.awayTeam.name,
-          home_score: homeScore,
-          away_score: awayScore,
-          winner,
-        },
-      );
+      await supabaseUpsertMatch({
+        external_id: String(match.id),
+        stage: mapStage(match.stage),
+        group_name: match.group ?? null,
+        status,
+        match_date: match.utcDate,
+        home_team: match.homeTeam.shortName ?? match.homeTeam.name ?? "TBD",
+        away_team: match.awayTeam.shortName ?? match.awayTeam.name ?? "TBD",
+        home_score: homeScore,
+        away_score: awayScore,
+        winner,
+      });
 
       if (status === "finished") {
         await recalculatePredictions(String(match.id), homeScore, awayScore, winner);
@@ -124,29 +126,42 @@ async function recalculatePredictions(externalId: string, homeScore: number | nu
 }
 
 async function supabaseGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${process.env.PREDICT_SUPABASE_URL}${path}`, {
+  const response = await fetch(`${supabaseRestUrl()}${path}`, {
     headers: supabaseHeaders(),
   });
-  if (!response.ok) throw new Error(`Supabase GET failed: ${response.status}`);
+  if (!response.ok) throw new Error(`Supabase GET ${path} failed: ${response.status} ${await safeErrorText(response)}`);
   return response.json() as Promise<T>;
 }
 
 async function supabasePatch(path: string, body: Record<string, unknown>) {
-  const response = await fetch(`${process.env.PREDICT_SUPABASE_URL}${path}`, {
+  const response = await fetch(`${supabaseRestUrl()}${path}`, {
     method: "PATCH",
     headers: { ...supabaseHeaders(), "Content-Type": "application/json", Prefer: "return=minimal" },
     body: JSON.stringify(body),
   });
-  if (!response.ok) throw new Error(`Supabase PATCH failed: ${response.status}`);
+  if (!response.ok) throw new Error(`Supabase PATCH ${path} failed: ${response.status} ${await safeErrorText(response)}`);
+}
+
+async function supabaseUpsertMatch(body: Record<string, unknown>) {
+  const response = await fetch(`${supabaseRestUrl()}/predict_matches?on_conflict=external_id`, {
+    method: "POST",
+    headers: {
+      ...supabaseHeaders(),
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=minimal",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`Supabase UPSERT predict_matches failed: ${response.status} ${await safeErrorText(response)}`);
 }
 
 async function supabaseRpc(functionName: string) {
-  const response = await fetch(`${process.env.PREDICT_SUPABASE_URL}/rest/v1/rpc/${functionName}`, {
+  const response = await fetch(`${supabaseRestUrl()}/rpc/${functionName}`, {
     method: "POST",
     headers: { ...supabaseHeaders(), "Content-Type": "application/json" },
     body: "{}",
   });
-  if (!response.ok) throw new Error(`Supabase RPC failed: ${response.status}`);
+  if (!response.ok) throw new Error(`Supabase RPC ${functionName} failed: ${response.status} ${await safeErrorText(response)}`);
 }
 
 function supabaseHeaders() {
@@ -167,6 +182,31 @@ function mapWinner(winner?: string) {
   if (winner === "AWAY_TEAM") return "away";
   if (winner === "DRAW") return "draw";
   return null;
+}
+
+function mapStage(stage?: string) {
+  const normalized = stage?.toLowerCase() ?? "";
+  if (normalized.includes("last_32") || normalized.includes("round_of_32")) return "round_of_32";
+  if (normalized.includes("last_16") || normalized.includes("round_of_16")) return "round_of_16";
+  if (normalized.includes("quarter")) return "quarterfinal";
+  if (normalized.includes("semi")) return "semifinal";
+  if (normalized.includes("third") || normalized.includes("bronze")) return "bronze";
+  if (normalized.includes("final")) return "final";
+  return "group";
+}
+
+function supabaseRestUrl() {
+  const rawUrl = process.env.PREDICT_SUPABASE_URL!.replace(/\/+$/, "");
+  return rawUrl.endsWith("/rest/v1") ? rawUrl : `${rawUrl}/rest/v1`;
+}
+
+async function safeErrorText(response: Response) {
+  try {
+    const text = await response.text();
+    return text.slice(0, 300);
+  } catch {
+    return "";
+  }
 }
 
 function getBearerToken(request: ApiRequest) {
