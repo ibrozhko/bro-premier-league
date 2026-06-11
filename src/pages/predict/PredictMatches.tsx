@@ -62,9 +62,11 @@ export default function PredictMatches() {
 }
 
 function Team({ code, name, align }: { code: string; name: string; align: "left" | "right" }) {
+  const isPlaceholder = name === "TBD";
+
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="font-semibold text-[#343434] truncate">{name}</div>
+      <div className="font-semibold text-[#343434] truncate">{isPlaceholder ? "Буде визначено" : name}</div>
       <div className="t-meta">{code}</div>
     </div>
   );

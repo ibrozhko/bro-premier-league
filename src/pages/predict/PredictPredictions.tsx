@@ -90,6 +90,10 @@ export default function PredictPredictions() {
 
   async function save(event: FormEvent<HTMLFormElement>, match: PredictMatch) {
     event.preventDefault();
+    if (match.homeTeam === "TBD" || match.awayTeam === "TBD") {
+      setMessage("Пара матчу ще не визначена.");
+      return;
+    }
     const current = draft[match.id];
     const predictedHomeScore = Number(current?.home);
     const predictedAwayScore = Number(current?.away);
@@ -214,10 +218,12 @@ function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
 }
 
 function TeamPick({ code, name, align = "left" }: { code: string; name: string; align?: "left" | "right" }) {
+  const isPlaceholder = name === "TBD";
+
   return (
     <div className={`min-w-0 ${align === "right" ? "lg:text-right" : ""}`}>
       <div className="t-label">{code}</div>
-      <div className="truncate font-heading text-2xl text-[#343434]">{name}</div>
+      <div className="truncate font-heading text-2xl text-[#343434]">{isPlaceholder ? "Буде визначено" : name}</div>
     </div>
   );
 }

@@ -127,6 +127,7 @@ export const popularScorers = [
 ];
 
 const teamCodes: Record<string, string> = {
+  TBD: "TBD",
   Algeria: "ALG",
   Argentina: "ARG",
   Australia: "AUS",
@@ -205,16 +206,7 @@ const groupSchedule = [
   ["Norway", "Italy"], ["Sweden", "Australia"], ["Venezuela", "Uzbekistan"], ["Paraguay", "Zambia"],
 ];
 
-const knockoutSchedule = [
-  ["Mexico", "Argentina"], ["France", "Serbia"], ["England", "Costa Rica"], ["Germany", "Ghana"],
-  ["Netherlands", "Canada"], ["Uruguay", "Morocco"], ["Switzerland", "Chile"], ["Ecuador", "Egypt"],
-  ["Colombia", "Scotland"], ["Norway", "Australia"], ["Venezuela", "Zambia"], ["Brazil", "Denmark"],
-  ["Spain", "Iran"], ["Portugal", "Japan"], ["Belgium", "Senegal"], ["Croatia", "South Korea"],
-  ["Argentina", "France"], ["England", "Germany"], ["Netherlands", "Uruguay"], ["Switzerland", "Ecuador"],
-  ["Colombia", "Norway"], ["Venezuela", "Brazil"], ["Spain", "Portugal"], ["Belgium", "Croatia"],
-  ["Argentina", "England"], ["Netherlands", "Switzerland"], ["Colombia", "Brazil"], ["Portugal", "Belgium"],
-  ["Argentina", "Netherlands"], ["Brazil", "Portugal"], ["Netherlands", "Portugal"], ["Argentina", "Brazil"],
-];
+const knockoutSchedule = Array.from({ length: 32 }, () => ["TBD", "TBD"]);
 
 function addDays(baseIso: string, days: number, hourOffset = 0) {
   const date = new Date(baseIso);
