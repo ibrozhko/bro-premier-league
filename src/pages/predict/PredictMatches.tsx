@@ -4,12 +4,21 @@ import { formatKyivDate, predictMatches, stageLabels, type MatchStage } from "@/
 
 type StageFilter = MatchStage | "all" | "knockout";
 
+function sortByKickoff(matches: typeof predictMatches) {
+  return [...matches].sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime() || a.id - b.id);
+}
+
 export default function PredictMatches() {
   const [stage, setStage] = useState<StageFilter>("all");
   const matches = useMemo(() => {
-    if (stage === "all") return predictMatches;
-    if (stage === "knockout") return predictMatches.filter(match => match.stage !== "group");
-    return predictMatches.filter(match => match.stage === stage);
+    const filtered =
+      stage === "all"
+        ? predictMatches
+        : stage === "knockout"
+          ? predictMatches.filter(match => match.stage !== "group")
+          : predictMatches.filter(match => match.stage === stage);
+
+    return sortByKickoff(filtered);
   }, [stage]);
 
   const filters: StageFilter[] = ["all", "group", "knockout", "round_of_32", "round_of_16", "quarterfinal", "semifinal", "final"];

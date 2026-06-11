@@ -17,6 +17,10 @@ import { getCurrentPredictUser, saveMatchPrediction } from "@/lib/predictStore";
 
 type Draft = Record<number, { home: string; away: string; advancing: "home" | "away" | "" }>;
 
+function sortByKickoff(matches: PredictMatch[]) {
+  return [...matches].sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime() || a.id - b.id);
+}
+
 export default function PredictPredictions() {
   const [user, setUser] = useState<PredictUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,7 +63,7 @@ export default function PredictPredictions() {
 
   const visibleMatches = useMemo(() => {
     if (!user) return [];
-    return predictMatches.filter(match => isVisibleForPrediction(match, user.predictions[match.id]));
+    return sortByKickoff(predictMatches.filter(match => isVisibleForPrediction(match, user.predictions[match.id])));
   }, [user]);
 
   if (isLoading) {

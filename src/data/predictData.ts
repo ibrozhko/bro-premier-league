@@ -192,18 +192,78 @@ const teamCodes: Record<string, string> = {
 };
 
 const groupSchedule = [
-  ["Mexico", "South Africa"], ["Canada", "Japan"], ["United States", "Wales"], ["Argentina", "Saudi Arabia"],
-  ["France", "Denmark"], ["Brazil", "Serbia"], ["England", "Iran"], ["Spain", "Costa Rica"],
-  ["Germany", "Japan"], ["Portugal", "Ghana"], ["Netherlands", "Senegal"], ["Belgium", "Canada"],
-  ["Uruguay", "South Korea"], ["Croatia", "Morocco"], ["Switzerland", "Cameroon"], ["Poland", "Chile"],
-  ["Ecuador", "Qatar"], ["Nigeria", "Egypt"], ["Colombia", "Peru"], ["Ukraine", "Scotland"],
-  ["Norway", "Sweden"], ["Italy", "Australia"], ["Venezuela", "Paraguay"], ["Uzbekistan", "New Zealand"],
-  ["Mexico", "Japan"], ["South Africa", "Canada"], ["United States", "Argentina"], ["Wales", "Saudi Arabia"],
-  ["France", "Brazil"], ["Denmark", "Serbia"], ["England", "Spain"], ["Iran", "Costa Rica"],
-  ["Germany", "Portugal"], ["Japan", "Ghana"], ["Netherlands", "Belgium"], ["Senegal", "Canada"],
-  ["Uruguay", "Croatia"], ["South Korea", "Morocco"], ["Switzerland", "Poland"], ["Cameroon", "Chile"],
-  ["Ecuador", "Nigeria"], ["Qatar", "Egypt"], ["Colombia", "Ukraine"], ["Peru", "Scotland"],
-  ["Norway", "Italy"], ["Sweden", "Australia"], ["Venezuela", "Uzbekistan"], ["Paraguay", "Zambia"],
+  { matchNo: 1, groupName: "A", matchDate: "2026-06-11T19:00:00.000Z", homeTeam: "Mexico", awayTeam: "South Africa" },
+  { matchNo: 2, groupName: "A", matchDate: "2026-06-12T02:00:00.000Z", homeTeam: "South Korea", awayTeam: "Czechia" },
+  { matchNo: 3, groupName: "B", matchDate: "2026-06-12T19:00:00.000Z", homeTeam: "Canada", awayTeam: "Bosnia and Herzegovina" },
+  { matchNo: 4, groupName: "D", matchDate: "2026-06-13T01:00:00.000Z", homeTeam: "United States", awayTeam: "Paraguay" },
+  { matchNo: 5, groupName: "C", matchDate: "2026-06-14T01:00:00.000Z", homeTeam: "Haiti", awayTeam: "Scotland" },
+  { matchNo: 6, groupName: "D", matchDate: "2026-06-14T04:00:00.000Z", homeTeam: "Australia", awayTeam: "Turkey" },
+  { matchNo: 7, groupName: "C", matchDate: "2026-06-13T22:00:00.000Z", homeTeam: "Brazil", awayTeam: "Morocco" },
+  { matchNo: 8, groupName: "B", matchDate: "2026-06-13T19:00:00.000Z", homeTeam: "Qatar", awayTeam: "Switzerland" },
+  { matchNo: 9, groupName: "E", matchDate: "2026-06-14T23:00:00.000Z", homeTeam: "Ivory Coast", awayTeam: "Ecuador" },
+  { matchNo: 10, groupName: "E", matchDate: "2026-06-14T17:00:00.000Z", homeTeam: "Germany", awayTeam: "Curacao" },
+  { matchNo: 11, groupName: "F", matchDate: "2026-06-14T20:00:00.000Z", homeTeam: "Netherlands", awayTeam: "Japan" },
+  { matchNo: 12, groupName: "F", matchDate: "2026-06-15T02:00:00.000Z", homeTeam: "Sweden", awayTeam: "Tunisia" },
+  { matchNo: 13, groupName: "H", matchDate: "2026-06-15T22:00:00.000Z", homeTeam: "Saudi Arabia", awayTeam: "Uruguay" },
+  { matchNo: 14, groupName: "H", matchDate: "2026-06-15T16:00:00.000Z", homeTeam: "Spain", awayTeam: "Cape Verde" },
+  { matchNo: 15, groupName: "G", matchDate: "2026-06-16T01:00:00.000Z", homeTeam: "Iran", awayTeam: "New Zealand" },
+  { matchNo: 16, groupName: "G", matchDate: "2026-06-15T19:00:00.000Z", homeTeam: "Belgium", awayTeam: "Egypt" },
+  { matchNo: 17, groupName: "I", matchDate: "2026-06-16T19:00:00.000Z", homeTeam: "France", awayTeam: "Senegal" },
+  { matchNo: 18, groupName: "I", matchDate: "2026-06-16T22:00:00.000Z", homeTeam: "Iraq", awayTeam: "Norway" },
+  { matchNo: 19, groupName: "J", matchDate: "2026-06-17T01:00:00.000Z", homeTeam: "Argentina", awayTeam: "Algeria" },
+  { matchNo: 20, groupName: "J", matchDate: "2026-06-17T04:00:00.000Z", homeTeam: "Austria", awayTeam: "Jordan" },
+  { matchNo: 21, groupName: "L", matchDate: "2026-06-17T23:00:00.000Z", homeTeam: "Ghana", awayTeam: "Panama" },
+  { matchNo: 22, groupName: "L", matchDate: "2026-06-17T20:00:00.000Z", homeTeam: "England", awayTeam: "Croatia" },
+  { matchNo: 23, groupName: "K", matchDate: "2026-06-17T17:00:00.000Z", homeTeam: "Portugal", awayTeam: "DR Congo" },
+  { matchNo: 24, groupName: "K", matchDate: "2026-06-18T02:00:00.000Z", homeTeam: "Uzbekistan", awayTeam: "Colombia" },
+  { matchNo: 25, groupName: "A", matchDate: "2026-06-18T16:00:00.000Z", homeTeam: "Czechia", awayTeam: "South Africa" },
+  { matchNo: 26, groupName: "B", matchDate: "2026-06-18T19:00:00.000Z", homeTeam: "Switzerland", awayTeam: "Bosnia and Herzegovina" },
+  { matchNo: 27, groupName: "B", matchDate: "2026-06-18T22:00:00.000Z", homeTeam: "Canada", awayTeam: "Qatar" },
+  { matchNo: 28, groupName: "A", matchDate: "2026-06-19T01:00:00.000Z", homeTeam: "Mexico", awayTeam: "South Korea" },
+  { matchNo: 29, groupName: "C", matchDate: "2026-06-20T00:30:00.000Z", homeTeam: "Brazil", awayTeam: "Haiti" },
+  { matchNo: 30, groupName: "C", matchDate: "2026-06-19T22:00:00.000Z", homeTeam: "Scotland", awayTeam: "Morocco" },
+  { matchNo: 31, groupName: "D", matchDate: "2026-06-20T03:00:00.000Z", homeTeam: "Turkey", awayTeam: "Paraguay" },
+  { matchNo: 32, groupName: "D", matchDate: "2026-06-19T19:00:00.000Z", homeTeam: "United States", awayTeam: "Australia" },
+  { matchNo: 33, groupName: "E", matchDate: "2026-06-20T20:00:00.000Z", homeTeam: "Germany", awayTeam: "Ivory Coast" },
+  { matchNo: 34, groupName: "E", matchDate: "2026-06-21T00:00:00.000Z", homeTeam: "Ecuador", awayTeam: "Curacao" },
+  { matchNo: 35, groupName: "F", matchDate: "2026-06-20T17:00:00.000Z", homeTeam: "Netherlands", awayTeam: "Sweden" },
+  { matchNo: 36, groupName: "F", matchDate: "2026-06-21T04:00:00.000Z", homeTeam: "Tunisia", awayTeam: "Japan" },
+  { matchNo: 37, groupName: "H", matchDate: "2026-06-21T22:00:00.000Z", homeTeam: "Uruguay", awayTeam: "Cape Verde" },
+  { matchNo: 38, groupName: "H", matchDate: "2026-06-21T16:00:00.000Z", homeTeam: "Spain", awayTeam: "Saudi Arabia" },
+  { matchNo: 39, groupName: "G", matchDate: "2026-06-21T19:00:00.000Z", homeTeam: "Belgium", awayTeam: "Iran" },
+  { matchNo: 40, groupName: "G", matchDate: "2026-06-22T01:00:00.000Z", homeTeam: "New Zealand", awayTeam: "Egypt" },
+  { matchNo: 41, groupName: "I", matchDate: "2026-06-23T00:00:00.000Z", homeTeam: "Norway", awayTeam: "Senegal" },
+  { matchNo: 42, groupName: "I", matchDate: "2026-06-22T21:00:00.000Z", homeTeam: "France", awayTeam: "Iraq" },
+  { matchNo: 43, groupName: "J", matchDate: "2026-06-22T17:00:00.000Z", homeTeam: "Argentina", awayTeam: "Austria" },
+  { matchNo: 44, groupName: "J", matchDate: "2026-06-23T03:00:00.000Z", homeTeam: "Jordan", awayTeam: "Algeria" },
+  { matchNo: 45, groupName: "L", matchDate: "2026-06-23T20:00:00.000Z", homeTeam: "England", awayTeam: "Ghana" },
+  { matchNo: 46, groupName: "L", matchDate: "2026-06-23T23:00:00.000Z", homeTeam: "Panama", awayTeam: "Croatia" },
+  { matchNo: 47, groupName: "K", matchDate: "2026-06-23T17:00:00.000Z", homeTeam: "Portugal", awayTeam: "Uzbekistan" },
+  { matchNo: 48, groupName: "K", matchDate: "2026-06-24T02:00:00.000Z", homeTeam: "Colombia", awayTeam: "DR Congo" },
+  { matchNo: 49, groupName: "C", matchDate: "2026-06-24T22:00:00.000Z", homeTeam: "Scotland", awayTeam: "Brazil" },
+  { matchNo: 50, groupName: "C", matchDate: "2026-06-24T22:00:00.000Z", homeTeam: "Morocco", awayTeam: "Haiti" },
+  { matchNo: 51, groupName: "B", matchDate: "2026-06-24T19:00:00.000Z", homeTeam: "Switzerland", awayTeam: "Canada" },
+  { matchNo: 52, groupName: "B", matchDate: "2026-06-24T19:00:00.000Z", homeTeam: "Bosnia and Herzegovina", awayTeam: "Qatar" },
+  { matchNo: 53, groupName: "A", matchDate: "2026-06-25T01:00:00.000Z", homeTeam: "Czechia", awayTeam: "Mexico" },
+  { matchNo: 54, groupName: "A", matchDate: "2026-06-25T01:00:00.000Z", homeTeam: "South Africa", awayTeam: "South Korea" },
+  { matchNo: 55, groupName: "E", matchDate: "2026-06-25T20:00:00.000Z", homeTeam: "Curacao", awayTeam: "Ivory Coast" },
+  { matchNo: 56, groupName: "E", matchDate: "2026-06-25T20:00:00.000Z", homeTeam: "Ecuador", awayTeam: "Germany" },
+  { matchNo: 57, groupName: "F", matchDate: "2026-06-25T23:00:00.000Z", homeTeam: "Japan", awayTeam: "Sweden" },
+  { matchNo: 58, groupName: "F", matchDate: "2026-06-25T23:00:00.000Z", homeTeam: "Tunisia", awayTeam: "Netherlands" },
+  { matchNo: 59, groupName: "D", matchDate: "2026-06-26T02:00:00.000Z", homeTeam: "Turkey", awayTeam: "United States" },
+  { matchNo: 60, groupName: "D", matchDate: "2026-06-26T02:00:00.000Z", homeTeam: "Paraguay", awayTeam: "Australia" },
+  { matchNo: 61, groupName: "I", matchDate: "2026-06-26T19:00:00.000Z", homeTeam: "Norway", awayTeam: "France" },
+  { matchNo: 62, groupName: "I", matchDate: "2026-06-26T19:00:00.000Z", homeTeam: "Senegal", awayTeam: "Iraq" },
+  { matchNo: 63, groupName: "G", matchDate: "2026-06-27T03:00:00.000Z", homeTeam: "Egypt", awayTeam: "Iran" },
+  { matchNo: 64, groupName: "G", matchDate: "2026-06-27T03:00:00.000Z", homeTeam: "New Zealand", awayTeam: "Belgium" },
+  { matchNo: 65, groupName: "H", matchDate: "2026-06-27T00:00:00.000Z", homeTeam: "Cape Verde", awayTeam: "Saudi Arabia" },
+  { matchNo: 66, groupName: "H", matchDate: "2026-06-27T00:00:00.000Z", homeTeam: "Uruguay", awayTeam: "Spain" },
+  { matchNo: 67, groupName: "L", matchDate: "2026-06-27T21:00:00.000Z", homeTeam: "Panama", awayTeam: "England" },
+  { matchNo: 68, groupName: "L", matchDate: "2026-06-27T21:00:00.000Z", homeTeam: "Croatia", awayTeam: "Ghana" },
+  { matchNo: 69, groupName: "J", matchDate: "2026-06-28T02:00:00.000Z", homeTeam: "Algeria", awayTeam: "Austria" },
+  { matchNo: 70, groupName: "J", matchDate: "2026-06-28T02:00:00.000Z", homeTeam: "Jordan", awayTeam: "Argentina" },
+  { matchNo: 71, groupName: "K", matchDate: "2026-06-27T23:30:00.000Z", homeTeam: "Colombia", awayTeam: "Portugal" },
+  { matchNo: 72, groupName: "K", matchDate: "2026-06-27T23:30:00.000Z", homeTeam: "DR Congo", awayTeam: "Uzbekistan" },
 ];
 
 const knockoutSchedule = Array.from({ length: 32 }, () => ["TBD", "TBD"]);
@@ -229,10 +289,9 @@ function resultFor() {
 }
 
 export const predictMatches: PredictMatch[] = [
-  ...groupSchedule.map(([homeTeam, awayTeam], index) => {
-    const id = index + 1;
+  ...groupSchedule.map(({ matchNo, groupName, matchDate, homeTeam, awayTeam }) => {
+    const id = matchNo;
     const result = resultFor(id);
-    const groupName = String.fromCharCode(65 + Math.floor(index / 4));
     const winner =
       result.homeScore === null || result.awayScore === null
         ? null
@@ -244,10 +303,10 @@ export const predictMatches: PredictMatch[] = [
 
     return {
       id,
-      externalId: `WC2026-G-${id}`,
+      externalId: `WC2026-G-${matchNo}`,
       stage: "group" as const,
       groupName,
-      matchDate: addDays("2026-06-11T18:00:00.000Z", Math.floor(index / 3), index % 3),
+      matchDate,
       homeTeam,
       awayTeam,
       homeCode: teamCodes[homeTeam],
