@@ -10,6 +10,7 @@ const navLinks = [
   { path: "/players", labelKey: "nav.players" },
   { path: "/top-scorers", labelKey: "nav.topScorers" },
   { path: "/best-defense", labelKey: "nav.bestDefense" },
+  { path: "/predict", labelKey: "nav.predict" },
   { path: "/apply", labelKey: "nav.apply" },
 ] as const;
 
