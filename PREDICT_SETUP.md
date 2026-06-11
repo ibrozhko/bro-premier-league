@@ -70,4 +70,18 @@ Run the schema in:
 supabase/predict.sql
 ```
 
+To create the first admin/test user, run:
+
+```text
+supabase/predict_seed_ihor.sql
+```
+
+This creates:
+
+```text
+username: ihor
+password: demo2026
+invite code: BPL-IHOR
+```
+
 The sync endpoint expects the `predict_matches.external_id` field to match football-data.org match IDs.

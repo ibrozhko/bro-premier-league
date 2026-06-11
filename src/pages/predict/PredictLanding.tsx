@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, LockKeyhole, Medal, ShieldCheck, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,18 +7,19 @@ import { predictMatches } from "@/data/predictData";
 
 export default function PredictLanding() {
   const navigate = useNavigate();
-  const users = getPredictUsers();
+  const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
-    if (getCurrentPredictUser()) {
-      navigate("/predict/predictions", { replace: true });
-    }
+    getCurrentPredictUser().then(user => {
+      if (user) navigate("/predict/predictions", { replace: true });
+    }).catch(() => undefined);
+    getPredictUsers().then(users => setUserCount(users.length)).catch(() => setUserCount(0));
   }, [navigate]);
 
   const stats = [
     { label: "Команд", value: "48" },
     { label: "Матчі", value: predictMatches.length },
-    { label: "Гравців", value: users.length },
+    { label: "Гравців", value: userCount },
     { label: "Фінал", value: "19.07" },
   ];
 

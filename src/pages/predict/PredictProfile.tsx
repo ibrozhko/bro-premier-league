@@ -1,12 +1,29 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Clipboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatKyivDate, getTournamentPoints, predictMatches, stageLabels } from "@/data/predictData";
+import { formatKyivDate, getTournamentPoints, predictMatches, stageLabels, type PredictUser } from "@/data/predictData";
 import { getCurrentPredictUser, logoutPredictUser } from "@/lib/predictStore";
 
 export default function PredictProfile() {
   const navigate = useNavigate();
-  const user = getCurrentPredictUser();
+  const [user, setUser] = useState<PredictUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getCurrentPredictUser()
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return (
+      <main className="content-shell py-10">
+        <div className="rounded-md border border-[#2937da]/15 bg-white p-6 text-[#343434]/75">Завантажуємо профіль...</div>
+      </main>
+    );
+  }
 
   if (!user) {
     return (
@@ -28,8 +45,8 @@ export default function PredictProfile() {
   const matchPoints = predictions.reduce((sum, item) => sum + item.prediction.pointsOutcome + item.prediction.pointsAdvancing, 0);
   const tournamentPoints = getTournamentPoints(user);
 
-  function logout() {
-    logoutPredictUser();
+  async function logout() {
+    await logoutPredictUser();
     navigate("/predict");
   }
 

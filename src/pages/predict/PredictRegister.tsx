@@ -29,10 +29,10 @@ export default function PredictRegister() {
     setPrediction(current => ({ ...current, [key]: value }));
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
-      registerPredictUser({ username, password, inviteCode, tournamentPrediction: prediction });
+      await registerPredictUser({ username, password, inviteCode, tournamentPrediction: prediction });
       navigate("/predict/predictions");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не вдалося зареєструватись.");

@@ -12,10 +12,10 @@ export default function PredictLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
-      loginPredictUser(username, password);
+      await loginPredictUser(username, password);
       navigate("/predict/predictions");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не вдалося увійти.");
@@ -28,9 +28,9 @@ export default function PredictLogin() {
         <div className="brand-stripe h-1" />
         <form onSubmit={submit} className="space-y-5 p-5 sm:p-6">
           <div>
-            <div className="page-kicker">Demo auth</div>
+            <div className="page-kicker">Predict auth</div>
             <h2 className="h-section text-[#343434]">Увійти в Predict</h2>
-            <p className="t-meta mt-2">Демо-адмін: admin / bpl2026. Демо-гравці: andrii або misha / demo.</p>
+            <p className="t-meta mt-2">Вхід за нікнеймом і паролем. Реєстрація доступна тільки з інвайт-кодом.</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="username">Нікнейм</Label>

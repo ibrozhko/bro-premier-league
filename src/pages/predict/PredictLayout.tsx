@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { BarChart3, CalendarDays, Shield, Trophy, UserRound } from "lucide-react";
 import { getCurrentPredictUser } from "@/lib/predictStore";
+import type { PredictUser } from "@/data/predictData";
 
 const links = [
   { to: "/predict", label: "Огляд", icon: Trophy },
@@ -11,7 +13,11 @@ const links = [
 ];
 
 export default function PredictLayout() {
-  const user = getCurrentPredictUser();
+  const [user, setUser] = useState<PredictUser | null>(null);
+
+  useEffect(() => {
+    getCurrentPredictUser().then(setUser).catch(() => setUser(null));
+  }, []);
 
   return (
     <div className="coax-light min-h-screen">

@@ -1,21 +1,38 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getPredictUsers, getCurrentPredictUser, seedPredictUser, updateManualResult } from "@/lib/predictStore";
-import { predictMatches } from "@/data/predictData";
+import { predictMatches, type PredictUser } from "@/data/predictData";
 
 export default function PredictAdmin() {
-  const user = getCurrentPredictUser();
-  const [usersVersion, setUsersVersion] = useState(0);
+  const [user, setUser] = useState<PredictUser | null>(null);
+  const [users, setUsers] = useState<Array<PredictUser & { totalPoints: number }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [seedName, setSeedName] = useState("");
   const [matchId, setMatchId] = useState(predictMatches[0].id.toString());
   const [homeScore, setHomeScore] = useState("");
   const [awayScore, setAwayScore] = useState("");
   const [message, setMessage] = useState("");
-  const users = getPredictUsers().sort((a, b) => b.totalPoints - a.totalPoints);
-  void usersVersion;
+
+  useEffect(() => {
+    Promise.all([getCurrentPredictUser(), getPredictUsers()])
+      .then(([currentUser, loadedUsers]) => {
+        setUser(currentUser);
+        setUsers(loadedUsers.sort((a, b) => b.totalPoints - a.totalPoints));
+      })
+      .catch(err => setMessage(err instanceof Error ? err.message : "Не вдалося завантажити адмінку."))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return (
+      <main className="content-shell py-10">
+        <div className="rounded-md border border-[#2937da]/15 bg-white p-6 text-[#343434]/75">Завантажуємо адмінку...</div>
+      </main>
+    );
+  }
 
   if (!user?.isAdmin) {
     return (
@@ -30,19 +47,19 @@ export default function PredictAdmin() {
     );
   }
 
-  function seed(event: FormEvent<HTMLFormElement>) {
+  async function seed(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
-      const created = seedPredictUser(seedName);
+      const created = await seedPredictUser(seedName);
       setSeedName("");
       setMessage(`Створено ${created.username}. Пароль: ${created.password}. Код: ${created.inviteCode}.`);
-      setUsersVersion(version => version + 1);
+      setUsers(await getPredictUsers());
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Не вдалося створити гравця.");
     }
   }
 
-  function updateResult(event: FormEvent<HTMLFormElement>) {
+  async function updateResult(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsedMatchId = Number(matchId);
     const parsedHome = Number(homeScore);
@@ -52,9 +69,8 @@ export default function PredictAdmin() {
       return;
     }
     try {
-      const match = updateManualResult(parsedMatchId, parsedHome, parsedAway);
+      const match = await updateManualResult(parsedMatchId, parsedHome, parsedAway);
       setMessage(`Оновлено: ${match.homeTeam} ${parsedHome}:${parsedAway} ${match.awayTeam}.`);
-      setUsersVersion(version => version + 1);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Не вдалося оновити матч.");
     }

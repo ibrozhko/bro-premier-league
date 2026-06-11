@@ -1,5 +1,5 @@
-import { FormEvent, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Lock, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,31 +11,64 @@ import {
   stageLabels,
   type MatchPrediction,
   type PredictMatch,
+  type PredictUser,
 } from "@/data/predictData";
 import { getCurrentPredictUser, saveMatchPrediction } from "@/lib/predictStore";
 
 type Draft = Record<number, { home: string; away: string; advancing: "home" | "away" | "" }>;
 
 export default function PredictPredictions() {
-  const navigate = useNavigate();
-  const user = getCurrentPredictUser();
+  const [user, setUser] = useState<PredictUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [draft, setDraft] = useState<Draft>(() => {
-    if (!user) return {};
-    return Object.fromEntries(Object.values(user.predictions).map(prediction => [
+  const [draft, setDraft] = useState<Draft>({});
+
+  useEffect(() => {
+    getCurrentPredictUser()
+      .then(loadedUser => {
+        setUser(loadedUser);
+        if (loadedUser) {
+          setDraft(Object.fromEntries(Object.values(loadedUser.predictions).map(prediction => [
+            prediction.matchId,
+            {
+              home: prediction.predictedHomeScore.toString(),
+              away: prediction.predictedAwayScore.toString(),
+              advancing: prediction.predictedAdvancing ?? "",
+            },
+          ])));
+        }
+      })
+      .catch(err => setMessage(err instanceof Error ? err.message : "Не вдалося завантажити користувача."))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    setDraft(current => ({
+      ...Object.fromEntries(Object.values(user.predictions).map(prediction => [
       prediction.matchId,
       {
         home: prediction.predictedHomeScore.toString(),
         away: prediction.predictedAwayScore.toString(),
         advancing: prediction.predictedAdvancing ?? "",
       },
-    ]));
-  });
+      ])),
+      ...current,
+    }));
+  }, [user]);
 
   const visibleMatches = useMemo(() => {
     if (!user) return [];
     return predictMatches.filter(match => isVisibleForPrediction(match, user.predictions[match.id]));
   }, [user]);
+
+  if (isLoading) {
+    return (
+      <main className="content-shell py-10">
+        <div className="rounded-md border border-[#2937da]/15 bg-white p-6 text-[#343434]/75">Завантажуємо прогнози...</div>
+      </main>
+    );
+  }
 
   if (!user) {
     return (
@@ -55,7 +88,7 @@ export default function PredictPredictions() {
     setDraft(current => ({ ...current, [matchId]: { home: "", away: "", advancing: "", ...current[matchId], ...patch } }));
   }
 
-  function save(event: FormEvent<HTMLFormElement>, match: PredictMatch) {
+  async function save(event: FormEvent<HTMLFormElement>, match: PredictMatch) {
     event.preventDefault();
     const current = draft[match.id];
     const predictedHomeScore = Number(current?.home);
@@ -71,14 +104,13 @@ export default function PredictPredictions() {
     }
 
     try {
-      saveMatchPrediction(user.id, {
-        matchId: match.id,
+      const nextUser = await saveMatchPrediction(match, {
         predictedHomeScore,
         predictedAwayScore,
         predictedAdvancing: match.stage === "group" ? undefined : current.advancing as "home" | "away",
       });
+      setUser(nextUser);
       setMessage("Прогноз збережено.");
-      navigate(0);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Не вдалося зберегти прогноз.");
     }

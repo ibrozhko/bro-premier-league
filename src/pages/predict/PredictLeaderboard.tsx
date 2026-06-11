@@ -1,9 +1,18 @@
 import { Medal } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getCorrectPredictionCount, getTournamentPoints } from "@/data/predictData";
 import { getPredictUsers } from "@/lib/predictStore";
+import type { PredictUser } from "@/data/predictData";
 
 export default function PredictLeaderboard() {
-  const users = getPredictUsers().sort((a, b) => b.totalPoints - a.totalPoints);
+  const [users, setUsers] = useState<Array<PredictUser & { totalPoints: number }>>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    getPredictUsers()
+      .then(items => setUsers(items.sort((a, b) => b.totalPoints - a.totalPoints)))
+      .catch(err => setError(err instanceof Error ? err.message : "Не вдалося завантажити лідерборд."));
+  }, []);
 
   return (
     <main className="content-shell py-10">
@@ -11,6 +20,7 @@ export default function PredictLeaderboard() {
         <div className="page-kicker">Оновлення кожні 60 секунд у production</div>
         <h2 className="h-page">Таблиця лідерів</h2>
       </div>
+      {error && <div className="mb-5 rounded-md border border-red-500/30 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
       <div className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white">
         <div className="grid grid-cols-[56px_1fr_92px_110px_100px] gap-2 border-b border-[#2937da]/10 bg-[#f3f3f6] px-3 py-3 text-xs font-bold uppercase tracking-wide text-[#343434]/65">
