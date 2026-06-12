@@ -57,10 +57,13 @@ export default function PredictLanding() {
 
       <section className="light-panel overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
         <div className="brand-stripe h-1" />
-        <div className="grid gap-0 lg:grid-cols-[220px_1fr]">
+        <div className="grid gap-0 lg:grid-cols-[240px_1fr]">
           <div className="border-b border-[#2937da]/10 bg-[#2937da] p-5 text-white lg:border-b-0 lg:border-r">
-            <div className="text-xs font-bold uppercase tracking-wide text-white/70">Турнірний центр</div>
-            <div className="mt-4 grid grid-cols-3 gap-3 lg:grid-cols-1">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-white/75">
+              <Trophy className="h-4 w-4 text-[#bbf903]" />
+              Турнірний центр
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 lg:grid-cols-1 lg:gap-3">
               <Stat label="Зіграно" value={finishedCount} />
               <Stat label="Матчів" value={matchList.length} />
               <Stat label="Гравців" value={users.length} />
@@ -106,9 +109,9 @@ export default function PredictLanding() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-md bg-white/10 p-3">
+    <div className="rounded-md border border-white/15 bg-[#3441dd] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
       <div className="font-heading text-3xl leading-none text-[#bbf903]">{value}</div>
-      <div className="mt-1 text-[0.65rem] font-bold uppercase tracking-wide text-white/70">{label}</div>
+      <div className="mt-1 text-[0.65rem] font-bold uppercase tracking-wide text-white">{label}</div>
     </div>
   );
 }
