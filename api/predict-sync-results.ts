@@ -106,7 +106,7 @@ async function recalculatePredictions(externalId: string, homeScore: number | nu
     predicted_advancing: string | null;
     predict_matches: { stage: string; team_advancing: string | null };
   }>>(
-    `/rest/v1/predict_predictions?select=id,predicted_home_score,predicted_away_score,predicted_advancing,predict_matches!inner(stage,team_advancing)&predict_matches.external_id=eq.${encodeURIComponent(externalId)}`,
+    `/predict_predictions?select=id,predicted_home_score,predicted_away_score,predicted_advancing,predict_matches!inner(stage,team_advancing)&predict_matches.external_id=eq.${encodeURIComponent(externalId)}`,
   );
 
   for (const row of rows) {
@@ -123,7 +123,7 @@ async function recalculatePredictions(externalId: string, homeScore: number | nu
     const pointsAdvancing =
       row.predict_matches.stage !== "group" && row.predicted_advancing === row.predict_matches.team_advancing ? 5 : 0;
 
-    await supabasePatch(`/rest/v1/predict_predictions?id=eq.${row.id}`, {
+    await supabasePatch(`/predict_predictions?id=eq.${row.id}`, {
       points_outcome: pointsOutcome,
       points_advancing: pointsAdvancing,
     });
