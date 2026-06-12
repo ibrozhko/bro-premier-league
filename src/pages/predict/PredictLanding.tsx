@@ -38,26 +38,26 @@ export default function PredictLanding() {
 
   return (
     <main>
-      <section className="border-b border-white/15 bg-[#2937da] py-10 text-center text-white sm:py-12 md:py-14">
+      <section className="border-b border-white/15 bg-[#2937da] py-8 text-center text-white sm:py-10 md:py-11">
         <div className="content-shell">
-          <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white p-3 shadow-[0_18px_38px_rgba(0,0,0,0.18)] sm:h-32 sm:w-32">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-white p-2.5 shadow-[0_18px_38px_rgba(0,0,0,0.18)] sm:h-24 sm:w-24 md:h-28 md:w-28">
             <img src={logoFull} alt="Bro Premier League" className="h-[124%] w-[124%] max-w-none object-contain" />
           </div>
           <div className="page-kicker text-[#bbf903]">Fantasy World Cup 2026</div>
-          <h2 className="mx-auto max-w-3xl font-heading text-[2.6rem] leading-none text-white sm:text-[4rem] md:text-[5rem]">
+          <h2 className="mx-auto max-w-3xl font-heading text-[2.45rem] leading-none text-white sm:text-[3.8rem] md:text-[4.35rem]">
             Чемпіонат <span className="text-[#bbf903]">прогнозів</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-white/82 sm:text-xl">
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-white/82 sm:text-lg">
             Окрема гра BPL на ЧС-2026: став рахунок, збирай очки за точність і піднімайся у таблиці друзів.
           </p>
 
-          <div className="mx-auto mt-7 grid max-w-4xl grid-cols-3 gap-px text-left">
+          <div className="mx-auto mt-5 grid max-w-3xl grid-cols-3 gap-px text-left">
             <HeroStat label="Зіграно" value={finishedCount} />
             <HeroStat label="Матчів" value={matchList.length} />
             <HeroStat label="Гравців" value={users.length} />
           </div>
 
-          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               to={user ? "/predict/predictions" : "/predict/login"}
               className="inline-flex h-12 items-center justify-center rounded-md bg-[#bbf903] px-5 text-base font-bold text-[#111111] transition-colors hover:bg-[#d2ff3d]"
@@ -76,7 +76,7 @@ export default function PredictLanding() {
         </div>
       </section>
 
-      <section className="coax-light py-10 sm:py-12">
+      <section className="coax-light py-8 sm:py-10">
         <div className="content-shell space-y-5">
           <section className="light-panel rounded-md border border-[#2937da]/15 bg-white px-4 py-4 shadow-[0_12px_30px_rgba(41,55,218,0.06)] sm:px-5">
             <div className="grid gap-4 sm:grid-cols-[48px_1fr_auto] sm:items-center">
@@ -125,8 +125,8 @@ export default function PredictLanding() {
 
 function HeroStat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="border border-white/15 bg-[#3441dd] p-3 sm:p-4">
-      <div className="font-heading text-3xl leading-none text-[#bbf903] sm:text-4xl">{value}</div>
+    <div className="border border-white/15 bg-[#3441dd] p-3 sm:p-3.5">
+      <div className="font-heading text-2xl leading-none text-[#bbf903] sm:text-3xl">{value}</div>
       <div className="mt-1 text-[0.65rem] font-bold uppercase tracking-wide text-white/75">{label}</div>
     </div>
   );
