@@ -13,7 +13,7 @@ import {
   type PredictMatch,
   type PredictUser,
 } from "@/data/predictData";
-import { getCurrentPredictUser, saveMatchPrediction } from "@/lib/predictStore";
+import { getCurrentPredictUser, getPredictMatches, saveMatchPrediction } from "@/lib/predictStore";
 
 type Draft = Record<number, { home: string; away: string; advancing: "home" | "away" | "" }>;
 
@@ -26,10 +26,15 @@ export default function PredictPredictions() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [draft, setDraft] = useState<Draft>({});
+  const [matchList, setMatchList] = useState<PredictMatch[]>(predictMatches);
 
   useEffect(() => {
-    getCurrentPredictUser()
-      .then(loadedUser => {
+    Promise.all([
+      getCurrentPredictUser(),
+      getPredictMatches().catch(() => predictMatches),
+    ])
+      .then(([loadedUser, loadedMatches]) => {
+        setMatchList(loadedMatches);
         setUser(loadedUser);
         if (loadedUser) {
           setDraft(Object.fromEntries(Object.values(loadedUser.predictions).map(prediction => [
@@ -63,8 +68,8 @@ export default function PredictPredictions() {
 
   const visibleMatches = useMemo(() => {
     if (!user) return [];
-    return sortByKickoff(predictMatches.filter(match => isVisibleForPrediction(match, user.predictions[match.id])));
-  }, [user]);
+    return sortByKickoff(matchList.filter(match => isVisibleForPrediction(match, user.predictions[match.id])));
+  }, [matchList, user]);
 
   if (isLoading) {
     return (

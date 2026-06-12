@@ -84,4 +84,4 @@ password: demo2026
 invite code: BPL-IHOR
 ```
 
-The sync endpoint expects the `predict_matches.external_id` field to match football-data.org match IDs.
+The sync endpoint maps football-data.org matches onto the local `WC2026-*` match IDs used by the frontend.

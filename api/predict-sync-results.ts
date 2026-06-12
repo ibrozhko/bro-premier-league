@@ -1,3 +1,5 @@
+import { predictMatches } from "../src/data/predictData.js";
+
 type ApiRequest = {
   method?: string;
   headers?: Record<string, string | string[] | undefined>;
@@ -64,22 +66,25 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       const homeScore = status === "finished" ? fullTime?.home ?? null : null;
       const awayScore = status === "finished" ? fullTime?.away ?? null : null;
       const winner = mapWinner(match.score.winner);
+      const stage = mapStage(match.stage);
+      const localMatch = findLocalMatch(match, stage);
+      const externalId = localMatch?.externalId ?? String(match.id);
 
       await supabaseUpsertMatch({
-        external_id: String(match.id),
-        stage: mapStage(match.stage),
-        group_name: match.group ?? null,
+        external_id: externalId,
+        stage,
+        group_name: localMatch?.groupName ?? match.group ?? null,
         status,
-        match_date: match.utcDate,
-        home_team: match.homeTeam.shortName ?? match.homeTeam.name ?? "TBD",
-        away_team: match.awayTeam.shortName ?? match.awayTeam.name ?? "TBD",
+        match_date: localMatch?.matchDate ?? match.utcDate,
+        home_team: localMatch?.homeTeam ?? normalizeTeamName(match.homeTeam.name ?? match.homeTeam.shortName ?? "TBD"),
+        away_team: localMatch?.awayTeam ?? normalizeTeamName(match.awayTeam.name ?? match.awayTeam.shortName ?? "TBD"),
         home_score: homeScore,
         away_score: awayScore,
         winner,
       });
 
       if (status === "finished") {
-        await recalculatePredictions(String(match.id), homeScore, awayScore, winner);
+        await recalculatePredictions(externalId, homeScore, awayScore, winner);
         updated += 1;
       }
     }
@@ -193,6 +198,38 @@ function mapStage(stage?: string) {
   if (normalized.includes("third") || normalized.includes("bronze")) return "bronze";
   if (normalized.includes("final")) return "final";
   return "group";
+}
+
+function findLocalMatch(match: FootballDataMatch, stage: string) {
+  const homeTeam = normalizeTeamName(match.homeTeam.name ?? match.homeTeam.shortName ?? "");
+  const awayTeam = normalizeTeamName(match.awayTeam.name ?? match.awayTeam.shortName ?? "");
+
+  return predictMatches.find(localMatch =>
+    localMatch.stage === stage &&
+    normalizeTeamName(localMatch.homeTeam) === homeTeam &&
+    normalizeTeamName(localMatch.awayTeam) === awayTeam
+  );
+}
+
+function normalizeTeamName(name: string) {
+  const normalized = name.trim();
+  const aliases: Record<string, string> = {
+    "Bosnia-Herzegovina": "Bosnia and Herzegovina",
+    "Bosnia & Herzegovina": "Bosnia and Herzegovina",
+    "Congo DR": "DR Congo",
+    "Congo, The Democratic Republic of the": "DR Congo",
+    "Côte d'Ivoire": "Ivory Coast",
+    "Cote d'Ivoire": "Ivory Coast",
+    "Curaçao": "Curacao",
+    "Czech Republic": "Czechia",
+    "Korea Republic": "South Korea",
+    "South Korea Republic": "South Korea",
+    "Türkiye": "Turkey",
+    "USA": "United States",
+    "United States of America": "United States",
+  };
+
+  return aliases[normalized] ?? normalized;
 }
 
 function supabaseRestUrl() {

@@ -2,17 +2,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Clipboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatKyivDate, getTournamentPoints, predictMatches, stageLabels, type PredictUser } from "@/data/predictData";
-import { getCurrentPredictUser, logoutPredictUser } from "@/lib/predictStore";
+import { formatKyivDate, getTournamentPoints, predictMatches, stageLabels, type PredictMatch, type PredictUser } from "@/data/predictData";
+import { getCurrentPredictUser, getPredictMatches, logoutPredictUser } from "@/lib/predictStore";
 
 export default function PredictProfile() {
   const navigate = useNavigate();
   const [user, setUser] = useState<PredictUser | null>(null);
+  const [matchList, setMatchList] = useState<PredictMatch[]>(predictMatches);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getCurrentPredictUser()
-      .then(setUser)
+    Promise.all([
+      getCurrentPredictUser(),
+      getPredictMatches().catch(() => predictMatches),
+    ])
+      .then(([loadedUser, loadedMatches]) => {
+        setUser(loadedUser);
+        setMatchList(loadedMatches);
+      })
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
   }, []);
@@ -39,7 +46,7 @@ export default function PredictProfile() {
   }
 
   const predictions = Object.values(user.predictions)
-    .map(prediction => ({ prediction, match: predictMatches.find(match => match.id === prediction.matchId) }))
+    .map(prediction => ({ prediction, match: matchList.find(match => match.id === prediction.matchId) }))
     .filter(item => item.match)
     .sort((a, b) => new Date(a.match!.matchDate).getTime() - new Date(b.match!.matchDate).getTime());
   const matchPoints = predictions.reduce((sum, item) => sum + item.prediction.pointsOutcome + item.prediction.pointsAdvancing, 0);

@@ -1,25 +1,32 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarDays } from "lucide-react";
-import { formatKyivDate, predictMatches, stageLabels, type MatchStage } from "@/data/predictData";
+import { formatKyivDate, predictMatches, stageLabels, type MatchStage, type PredictMatch } from "@/data/predictData";
+import { getPredictMatches } from "@/lib/predictStore";
 
 type StageFilter = MatchStage | "all" | "knockout";
 
-function sortByKickoff(matches: typeof predictMatches) {
+function sortByKickoff(matches: PredictMatch[]) {
   return [...matches].sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime() || a.id - b.id);
 }
 
 export default function PredictMatches() {
   const [stage, setStage] = useState<StageFilter>("all");
+  const [matchList, setMatchList] = useState<PredictMatch[]>(predictMatches);
+
+  useEffect(() => {
+    getPredictMatches().then(setMatchList).catch(() => setMatchList(predictMatches));
+  }, []);
+
   const matches = useMemo(() => {
     const filtered =
       stage === "all"
-        ? predictMatches
+        ? matchList
         : stage === "knockout"
-          ? predictMatches.filter(match => match.stage !== "group")
-          : predictMatches.filter(match => match.stage === stage);
+          ? matchList.filter(match => match.stage !== "group")
+          : matchList.filter(match => match.stage === stage);
 
     return sortByKickoff(filtered);
-  }, [stage]);
+  }, [matchList, stage]);
 
   const filters: StageFilter[] = ["all", "group", "knockout", "round_of_32", "round_of_16", "quarterfinal", "semifinal", "final"];
 

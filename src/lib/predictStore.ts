@@ -1,3 +1,4 @@
+import { predictMatches } from "@/data/predictData";
 import type { MatchPrediction, PredictMatch, PredictUser, TournamentPrediction } from "@/data/predictData";
 
 type UsersResponse = {
@@ -7,6 +8,17 @@ type UsersResponse = {
 
 type UserResponse = {
   user: PredictUser | null;
+};
+
+type MatchesResponse = {
+  matches: Array<{
+    externalId: string;
+    status: PredictMatch["status"];
+    homeScore: number | null;
+    awayScore: number | null;
+    winner: PredictMatch["winner"];
+    teamAdvancing: PredictMatch["teamAdvancing"];
+  }>;
 };
 
 async function apiFetch<T>(path: string, options: RequestInit = {}) {
@@ -33,6 +45,25 @@ export async function getPredictUsers() {
 export async function getCurrentPredictUser() {
   const payload = await apiFetch<UserResponse>("/api/predict-auth");
   return payload.user;
+}
+
+export async function getPredictMatches() {
+  const payload = await apiFetch<MatchesResponse>("/api/predict-matches");
+  const rowsByExternalId = new Map(payload.matches.map(match => [match.externalId, match]));
+
+  return predictMatches.map(match => {
+    const row = rowsByExternalId.get(match.externalId);
+    if (!row) return match;
+
+    return {
+      ...match,
+      status: row.status ?? match.status,
+      homeScore: row.homeScore,
+      awayScore: row.awayScore,
+      winner: row.winner,
+      teamAdvancing: row.teamAdvancing,
+    };
+  });
 }
 
 export async function loginPredictUser(username: string, password: string) {
