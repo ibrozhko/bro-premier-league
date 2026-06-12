@@ -7,7 +7,7 @@ import type { PredictUser } from "@/data/predictData";
 export default function PredictLeaderboard() {
   const [users, setUsers] = useState<Array<PredictUser & { totalPoints: number }>>([]);
   const [error, setError] = useState("");
-  const podium = users.slice(0, 3);
+  const leader = users[0];
 
   useEffect(() => {
     getPredictUsers()
@@ -23,29 +23,22 @@ export default function PredictLeaderboard() {
       </div>
       {error && <div className="mb-5 rounded-md border border-red-500/30 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
-      {podium.length > 0 && (
-        <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
-          {podium.map((user, index) => (
-            <div
-              key={user.id}
-              className={`overflow-hidden rounded-md border border-[#2937da]/15 bg-white p-3 shadow-sm ${
-                index === 0 ? "bg-[#2937da] text-white" : "text-[#343434]"
-              }`}
-            >
-              <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-md ${
-                index === 0 ? "bg-[#bbf903] text-[#111111]" : "bg-[#2937da]/10 text-[#2937da]"
-              }`}>
-                <Medal className="h-5 w-5" />
-              </div>
-              <div className="font-heading text-2xl leading-none">{index + 1}</div>
-              <div className={`mt-1 truncate text-sm font-bold ${index === 0 ? "text-white" : "text-[#343434]"}`}>
-                {user.displayName || user.username}
-              </div>
-              <div className={`mt-2 font-heading text-3xl leading-none ${index === 0 ? "text-[#bbf903]" : "text-[#2937da]"}`}>
-                {user.totalPoints}
-              </div>
+      {leader && (
+        <div className="mb-4 overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da] text-white shadow-[0_18px_48px_rgba(41,55,218,0.18)]">
+          <div className="brand-stripe h-1" />
+          <div className="grid grid-cols-[56px_1fr_auto] items-center gap-3 p-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[#bbf903] text-[#111111]">
+              <Medal className="h-6 w-6" />
             </div>
-          ))}
+            <div className="min-w-0">
+              <div className="text-xs font-bold uppercase tracking-wide text-white/70">Лідер зараз</div>
+              <div className="truncate font-heading text-3xl leading-none text-white">{leader.displayName || leader.username}</div>
+            </div>
+            <div className="text-right">
+              <div className="font-heading text-4xl leading-none text-[#bbf903]">{leader.totalPoints}</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-white/70">балів</div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -58,9 +51,11 @@ export default function PredictLeaderboard() {
           <span className="hidden text-right sm:block">Вірні</span>
         </div>
         {users.map((user, index) => (
-          <div key={user.id} className="grid grid-cols-[44px_minmax(0,1fr)_72px] gap-2 border-b border-[#2937da]/10 px-3 py-4 last:border-b-0 sm:grid-cols-[56px_1fr_92px_110px_100px]">
+          <div key={user.id} className="grid grid-cols-[44px_minmax(0,1fr)_72px] items-center gap-2 border-b border-[#2937da]/10 px-3 py-4 last:border-b-0 sm:grid-cols-[56px_1fr_92px_110px_100px]">
             <span className="flex items-center gap-2 font-heading text-xl text-[#2937da]">
-              {index < 3 && <Medal className="h-4 w-4 text-[#2937da]" />}
+              {index < 3 ? (
+                <Medal className="h-5 w-5" />
+              ) : null}
               {index + 1}
             </span>
             <span className="min-w-0 truncate font-semibold text-[#343434]">{user.displayName || user.username}</span>

@@ -58,40 +58,40 @@ export default function PredictProfile() {
   }
 
   return (
-    <main className="content-shell py-10">
+    <main className="content-shell py-6 sm:py-10">
       <div className="page-header">
         <div className="page-kicker">Особистий кабінет</div>
         <h2 className="h-page">{user.displayName || user.username}</h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           { label: "Всього балів", value: matchPoints + tournamentPoints },
           { label: "Матчеві", value: matchPoints },
           { label: "Турнірні", value: tournamentPoints },
           { label: "Інвайти", value: `${user.invitesRemaining} з 3` },
         ].map(item => (
-          <div key={item.label} className="rounded-md border border-[#2937da]/15 bg-white p-4">
-            <div className="h-stat text-[#2937da]">{item.value}</div>
-            <div className="t-label mt-1">{item.label}</div>
+          <div key={item.label} className="rounded-md border border-[#2937da]/15 bg-white p-3 shadow-sm sm:p-4">
+            <div className="font-heading text-3xl leading-none text-[#2937da] sm:text-2xl">{item.value}</div>
+            <div className="mt-1 text-[0.66rem] font-semibold uppercase tracking-wide text-[#343434]/60 sm:text-xs">{item.label}</div>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white">
+      <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
           <div className="brand-stripe h-1" />
-          <div className="space-y-5 p-5">
+          <div className="space-y-5 p-4 sm:p-5">
             <div>
               <h3 className="h-card text-[#343434]">Інвайт-код</h3>
               <div className="mt-3 flex gap-2">
-                <code className="flex h-11 flex-1 items-center rounded-md border border-[#2937da]/15 bg-[#f3f3f6] px-3 font-bold text-[#2937da]">
+                <code className="flex h-12 min-w-0 flex-1 items-center truncate rounded-md border border-[#2937da]/15 bg-[#f3f3f6] px-3 font-bold text-[#2937da]">
                   {user.inviteCode}
                 </code>
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-11 rounded-md border-[#2937da]/20 bg-white text-[#2937da] hover:bg-[#2937da] hover:text-white"
+                  className="h-12 w-12 shrink-0 rounded-md border-[#2937da]/20 bg-white p-0 text-[#2937da] hover:bg-[#2937da] hover:text-white"
                   onClick={() => navigator.clipboard?.writeText(user.inviteCode)}
                   aria-label="Copy invite code"
                 >
@@ -102,7 +102,7 @@ export default function PredictProfile() {
 
             <div>
               <h3 className="h-card text-[#343434]">Мої турнірні прогнози</h3>
-              <dl className="mt-3 grid gap-3 text-sm">
+              <dl className="mt-3 grid gap-0 text-sm">
                 {[
                   ["Чемпіон", user.tournamentPrediction.champion],
                   ["Фіналіст", user.tournamentPrediction.finalist],
@@ -110,9 +110,9 @@ export default function PredictProfile() {
                   ["Темна конячка", user.tournamentPrediction.darkHorse],
                   ["Улюблена команда", user.tournamentPrediction.favoriteTeam],
                 ].map(([label, value]) => (
-                  <div key={label} className="flex justify-between gap-3 border-b border-[#2937da]/10 pb-2 last:border-b-0">
+                  <div key={label} className="flex items-center justify-between gap-3 border-b border-[#2937da]/10 py-3 first:pt-0 last:border-b-0 last:pb-0">
                     <dt className="text-[#343434]/60">{label}</dt>
-                    <dd className="font-semibold text-[#343434]">{value}</dd>
+                    <dd className="min-w-0 truncate text-right font-semibold text-[#343434]">{value}</dd>
                   </div>
                 ))}
               </dl>
@@ -124,20 +124,20 @@ export default function PredictProfile() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white">
+        <section className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
           <div className="border-b border-[#2937da]/10 bg-[#f3f3f6] p-4">
             <h3 className="h-card text-[#343434]">Історія ставок</h3>
           </div>
           <div className="divide-y divide-[#2937da]/10">
             {predictions.length === 0 && <div className="p-5 text-sm text-[#343434]/70">Поки немає прогнозів.</div>}
             {predictions.map(({ prediction, match }) => (
-              <div key={prediction.matchId} className="grid gap-2 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div key={prediction.matchId} className="grid grid-cols-[minmax(0,1fr)_72px] gap-3 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div className="min-w-0">
                   <div className="t-label">{stageLabels[match!.stage]} - {formatKyivDate(match!.matchDate)}</div>
                   <div className="truncate font-semibold text-[#343434]">{match!.homeTeam} vs {match!.awayTeam}</div>
                 </div>
-                <div className="text-left sm:text-right">
-                  <div className="font-heading text-xl text-[#2937da]">{prediction.predictedHomeScore}:{prediction.predictedAwayScore}</div>
+                <div className="text-right">
+                  <div className="font-heading text-2xl leading-none text-[#2937da]">{prediction.predictedHomeScore}:{prediction.predictedAwayScore}</div>
                   <div className="t-meta">{prediction.pointsOutcome + prediction.pointsAdvancing} балів</div>
                 </div>
               </div>

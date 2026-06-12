@@ -20,7 +20,7 @@ export default function PredictLayout() {
   }, []);
 
   return (
-    <div className="coax-light min-h-screen pb-[calc(88px+env(safe-area-inset-bottom))] lg:pb-0">
+    <div className="coax-light min-h-screen pb-[calc(104px+env(safe-area-inset-bottom))] lg:pb-0">
       <div className="sticky top-0 z-40 border-b border-[#2937da]/15 bg-white/95 backdrop-blur">
         <div className="content-shell flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between lg:py-4">
           <div className="flex items-center justify-between gap-3">
@@ -105,7 +105,7 @@ function PredictMobileNav({ user }: { user: PredictUser | null }) {
             to={item.to}
             end={item.to === "/predict"}
             className={({ isActive }) =>
-              `flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-[6px] px-1 text-[0.66rem] font-bold leading-none transition-colors ${
+              `flex h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-[6px] px-1 text-[0.64rem] font-bold leading-none transition-colors ${
                 isActive ? "bg-[#2937da] text-white" : "text-[#2937da]"
               }`
             }
