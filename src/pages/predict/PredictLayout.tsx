@@ -34,7 +34,7 @@ export default function PredictLayout() {
               to="/"
               className={`inline-flex h-10 w-fit items-center gap-2 rounded-md border px-3 text-sm font-semibold transition-colors ${
                 isOverview
-                  ? "border-white/25 bg-white/10 text-white hover:bg-white hover:text-[#2937da]"
+                  ? "border-white/20 bg-transparent text-white/90 hover:bg-white/10 hover:text-white"
                   : "border-[#2937da]/20 bg-white text-[#2937da] hover:bg-[#2937da] hover:text-white"
               }`}
             >
@@ -68,7 +68,7 @@ function PredictNav({
 }) {
   const inactiveClass =
     variant === "dark"
-      ? "border-white/25 bg-white/10 text-white hover:bg-white hover:text-[#2937da]"
+      ? "border-transparent bg-transparent text-white/82 hover:border-white/20 hover:bg-white/10 hover:text-white"
       : "border-[#2937da]/20 bg-white text-[#2937da] hover:bg-[#2937da] hover:text-white";
 
   return (
@@ -117,7 +117,7 @@ function PredictMobileNav({ user, variant = "light" }: { user: PredictUser | nul
   return (
     <nav
       className={`grid grid-cols-5 overflow-hidden rounded-md border p-1 shadow-[0_12px_28px_rgba(41,55,218,0.16)] ${
-        variant === "dark" ? "border-white/20 bg-white/10" : "border-[#2937da]/15 bg-white"
+        variant === "dark" ? "border-white/20 bg-[#3441dd]" : "border-[#2937da]/15 bg-white"
       }`}
     >
       {items.map(item => {
