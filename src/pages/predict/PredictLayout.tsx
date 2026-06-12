@@ -22,7 +22,7 @@ export default function PredictLayout() {
 
   return (
     <div className="coax-light flex min-h-screen flex-col">
-      <div className="sticky top-0 z-40 border-b border-white/15 bg-[#2937da]/95 backdrop-blur">
+      <div className="z-40 border-b border-white/15 bg-[#2937da]/95 backdrop-blur lg:sticky lg:top-0">
         <div className="content-shell flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between lg:py-4">
           <div className="flex items-center justify-between gap-3">
             <NavLink
