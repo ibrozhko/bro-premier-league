@@ -65,7 +65,7 @@ function PredictNav({
   user: PredictUser | null;
   className?: string;
 }) {
-  const inactiveClass = "border-transparent bg-transparent text-white/80 hover:border-transparent hover:bg-white/10 hover:text-white hover:shadow-[inset_0_-2px_0_#bbf903]";
+  const inactiveClass = "border-transparent bg-transparent text-white/80 hover:border-b-[#bbf903] hover:bg-[#3441dd] hover:text-white";
 
   return (
     <nav className={`gap-2 ${className ?? ""}`}>
