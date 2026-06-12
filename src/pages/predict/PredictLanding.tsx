@@ -77,28 +77,20 @@ export default function PredictLanding() {
 
       <section className="coax-light py-10 sm:py-12">
         <div className="content-shell space-y-5">
-          <section className="light-panel overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
-            <div className="brand-stripe h-1" />
-            <div className="p-4 sm:p-5">
-              <div>
-                <div className="page-kicker">Поточний лідер</div>
+          <section className="light-panel rounded-md border border-[#2937da]/15 bg-white px-4 py-4 shadow-[0_12px_30px_rgba(41,55,218,0.06)] sm:px-5">
+            <div className="grid gap-4 sm:grid-cols-[48px_1fr_auto] sm:items-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[#2937da]/10 text-[#2937da]">
+                <Medal className="h-6 w-6" />
               </div>
-              <div className="mt-3 rounded-md border border-[#2937da]/15 bg-[#2937da] p-4 text-white">
-                <div className="grid gap-4 sm:grid-cols-[56px_1fr_auto] sm:items-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-md bg-[#bbf903] text-[#111111]">
-                    <Medal className="h-7 w-7" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold uppercase tracking-wide text-white/75">Лідер зараз</div>
-                    <div className="truncate font-heading text-3xl leading-none text-white sm:text-4xl">
-                      {leader ? leader.displayName || leader.username : "Ще немає"}
-                    </div>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <div className="font-heading text-4xl leading-none text-[#bbf903]">{leader?.totalPoints ?? 0}</div>
-                    <div className="text-xs font-semibold uppercase tracking-wide text-white/70">балів</div>
-                  </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">Поточний лідер</div>
+                <div className="truncate font-heading text-3xl leading-none text-[#343434]">
+                  {leader ? leader.displayName || leader.username : "Ще немає"}
                 </div>
+              </div>
+              <div className="text-left sm:text-right">
+                <div className="font-heading text-4xl leading-none text-[#2937da]">{leader?.totalPoints ?? 0}</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/55">балів</div>
               </div>
             </div>
           </section>
