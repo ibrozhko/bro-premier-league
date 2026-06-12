@@ -40,10 +40,10 @@ export default function PredictLanding() {
             <span className="rounded-md border border-[#2937da]/20 bg-[#2937da]/5 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#2937da]">11 червня - 19 липня</span>
             <span className="rounded-md bg-[#bbf903] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#111111]">{finishedCount} зіграно</span>
           </div>
-          <h2 className="max-w-3xl font-heading text-[3.2rem] leading-[0.9] tracking-normal text-[#343434] sm:text-7xl">
+          <h2 className="max-w-3xl font-heading text-[clamp(2.35rem,11vw,3.2rem)] leading-[0.92] tracking-normal text-[#343434] sm:text-7xl">
             Прогнозуй чемпіонат світу з друзями
           </h2>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[#343434]/72 sm:text-lg">
+          <p className="mt-4 max-w-2xl text-[0.98rem] leading-7 text-[#343434]/72 sm:text-lg">
             Живий турнір прогнозів BPL: ставиш рахунок, ловиш точні результати і піднімаєшся у таблиці після кожного матчу.
           </p>
 
@@ -60,14 +60,14 @@ export default function PredictLanding() {
             )}
           </div>
 
-          <div className="mt-7 grid grid-cols-3 gap-px overflow-hidden rounded-md bg-[#2937da]/10">
+          <div className="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-md bg-[#2937da]/10 sm:mt-7">
             {[
               ["Команд", "48"],
               ["Матчі", matchList.length],
               ["Гравців", users.length],
             ].map(([label, value]) => (
-              <div key={label} className="bg-[#f7f7fb] p-3">
-                <div className="font-heading text-3xl leading-none text-[#2937da]">{value}</div>
+              <div key={label} className="bg-[#f7f7fb] p-3 sm:p-3">
+                <div className="font-heading text-2xl leading-none text-[#2937da] sm:text-3xl">{value}</div>
                 <div className="mt-1 text-[0.65rem] font-bold uppercase tracking-wide text-[#343434]/55">{label}</div>
               </div>
             ))}
@@ -84,19 +84,19 @@ export default function PredictLanding() {
               {latestResult && <MatchCard title="Останній результат" icon={ShieldCheck} match={latestResult} />}
 
               <div className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white">
-                <div className="grid grid-cols-[48px_1fr_auto] items-center gap-3 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[#2937da] text-white">
-                <Medal className="h-6 w-6" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">Лідер зараз</div>
-                <div className="truncate font-heading text-2xl leading-none text-[#343434]">{leader ? leader.displayName || leader.username : "Ще немає"}</div>
-              </div>
-              <div className="text-right">
-                <div className="font-heading text-3xl leading-none text-[#2937da]">{leader?.totalPoints ?? 0}</div>
-                <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/55">балів</div>
-              </div>
-            </div>
+                  <div className="grid grid-cols-[44px_1fr_auto] items-center gap-3 p-3 sm:grid-cols-[48px_1fr_auto] sm:p-4">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#2937da] text-white sm:h-12 sm:w-12">
+                      <Medal className="h-6 w-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">Лідер зараз</div>
+                      <div className="truncate font-heading text-2xl leading-none text-[#343434]">{leader ? leader.displayName || leader.username : "Ще немає"}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-heading text-3xl leading-none text-[#2937da]">{leader?.totalPoints ?? 0}</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/55">балів</div>
+                    </div>
+                  </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -111,7 +111,7 @@ export default function PredictLanding() {
                   <Sparkles className="h-4 w-4" />
                   <span className="text-xs font-bold uppercase tracking-wide">{label}</span>
                 </div>
-                <div className="mt-1 font-heading text-xl leading-none text-[#343434]">{value}</div>
+                <div className="mt-1 font-heading text-lg leading-none text-[#343434] sm:text-xl">{value}</div>
               </div>
             ))}
               </div>
@@ -129,18 +129,18 @@ function MatchCard({ title, icon: Icon, match }: { title: string; icon: typeof C
 
   return (
     <div className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
-      <div className="grid grid-cols-[44px_1fr] gap-3 p-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#2937da]/10 text-[#2937da]">
+      <div className="grid grid-cols-[38px_1fr] gap-3 p-3 sm:grid-cols-[44px_1fr] sm:p-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#2937da]/10 text-[#2937da] sm:h-11 sm:w-11">
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <div className="flex items-center justify-between gap-3">
+          <div className="grid grid-cols-[1fr_auto] items-start gap-3">
             <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">{title}</div>
-            <div className="text-xs font-semibold text-[#343434]/55">{formatKyivDate(match.matchDate)}</div>
+            <div className="text-right text-xs font-semibold leading-tight text-[#343434]/55">{formatKyivDate(match.matchDate)}</div>
           </div>
-          <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3">
             <Team name={match.homeTeam} code={match.homeCode} align="right" />
-            <div className="min-w-[54px] text-center font-heading text-3xl leading-none text-[#2937da]">{score}</div>
+            <div className="min-w-[48px] text-center font-heading text-3xl leading-none text-[#2937da] sm:min-w-[54px]">{score}</div>
             <Team name={match.awayTeam} code={match.awayCode} align="left" />
           </div>
         </div>
@@ -152,7 +152,7 @@ function MatchCard({ title, icon: Icon, match }: { title: string; icon: typeof C
 function Team({ name, code, align }: { name: string; code: string; align: "left" | "right" }) {
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="truncate font-semibold text-[#343434]">{name}</div>
+      <div className="truncate text-sm font-semibold text-[#343434] sm:text-base">{name}</div>
       <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/50">{code}</div>
     </div>
   );
