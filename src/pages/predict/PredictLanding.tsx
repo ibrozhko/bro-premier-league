@@ -115,9 +115,23 @@ export default function PredictLanding() {
               <div className="text-sm font-medium text-[#343434]/65">Результати оновлюються після синку</div>
             </div>
 
-            <div className="grid gap-5 lg:grid-cols-2">
-              <MatchList title="Матчі сьогодні" empty="На сьогодні майбутніх матчів немає." icon={CalendarDays} matches={todayMatches} />
-              <MatchList title="Результати вчора" empty="За вчора результатів ще немає." icon={ShieldCheck} matches={yesterdayResults} />
+            <div className="grid gap-5">
+              <MatchList
+                title="Матчі сьогодні"
+                description="Усі матчі, які ще мають відбутися сьогодні за київським часом."
+                empty="На сьогодні майбутніх матчів немає."
+                icon={CalendarDays}
+                matches={todayMatches}
+                tone="today"
+              />
+              <MatchList
+                title="Результати вчора"
+                description="Завершені матчі попереднього дня."
+                empty="За вчора результатів ще немає."
+                icon={ShieldCheck}
+                matches={yesterdayResults}
+                tone="results"
+              />
             </div>
           </section>
         </div>
@@ -137,21 +151,35 @@ function HeroStat({ label, value }: { label: string; value: number | string }) {
 
 function MatchList({
   title,
+  description,
   empty,
   icon: Icon,
   matches,
+  tone,
 }: {
   title: string;
+  description: string;
   empty: string;
   icon: typeof CalendarDays;
   matches: PredictMatch[];
+  tone: "today" | "results";
 }) {
   return (
     <div className="light-panel overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
-      <div className="flex items-center justify-between border-b border-[#2937da]/10 bg-[#f7f7fb] px-4 py-3">
-        <div className="flex items-center gap-2 text-[#2937da]">
-          <Icon className="h-5 w-5" />
-          <span className="text-sm font-bold uppercase tracking-wide">{title}</span>
+      <div className={`border-b border-[#2937da]/10 px-4 py-4 ${tone === "today" ? "bg-[#2937da] text-white" : "bg-[#f7f7fb] text-[#343434]"}`}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`flex h-10 w-10 items-center justify-center rounded-md ${tone === "today" ? "bg-[#bbf903] text-[#111111]" : "bg-[#2937da]/10 text-[#2937da]"}`}>
+              <Icon className="h-5 w-5" />
+            </div>
+            <div>
+              <div className={`text-sm font-bold uppercase tracking-wide ${tone === "today" ? "text-white" : "text-[#2937da]"}`}>{title}</div>
+              <div className={`mt-1 text-sm ${tone === "today" ? "text-white/70" : "text-[#343434]/62"}`}>{description}</div>
+            </div>
+          </div>
+          <div className={`w-fit rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${tone === "today" ? "bg-white/[0.12] text-[#bbf903]" : "bg-[#2937da]/10 text-[#2937da]"}`}>
+            {matchCountLabel(matches.length)}
+          </div>
         </div>
       </div>
       <div className="divide-y divide-[#2937da]/10">
@@ -169,24 +197,27 @@ function MatchRow({ match }: { match: PredictMatch }) {
   const score = match.homeScore === null || match.awayScore === null ? "VS" : `${match.homeScore}-${match.awayScore}`;
 
   return (
-    <div className="grid gap-3 px-4 py-4 sm:grid-cols-[110px_1fr] sm:items-center">
+    <div className="grid gap-4 px-4 py-4 lg:grid-cols-[150px_minmax(0,1fr)_82px_minmax(0,1fr)] lg:items-center">
       <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/55">
         {match.groupName ? `Група ${match.groupName}` : stageLabel(match.stage)}
         <div className="mt-1 normal-case tracking-normal">{formatKyivDate(match.matchDate)}</div>
       </div>
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+      <Team name={match.homeTeam} code={match.homeCode} align="right" className="hidden lg:block" />
+      <div className="mx-auto hidden w-[72px] rounded-md bg-[#2937da]/10 px-2 py-2 text-center font-heading text-3xl leading-none text-[#2937da] lg:block">{score}</div>
+      <Team name={match.awayTeam} code={match.awayCode} align="left" className="hidden lg:block" />
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 lg:hidden">
         <Team name={match.homeTeam} code={match.homeCode} align="right" />
-        <div className="min-w-[58px] text-center font-heading text-3xl leading-none text-[#2937da]">{score}</div>
+        <div className="min-w-[64px] text-center font-heading text-3xl leading-none text-[#2937da]">{score}</div>
         <Team name={match.awayTeam} code={match.awayCode} align="left" />
       </div>
     </div>
   );
 }
 
-function Team({ name, code, align }: { name: string; code: string; align: "left" | "right" }) {
+function Team({ name, code, align, className = "" }: { name: string; code: string; align: "left" | "right"; className?: string }) {
   return (
-    <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="truncate text-base font-semibold text-[#343434] sm:text-lg">{name}</div>
+    <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"} ${className}`}>
+      <div className="text-base font-semibold leading-tight text-[#343434] sm:text-lg">{name}</div>
       <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/50">{code}</div>
     </div>
   );
@@ -214,4 +245,10 @@ function stageLabel(stage: PredictMatch["stage"]) {
     final: "Фінал",
   };
   return labels[stage];
+}
+
+function matchCountLabel(count: number) {
+  if (count === 1) return "1 матч";
+  if (count >= 2 && count <= 4) return `${count} матчі`;
+  return `${count} матчів`;
 }
