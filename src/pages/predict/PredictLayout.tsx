@@ -20,7 +20,7 @@ export default function PredictLayout() {
   }, []);
 
   return (
-    <div className="coax-light min-h-screen pb-[calc(104px+env(safe-area-inset-bottom))] lg:pb-0">
+    <div className="coax-light min-h-screen">
       <div className="sticky top-0 z-40 border-b border-[#2937da]/15 bg-white/95 backdrop-blur">
         <div className="content-shell flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between lg:py-4">
           <div className="flex items-center justify-between gap-3">
@@ -38,9 +38,11 @@ export default function PredictLayout() {
           </div>
           <PredictNav user={user} className="hidden lg:flex lg:justify-end" />
         </div>
+        <div className="content-shell pb-3 lg:hidden">
+          <PredictMobileNav user={user} />
+        </div>
       </div>
       <Outlet />
-      <PredictMobileNav user={user} />
     </div>
   );
 }
@@ -96,7 +98,7 @@ function PredictMobileNav({ user }: { user: PredictUser | null }) {
   const items = user?.isAdmin ? [...links.slice(0, 4), { to: "/predict/admin", label: "Адмін", icon: Shield }] : links;
 
   return (
-    <nav className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 grid grid-cols-5 overflow-hidden rounded-md border border-[#2937da]/15 bg-white/95 p-1 shadow-[0_18px_48px_rgba(41,55,218,0.24)] backdrop-blur lg:hidden">
+    <nav className="grid grid-cols-5 overflow-hidden rounded-md border border-[#2937da]/15 bg-white p-1 shadow-[0_12px_28px_rgba(41,55,218,0.16)]">
       {items.map(item => {
         const Icon = item.icon;
         return (

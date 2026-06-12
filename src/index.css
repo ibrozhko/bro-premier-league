@@ -309,7 +309,7 @@
   @media (max-width: 640px) {
     .coax-light main.content-shell {
       padding-top: 1.5rem;
-      padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+      padding-bottom: calc(2rem + env(safe-area-inset-bottom));
     }
 
     .coax-light .page-header {
