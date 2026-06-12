@@ -31,6 +31,14 @@
   ],
   "rewrites": [
     {
+      "source": "/predict",
+      "destination": "/predict.html"
+    },
+    {
+      "source": "/predict/:path*",
+      "destination": "/predict.html"
+    },
+    {
       "source": "/((?!api/|assets/|favicon.ico|robots.txt|placeholder.svg).*)",
       "destination": "/index.html"
     }
