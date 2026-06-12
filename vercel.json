@@ -7,6 +7,17 @@
   ],
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "bro-premier-league.vercel.app"
+        }
+      ],
+      "destination": "https://broleague.online/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
