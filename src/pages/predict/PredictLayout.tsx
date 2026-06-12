@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, BarChart3, CalendarDays, Shield, Trophy, UserRound } from "lucide-react";
 import { getCurrentPredictUser } from "@/lib/predictStore";
 import type { PredictUser } from "@/data/predictData";
+import logoFull from "@/assets/logo-full.png";
 
 const links = [
   { to: "/predict", label: "Огляд", icon: Trophy },
@@ -41,10 +42,17 @@ export default function PredictLayout() {
               <ArrowLeft className="h-4 w-4" />
               До BPL
             </NavLink>
-            <div className="min-w-0 text-right sm:text-left">
-              <div className={`page-kicker ${isOverview ? "text-[#bbf903]" : ""}`}>Fantasy World Cup 2026</div>
-              <h1 className={`h-section ${isOverview ? "text-white" : "text-[#2937da]"}`}>BPL Predict</h1>
-            </div>
+            <NavLink to="/predict" className="flex min-w-0 items-center gap-2">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-1 brand-glow">
+                <img src={logoFull} alt="BPL Predict" className="h-[124%] w-[124%] max-w-none object-contain" />
+              </span>
+              <div className="min-w-0 text-right sm:text-left">
+                <div className={`page-kicker ${isOverview ? "text-[#bbf903]" : ""}`}>Fantasy World Cup 2026</div>
+                <h1 className={`whitespace-nowrap font-heading text-2xl leading-none sm:text-3xl ${isOverview ? "text-white" : "text-[#2937da]"}`}>
+                  BPL Predict
+                </h1>
+              </div>
+            </NavLink>
           </div>
           <PredictNav user={user} className="hidden lg:flex lg:justify-end" variant={isOverview ? "dark" : "light"} />
         </div>

@@ -40,13 +40,13 @@ export default function PredictLanding() {
 
   return (
     <main>
-      <section className="border-b border-white/15 bg-[#2937da] py-9 text-center text-white sm:py-11 md:py-12">
+      <section className="border-b border-white/15 bg-[#2937da] py-9 text-center text-white sm:py-12 md:py-16">
         <div className="content-shell">
-          <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white p-3 shadow-[0_18px_38px_rgba(0,0,0,0.18)] sm:h-32 sm:w-32 md:h-36 md:w-36">
+          <div className="mx-auto mb-6 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-white p-3 shadow-[0_18px_38px_rgba(0,0,0,0.18)] sm:h-40 sm:w-40 sm:p-4 md:h-48 md:w-48 md:p-5">
             <img src={logoFull} alt="Bro Premier League" className="h-[124%] w-[124%] max-w-none object-contain" />
           </div>
           <div className="page-kicker text-[#bbf903]">Fantasy World Cup 2026</div>
-          <h2 className="mx-auto max-w-3xl font-heading text-[2.45rem] leading-none text-white sm:text-[3.8rem] md:text-[4.35rem]">
+          <h2 className="mx-auto max-w-none font-heading text-[2.35rem] leading-none text-white sm:text-[3.4rem] md:whitespace-nowrap md:text-[4.5rem]">
             Чемпіонат <span className="text-[#bbf903]">прогнозів</span>
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-white/82 sm:text-lg">
