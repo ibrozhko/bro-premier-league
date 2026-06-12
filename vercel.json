@@ -5,6 +5,19 @@
       "schedule": "0 3 * * *"
     }
   ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "bro-premier-league.vercel.app"
+        }
+      ],
+      "destination": "https://broleague.online/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/|assets/|favicon.ico|robots.txt|placeholder.svg).*)",
