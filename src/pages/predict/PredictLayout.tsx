@@ -76,7 +76,7 @@ function PredictNav({
 }) {
   const inactiveClass =
     variant === "dark"
-      ? "border-transparent bg-transparent text-white/82 hover:border-white/20 hover:bg-white/10 hover:text-white"
+      ? "border-transparent bg-transparent text-white/80 hover:border-white/20 hover:bg-white/10 hover:text-white"
       : "border-[#2937da]/20 bg-white text-[#2937da] hover:bg-[#2937da] hover:text-white";
 
   return (

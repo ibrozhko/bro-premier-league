@@ -49,7 +49,7 @@ export default function PredictLanding() {
           <h2 className="mx-auto max-w-none font-heading text-[2.35rem] leading-none text-white sm:text-[3.4rem] md:whitespace-nowrap md:text-[4.5rem]">
             Чемпіонат <span className="text-[#bbf903]">прогнозів</span>
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-white/82 sm:text-lg">
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
             Окрема гра BPL на ЧС-2026: став рахунок, збирай очки за точність і піднімайся у таблиці друзів.
           </p>
 
