@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ArrowLeft, BarChart3, CalendarDays, Menu, Shield, Trophy, UserRound, X } from "lucide-react";
+import { ArrowLeft, BarChart3, CalendarDays, Shield, Trophy, UserRound } from "lucide-react";
 import { getCurrentPredictUser } from "@/lib/predictStore";
 import type { PredictUser } from "@/data/predictData";
 
@@ -14,17 +14,16 @@ const links = [
 
 export default function PredictLayout() {
   const [user, setUser] = useState<PredictUser | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     getCurrentPredictUser().then(setUser).catch(() => setUser(null));
   }, []);
 
   return (
-    <div className="coax-light min-h-screen">
-      <div className="border-b border-[#2937da]/15 bg-white">
-        <div className="content-shell flex flex-col gap-3 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="coax-light min-h-screen pb-[calc(88px+env(safe-area-inset-bottom))] lg:pb-0">
+      <div className="sticky top-0 z-40 border-b border-[#2937da]/15 bg-white/95 backdrop-blur">
+        <div className="content-shell flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between lg:py-4">
+          <div className="flex items-center justify-between gap-3">
             <NavLink
               to="/"
               className="inline-flex h-10 w-fit items-center gap-2 rounded-md border border-[#2937da]/20 bg-white px-3 text-sm font-semibold text-[#2937da] transition-colors hover:bg-[#2937da] hover:text-white"
@@ -32,50 +31,29 @@ export default function PredictLayout() {
               <ArrowLeft className="h-4 w-4" />
               До BPL
             </NavLink>
-            <div>
+            <div className="min-w-0 text-right sm:text-left">
               <div className="page-kicker">Fantasy World Cup 2026</div>
               <h1 className="h-section text-[#2937da]">BPL Predict</h1>
             </div>
           </div>
-          <button
-            type="button"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#2937da]/20 bg-white px-3 text-sm font-semibold text-[#2937da] transition-colors hover:bg-[#2937da] hover:text-white lg:hidden"
-            onClick={() => setMenuOpen(current => !current)}
-            aria-expanded={menuOpen}
-            aria-controls="predict-mobile-nav"
-          >
-            {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            Меню
-          </button>
-          <PredictNav user={user} onNavigate={() => setMenuOpen(false)} className="hidden lg:flex lg:justify-end" />
+          <PredictNav user={user} className="hidden lg:flex lg:justify-end" />
         </div>
-        {menuOpen && (
-          <PredictNav
-            user={user}
-            onNavigate={() => setMenuOpen(false)}
-            id="predict-mobile-nav"
-            className="grid gap-2 border-t border-[#2937da]/10 pb-4 pt-3 lg:hidden"
-          />
-        )}
       </div>
       <Outlet />
+      <PredictMobileNav user={user} />
     </div>
   );
 }
 
 function PredictNav({
   user,
-  onNavigate,
   className,
-  id,
 }: {
   user: PredictUser | null;
-  onNavigate: () => void;
   className?: string;
-  id?: string;
 }) {
   return (
-    <nav id={id} className={`gap-2 ${className ?? ""}`}>
+    <nav className={`gap-2 ${className ?? ""}`}>
       {links.map(item => {
         const Icon = item.icon;
         return (
@@ -83,7 +61,6 @@ function PredictNav({
             key={item.to}
             to={item.to}
             end={item.to === "/predict"}
-            onClick={onNavigate}
             className={({ isActive }) =>
               `inline-flex h-11 items-center gap-2 rounded-md border px-3 text-sm font-semibold transition-colors ${
                 isActive
@@ -100,7 +77,6 @@ function PredictNav({
       {user?.isAdmin && (
         <NavLink
           to="/predict/admin"
-          onClick={onNavigate}
           className={({ isActive }) =>
             `inline-flex h-11 items-center gap-2 rounded-md border px-3 text-sm font-semibold transition-colors ${
               isActive
@@ -112,6 +88,33 @@ function PredictNav({
           Admin
         </NavLink>
       )}
+    </nav>
+  );
+}
+
+function PredictMobileNav({ user }: { user: PredictUser | null }) {
+  const items = user?.isAdmin ? [...links.slice(0, 4), { to: "/predict/admin", label: "Адмін", icon: Shield }] : links;
+
+  return (
+    <nav className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 grid grid-cols-5 overflow-hidden rounded-md border border-[#2937da]/15 bg-white/95 p-1 shadow-[0_18px_48px_rgba(41,55,218,0.24)] backdrop-blur lg:hidden">
+      {items.map(item => {
+        const Icon = item.icon;
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/predict"}
+            className={({ isActive }) =>
+              `flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-[6px] px-1 text-[0.66rem] font-bold leading-none transition-colors ${
+                isActive ? "bg-[#2937da] text-white" : "text-[#2937da]"
+              }`
+            }
+          >
+            <Icon className="h-5 w-5" />
+            <span className="truncate">{item.label}</span>
+          </NavLink>
+        );
+      })}
     </nav>
   );
 }

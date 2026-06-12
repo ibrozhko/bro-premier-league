@@ -349,15 +349,15 @@ export const predictMatches: PredictMatch[] = [
 ];
 
 export const stageLabels: Record<MatchStage | "all" | "knockout", string> = {
-  all: "All",
-  knockout: "Play-off",
-  group: "Group",
-  round_of_32: "Round of 32",
-  round_of_16: "Round of 16",
-  quarterfinal: "Quarterfinal",
-  semifinal: "Semifinal",
-  bronze: "Bronze",
-  final: "Final",
+  all: "Усі",
+  knockout: "Плей-офф",
+  group: "Група",
+  round_of_32: "1/16",
+  round_of_16: "1/8",
+  quarterfinal: "1/4",
+  semifinal: "1/2",
+  bronze: "3 місце",
+  final: "Фінал",
 };
 
 export function formatKyivDate(iso: string) {

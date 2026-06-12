@@ -305,4 +305,28 @@
   .coax-light .text-foreground {
     color: #343434;
   }
+
+  @media (max-width: 640px) {
+    .coax-light main.content-shell {
+      padding-top: 1.5rem;
+      padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+    }
+
+    .coax-light .page-header {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+    }
+
+    .coax-light .h-page {
+      font-size: clamp(2.55rem, 13vw, 3.35rem);
+      line-height: 0.9;
+      letter-spacing: 0.01em;
+    }
+
+    .coax-light .page-kicker {
+      margin-bottom: 0.35rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+    }
+  }
 }

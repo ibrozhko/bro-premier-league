@@ -36,7 +36,7 @@ export default function PredictMatches() {
         <div className="page-kicker">104 матчі</div>
         <h2 className="h-page">Матчі та результати</h2>
       </div>
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+      <div className="mb-6 flex flex-wrap gap-2">
         {filters.map(filter => (
           <button
             key={filter}
