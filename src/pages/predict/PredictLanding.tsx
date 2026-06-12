@@ -30,9 +30,9 @@ export default function PredictLanding() {
   const finishedCount = matchList.filter(match => match.status === "finished").length;
 
   return (
-    <main className="content-shell py-6 sm:py-10">
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-end">
-        <div className="py-2 lg:py-8">
+    <main className="content-shell py-6 sm:py-12">
+      <section className="grid gap-8 lg:grid-cols-[minmax(0,570px)_380px] lg:items-center lg:justify-between">
+        <div className="py-2 lg:py-10">
           <div className="mb-5 flex flex-wrap gap-2">
             <span className="rounded-md border border-[#2937da]/20 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#2937da]">
               11 червня - 19 липня
@@ -42,11 +42,11 @@ export default function PredictLanding() {
             </span>
           </div>
 
-          <h2 className="max-w-4xl font-heading text-[clamp(2.9rem,9vw,6rem)] leading-[0.88] tracking-normal text-[#343434]">
-            Прогнозуй ЧС разом з BPL
+          <h2 className="max-w-[570px] font-heading text-[clamp(2.45rem,5.6vw,4.6rem)] leading-[0.96] tracking-normal text-[#343434]">
+            Чемпіонат прогнозів BPL
           </h2>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-[#343434]/72 sm:text-lg">
-            Обирай рахунок, збирай очки за точність і дивись, як таблиця змінюється після кожного матчу.
+          <p className="mt-5 max-w-xl text-base leading-7 text-[#343434]/72 sm:text-lg">
+            Став рахунок на матчі ЧС-2026, збирай очки за точність і піднімайся у таблиці друзів.
           </p>
 
           <div className="mt-7 grid gap-3 sm:flex sm:flex-row">
