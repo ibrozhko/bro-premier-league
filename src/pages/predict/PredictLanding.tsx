@@ -165,31 +165,31 @@ function MatchList({
   tone: "today" | "results";
 }) {
   return (
-    <div className="light-panel overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
-      <div className={`border-b border-[#2937da]/10 px-4 py-4 ${tone === "today" ? "bg-[#2937da] text-white" : "bg-[#f7f7fb] text-[#343434]"}`}>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-md ${tone === "today" ? "bg-[#bbf903] text-[#111111]" : "bg-[#2937da]/10 text-[#2937da]"}`}>
-              <Icon className="h-5 w-5" />
-            </div>
-            <div>
-              <div className={`text-sm font-bold uppercase tracking-wide ${tone === "today" ? "text-white" : "text-[#2937da]"}`}>{title}</div>
-              <div className={`mt-1 text-sm ${tone === "today" ? "text-white/70" : "text-[#343434]/62"}`}>{description}</div>
-            </div>
+    <section>
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className={`mt-1 flex h-9 w-9 items-center justify-center rounded-md ${tone === "today" ? "bg-[#2937da] text-white" : "bg-[#2937da]/10 text-[#2937da]"}`}>
+            <Icon className="h-5 w-5" />
           </div>
-          <div className={`w-fit rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${tone === "today" ? "bg-white/[0.12] text-[#bbf903]" : "bg-[#2937da]/10 text-[#2937da]"}`}>
-            {matchCountLabel(matches.length)}
+          <div>
+            <h4 className="h-section text-[#343434]">{title}</h4>
+            <p className="mt-1 text-sm text-[#343434]/62">{description}</p>
           </div>
         </div>
+        <div className="w-fit rounded-md bg-[#2937da]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-[#2937da]">
+          {matchCountLabel(matches.length)}
+        </div>
       </div>
-      <div className="divide-y divide-[#2937da]/10">
+      <div className="light-panel overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
         {matches.length > 0 ? (
-          matches.map(match => <MatchRow key={match.id} match={match} />)
+          <div className="divide-y divide-[#2937da]/10">
+            {matches.map(match => <MatchRow key={match.id} match={match} />)}
+          </div>
         ) : (
           <div className="px-4 py-6 text-sm text-[#343434]/65">{empty}</div>
         )}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -197,17 +197,14 @@ function MatchRow({ match }: { match: PredictMatch }) {
   const score = match.homeScore === null || match.awayScore === null ? "VS" : `${match.homeScore}-${match.awayScore}`;
 
   return (
-    <div className="grid gap-4 px-4 py-4 lg:grid-cols-[150px_minmax(0,1fr)_82px_minmax(0,1fr)] lg:items-center">
-      <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/55">
-        {match.groupName ? `Група ${match.groupName}` : stageLabel(match.stage)}
-        <div className="mt-1 normal-case tracking-normal">{formatKyivDate(match.matchDate)}</div>
+    <div className="px-4 py-4 md:px-6 md:py-5">
+      <div className="mb-3 flex flex-col gap-1 text-xs font-semibold uppercase tracking-wide text-[#343434]/55 sm:flex-row sm:items-center sm:justify-between">
+        <span>{match.groupName ? `Група ${match.groupName}` : stageLabel(match.stage)}</span>
+        <span className="normal-case tracking-normal">{formatKyivDate(match.matchDate)}</span>
       </div>
-      <Team name={match.homeTeam} code={match.homeCode} align="right" className="hidden lg:block" />
-      <div className="mx-auto hidden w-[72px] rounded-md bg-[#2937da]/10 px-2 py-2 text-center font-heading text-3xl leading-none text-[#2937da] lg:block">{score}</div>
-      <Team name={match.awayTeam} code={match.awayCode} align="left" className="hidden lg:block" />
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 lg:hidden">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 md:gap-6">
         <Team name={match.homeTeam} code={match.homeCode} align="right" />
-        <div className="min-w-[64px] text-center font-heading text-3xl leading-none text-[#2937da]">{score}</div>
+        <div className="min-w-[72px] rounded-md bg-[#2937da]/10 px-3 py-2 text-center font-heading text-3xl leading-none text-[#2937da]">{score}</div>
         <Team name={match.awayTeam} code={match.awayCode} align="left" />
       </div>
     </div>
@@ -217,7 +214,7 @@ function MatchRow({ match }: { match: PredictMatch }) {
 function Team({ name, code, align, className = "" }: { name: string; code: string; align: "left" | "right"; className?: string }) {
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"} ${className}`}>
-      <div className="text-base font-semibold leading-tight text-[#343434] sm:text-lg">{name}</div>
+      <div className="text-base font-semibold leading-tight text-[#343434] sm:text-xl">{name}</div>
       <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/50">{code}</div>
     </div>
   );
