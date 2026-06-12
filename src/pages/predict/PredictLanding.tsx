@@ -28,9 +28,11 @@ export default function PredictLanding() {
   const finishedCount = matchList.filter(match => match.status === "finished").length;
   const todayKey = getKyivDayKey(new Date());
   const yesterdayKey = getKyivDayKey(new Date(Date.now() - 24 * 60 * 60 * 1000));
+  const tomorrowKey = getKyivDayKey(new Date(Date.now() + 24 * 60 * 60 * 1000));
+  const nextMatchDayKeys = new Set([todayKey, tomorrowKey]);
   const resultDayKeys = new Set([todayKey, yesterdayKey]);
-  const todayMatches = sortedMatches.filter(
-    match => getKyivDayKey(match.matchDate) === todayKey && match.status !== "finished",
+  const nextMatches = sortedMatches.filter(
+    match => nextMatchDayKeys.has(getKyivDayKey(match.matchDate)) && match.status !== "finished",
   );
   const recentResults = sortedMatches.filter(
     match => resultDayKeys.has(getKyivDayKey(match.matchDate)) && match.status === "finished",
@@ -100,11 +102,11 @@ export default function PredictLanding() {
             <div className="mb-3 text-sm font-medium text-[#343434]/65">Результати оновлюються після синку</div>
             <div className="grid gap-5">
               <MatchList
-                title="Матчі сьогодні"
-                description="Усі матчі, які ще мають відбутися сьогодні за київським часом."
-                empty="На сьогодні майбутніх матчів немає."
+                title="Наступні матчі"
+                description="Найближчі матчі за сьогодні та завтра за київським часом."
+                empty="На сьогодні та завтра майбутніх матчів немає."
                 icon={CalendarDays}
-                matches={todayMatches}
+                matches={nextMatches}
                 tone="today"
               />
               <MatchList
