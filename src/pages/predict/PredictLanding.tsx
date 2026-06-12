@@ -28,11 +28,12 @@ export default function PredictLanding() {
   const finishedCount = matchList.filter(match => match.status === "finished").length;
   const todayKey = getKyivDayKey(new Date());
   const yesterdayKey = getKyivDayKey(new Date(Date.now() - 24 * 60 * 60 * 1000));
+  const resultDayKeys = new Set([todayKey, yesterdayKey]);
   const todayMatches = sortedMatches.filter(
     match => getKyivDayKey(match.matchDate) === todayKey && match.status !== "finished",
   );
-  const yesterdayResults = sortedMatches.filter(
-    match => getKyivDayKey(match.matchDate) === yesterdayKey && match.status === "finished",
+  const recentResults = sortedMatches.filter(
+    match => resultDayKeys.has(getKyivDayKey(match.matchDate)) && match.status === "finished",
   );
 
   return (
@@ -107,11 +108,11 @@ export default function PredictLanding() {
                 tone="today"
               />
               <MatchList
-                title="Результати вчора"
-                description="Завершені матчі попереднього дня."
-                empty="За вчора результатів ще немає."
+                title="Результати"
+                description="Завершені матчі за сьогодні та вчора за київським часом."
+                empty="За сьогодні та вчора результатів ще немає."
                 icon={ShieldCheck}
-                matches={yesterdayResults}
+                matches={recentResults}
                 tone="results"
               />
             </div>
