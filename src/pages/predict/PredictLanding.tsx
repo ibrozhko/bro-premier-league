@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, CalendarDays, Medal, ShieldCheck, Target, Trophy, UsersRound } from "lucide-react";
+import { ArrowRight, CalendarDays, Medal, ShieldCheck } from "lucide-react";
 import { getCurrentPredictUser, getPredictMatches, getPredictUsers } from "@/lib/predictStore";
 import { formatKyivDate, predictMatches, type PredictMatch, type PredictUser } from "@/data/predictData";
 import logoFull from "@/assets/logo-full.png";
@@ -79,19 +79,11 @@ export default function PredictLanding() {
         <div className="content-shell space-y-5">
           <section className="light-panel overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
             <div className="brand-stripe h-1" />
-            <div className="grid gap-5 p-4 sm:p-5 lg:grid-cols-[1fr_320px]">
+            <div className="p-4 sm:p-5">
               <div>
-                <div className="page-kicker">Система балів</div>
-                <h3 className="h-section">Як рахуються очки</h3>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <ScoreTile icon={Target} title="Напрям" value="5 балів" text="Перемога однієї з команд або нічия." />
-                  <ScoreTile icon={Trophy} title="Точний рахунок" value="10 балів" text="Повний збіг рахунку матчу." />
-                  <ScoreTile icon={ShieldCheck} title="Плей-офф" value="+5" text="Команда проходить у наступний раунд." />
-                  <ScoreTile icon={UsersRound} title="Інвайти" value="3 коди" text="Кожен гравець має власні запрошення." />
-                </div>
+                <div className="page-kicker">Поточний лідер</div>
               </div>
-
-              <div className="rounded-md border border-[#2937da]/15 bg-[#2937da] p-4 text-white">
+              <div className="mt-3 rounded-md border border-[#2937da]/15 bg-[#2937da] p-4 text-white">
                 <div className="grid gap-4 sm:grid-cols-[56px_1fr_auto] sm:items-center">
                   <div className="flex h-14 w-14 items-center justify-center rounded-md bg-[#bbf903] text-[#111111]">
                     <Medal className="h-7 w-7" />
@@ -186,23 +178,6 @@ function MatchRow({ match }: { match: PredictMatch }) {
         <Team name={match.homeTeam} code={match.homeCode} align="right" />
         <div className="min-w-[58px] text-center font-heading text-3xl leading-none text-[#2937da]">{score}</div>
         <Team name={match.awayTeam} code={match.awayCode} align="left" />
-      </div>
-    </div>
-  );
-}
-
-function ScoreTile({ icon: Icon, title, value, text }: { icon: typeof Target; title: string; value: string; text: string }) {
-  return (
-    <div className="rounded-md border border-[#2937da]/15 bg-[#f7f7fb] p-3">
-      <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#2937da]/10 text-[#2937da]">
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">{title}</div>
-          <div className="font-heading text-xl leading-none text-[#343434]">{value}</div>
-          <p className="mt-1 text-sm leading-5 text-[#343434]/65">{text}</p>
-        </div>
       </div>
     </div>
   );

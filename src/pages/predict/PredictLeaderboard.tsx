@@ -1,4 +1,4 @@
-import { Medal } from "lucide-react";
+import { Medal, ShieldCheck, Target, Trophy, UsersRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCorrectPredictionCount, getTournamentPoints } from "@/data/predictData";
 import { getPredictUsers } from "@/lib/predictStore";
@@ -42,6 +42,20 @@ export default function PredictLeaderboard() {
         </div>
       )}
 
+      <section className="mb-4 overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
+        <div className="brand-stripe h-1" />
+        <div className="p-4">
+          <div className="page-kicker">Система балів</div>
+          <h3 className="h-section">Як рахуються очки</h3>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <ScoreTile icon={Target} title="Напрям" value="5 балів" text="Перемога однієї з команд або нічия." />
+            <ScoreTile icon={Trophy} title="Точний рахунок" value="10 балів" text="Повний збіг рахунку матчу." />
+            <ScoreTile icon={ShieldCheck} title="Плей-офф" value="+5" text="Команда проходить у наступний раунд." />
+            <ScoreTile icon={UsersRound} title="Інвайти" value="3 коди" text="Кожен гравець має власні запрошення." />
+          </div>
+        </div>
+      </section>
+
       <div className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
         <div className="grid grid-cols-[44px_minmax(0,1fr)_72px] gap-2 border-b border-[#2937da]/10 bg-[#f3f3f6] px-3 py-3 text-xs font-bold uppercase tracking-wide text-[#343434]/65 sm:grid-cols-[56px_1fr_92px_110px_100px]">
           <span>#</span>
@@ -66,5 +80,22 @@ export default function PredictLeaderboard() {
         ))}
       </div>
     </main>
+  );
+}
+
+function ScoreTile({ icon: Icon, title, value, text }: { icon: typeof Target; title: string; value: string; text: string }) {
+  return (
+    <div className="rounded-md border border-[#2937da]/15 bg-[#f7f7fb] p-3">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#2937da]/10 text-[#2937da]">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">{title}</div>
+          <div className="font-heading text-xl leading-none text-[#343434]">{value}</div>
+          <p className="mt-1 text-sm leading-5 text-[#343434]/65">{text}</p>
+        </div>
+      </div>
+    </div>
   );
 }
