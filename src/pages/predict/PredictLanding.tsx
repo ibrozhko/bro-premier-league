@@ -96,17 +96,7 @@ export default function PredictLanding() {
           </section>
 
           <section>
-            <div className="mb-5 flex flex-col gap-2 border-b border-[#2937da]/20 pb-5 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <div className="page-kicker">Live data</div>
-                <h3 className="h-section flex items-center gap-3">
-                  <CalendarDays className="h-7 w-7 text-[#2937da]" />
-                  Матч-центр
-                </h3>
-              </div>
-              <div className="text-sm font-medium text-[#343434]/65">Результати оновлюються після синку</div>
-            </div>
-
+            <div className="mb-3 text-sm font-medium text-[#343434]/65">Результати оновлюються після синку</div>
             <div className="grid gap-5">
               <MatchList
                 title="Матчі сьогодні"
