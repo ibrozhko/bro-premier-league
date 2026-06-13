@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, Medal, ShieldCheck } from "lucide-react";
 import { getCurrentPredictUser, getPredictMatches, getPredictUsers } from "@/lib/predictStore";
-import { formatKyivDate, predictMatches, type PredictMatch, type PredictUser } from "@/data/predictData";
+import { formatKyivDate, getTeamLabel, predictMatches, type PredictMatch, type PredictUser } from "@/data/predictData";
 import logoFull from "@/assets/logo-full.png";
 
 type Leader = PredictUser & { totalPoints: number };
@@ -50,7 +50,7 @@ export default function PredictLanding() {
             Чемпіонат <span className="text-[#bbf903]">прогнозів</span>
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
-            Окрема гра BPL на ЧС-2026: став рахунок, збирай очки за точність і піднімайся у таблиці друзів.
+            Приватний чемпіонат прогнозів на ЧС 2026 для своїх: став рахунок, набирай очки й тримай інтригу в таблиці до фіналу.
           </p>
 
           <div className="mx-auto mt-5 grid max-w-3xl grid-cols-3 gap-px text-left">
@@ -199,7 +199,7 @@ function MatchRow({ match }: { match: PredictMatch }) {
 function Team({ name, code, align, className = "" }: { name: string; code: string; align: "left" | "right"; className?: string }) {
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"} ${className}`}>
-      <div className="text-base font-semibold leading-tight text-[#343434] sm:text-xl">{name}</div>
+      <div className="text-base font-semibold leading-tight text-[#343434] sm:text-xl">{getTeamLabel(name)}</div>
       <div className="text-xs font-semibold uppercase tracking-wide text-[#343434]/50">{code}</div>
     </div>
   );

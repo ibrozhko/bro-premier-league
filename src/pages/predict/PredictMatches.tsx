@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays } from "lucide-react";
-import { formatKyivDate, predictMatches, stageLabels, type MatchStage, type PredictMatch } from "@/data/predictData";
+import { formatKyivDate, getTeamLabel, predictMatches, stageLabels, statusLabels, type MatchStage, type PredictMatch } from "@/data/predictData";
 import { getPredictMatches } from "@/lib/predictStore";
 
 type StageFilter = MatchStage | "all" | "knockout";
@@ -49,7 +49,7 @@ export default function PredictMatches() {
       </div>
       <div className="space-y-3">
         {matches.map(match => (
-          <div key={match.id} className="grid gap-3 rounded-md border border-[#2937da]/15 bg-white p-4 sm:grid-cols-[120px_1fr_92px] sm:items-center">
+          <div key={match.id} className="grid gap-3 rounded-md border border-[#2937da]/15 bg-white p-4 sm:grid-cols-[120px_minmax(0,1fr)_124px] sm:items-center">
             <div>
               <div className="t-label">{stageLabels[match.stage]}{match.groupName ? ` ${match.groupName}` : ""}</div>
               <div className="mt-1 flex items-center gap-1 text-xs text-[#343434]/70">
@@ -64,10 +64,10 @@ export default function PredictMatches() {
               <Team code={match.awayCode} name={match.awayTeam} align="left" />
             </div>
             <div className="text-left sm:text-right">
-              <span className={`rounded-md px-2 py-1 text-xs font-bold uppercase ${
+              <span className={`inline-flex w-fit justify-center whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold uppercase sm:w-full ${
                 match.status === "finished" ? "bg-green-100 text-green-700" : match.status === "live" ? "bg-red-100 text-red-700" : "bg-[#2937da]/10 text-[#2937da]"
               }`}>
-                {match.status}
+                {statusLabels[match.status]}
               </span>
             </div>
           </div>
@@ -78,11 +78,9 @@ export default function PredictMatches() {
 }
 
 function Team({ code, name, align }: { code: string; name: string; align: "left" | "right" }) {
-  const isPlaceholder = name === "TBD";
-
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="font-semibold text-[#343434] truncate">{isPlaceholder ? "Буде визначено" : name}</div>
+      <div className="font-semibold text-[#343434] truncate">{getTeamLabel(name)}</div>
       <div className="t-meta">{code}</div>
     </div>
   );

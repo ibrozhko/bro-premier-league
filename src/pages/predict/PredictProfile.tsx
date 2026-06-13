@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Clipboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatKyivDate, getTournamentPoints, predictMatches, stageLabels, type PredictMatch, type PredictUser } from "@/data/predictData";
+import { formatKyivDate, getTeamLabel, getTournamentPoints, predictMatches, stageLabels, type PredictMatch, type PredictUser } from "@/data/predictData";
 import { getCurrentPredictUser, getPredictMatches, logoutPredictUser } from "@/lib/predictStore";
 
 export default function PredictProfile() {
@@ -104,11 +104,11 @@ export default function PredictProfile() {
               <h3 className="h-card text-[#343434]">Мої турнірні прогнози</h3>
               <dl className="mt-3 grid gap-0 text-sm">
                 {[
-                  ["Чемпіон", user.tournamentPrediction.champion],
-                  ["Фіналіст", user.tournamentPrediction.finalist],
+                  ["Чемпіон", getTeamLabel(user.tournamentPrediction.champion)],
+                  ["Фіналіст", getTeamLabel(user.tournamentPrediction.finalist)],
                   ["Бомбардир", user.tournamentPrediction.topScorer],
-                  ["Темна конячка", user.tournamentPrediction.darkHorse],
-                  ["Улюблена команда", user.tournamentPrediction.favoriteTeam],
+                  ["Темна конячка", getTeamLabel(user.tournamentPrediction.darkHorse)],
+                  ["Улюблена команда", getTeamLabel(user.tournamentPrediction.favoriteTeam)],
                 ].map(([label, value]) => (
                   <div key={label} className="flex items-center justify-between gap-3 border-b border-[#2937da]/10 py-3 first:pt-0 last:border-b-0 last:pb-0">
                     <dt className="text-[#343434]/60">{label}</dt>
@@ -134,7 +134,7 @@ export default function PredictProfile() {
               <div key={prediction.matchId} className="grid grid-cols-[minmax(0,1fr)_72px] gap-3 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div className="min-w-0">
                   <div className="t-label">{stageLabels[match!.stage]} - {formatKyivDate(match!.matchDate)}</div>
-                  <div className="truncate font-semibold text-[#343434]">{match!.homeTeam} vs {match!.awayTeam}</div>
+                  <div className="truncate font-semibold text-[#343434]">{getTeamLabel(match!.homeTeam)} vs {getTeamLabel(match!.awayTeam)}</div>
                 </div>
                 <div className="text-right">
                   <div className="font-heading text-2xl leading-none text-[#2937da]">{prediction.predictedHomeScore}:{prediction.predictedAwayScore}</div>

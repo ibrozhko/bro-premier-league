@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   formatKyivDate,
+  getTeamLabel,
   isLocked,
   isVisibleForPrediction,
   predictMatches,
@@ -212,8 +213,8 @@ function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
       {match.stage !== "group" && (
         <div className="grid gap-2 border-t border-[#2937da]/10 p-4 sm:grid-cols-[160px_1fr_1fr] sm:items-center">
           <div className="t-label">Хто пройде далі</div>
-          <Choice label={match.homeTeam} active={draft.advancing === "home"} disabled={locked} onClick={() => onUpdate({ advancing: "home" })} />
-          <Choice label={match.awayTeam} active={draft.advancing === "away"} disabled={locked} onClick={() => onUpdate({ advancing: "away" })} />
+          <Choice label={getTeamLabel(match.homeTeam)} active={draft.advancing === "home"} disabled={locked} onClick={() => onUpdate({ advancing: "home" })} />
+          <Choice label={getTeamLabel(match.awayTeam)} active={draft.advancing === "away"} disabled={locked} onClick={() => onUpdate({ advancing: "away" })} />
         </div>
       )}
 
@@ -227,12 +228,10 @@ function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
 }
 
 function TeamPick({ code, name, align = "left" }: { code: string; name: string; align?: "left" | "right" }) {
-  const isPlaceholder = name === "TBD";
-
   return (
     <div className={`min-w-0 ${align === "right" ? "lg:text-right" : ""}`}>
       <div className="t-label">{code}</div>
-      <div className="truncate font-heading text-2xl text-[#343434]">{isPlaceholder ? "Буде визначено" : name}</div>
+      <div className="truncate font-heading text-2xl text-[#343434]">{getTeamLabel(name)}</div>
     </div>
   );
 }

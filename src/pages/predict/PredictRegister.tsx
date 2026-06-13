@@ -4,7 +4,7 @@ import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { popularScorers, wcTeams, type TournamentPrediction } from "@/data/predictData";
+import { getTeamLabel, popularScorers, wcTeams, type TournamentPrediction } from "@/data/predictData";
 import { registerPredictUser } from "@/lib/predictStore";
 
 export default function PredictRegister() {
@@ -113,7 +113,7 @@ function SelectField({ label, value, onChange }: { label: string; value: string;
         onChange={event => onChange(event.target.value)}
         className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm text-[#343434] ring-offset-background"
       >
-        {wcTeams.map(team => <option key={team} value={team}>{team}</option>)}
+        {wcTeams.map(team => <option key={team} value={team}>{getTeamLabel(team)}</option>)}
       </select>
     </div>
   );

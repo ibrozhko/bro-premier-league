@@ -4,7 +4,7 @@ import { Plus, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getPredictUsers, getCurrentPredictUser, seedPredictUser, updateManualResult } from "@/lib/predictStore";
-import { predictMatches, type PredictUser } from "@/data/predictData";
+import { getTeamLabel, predictMatches, type PredictUser } from "@/data/predictData";
 
 export default function PredictAdmin() {
   const [user, setUser] = useState<PredictUser | null>(null);
@@ -70,7 +70,7 @@ export default function PredictAdmin() {
     }
     try {
       const match = await updateManualResult(parsedMatchId, parsedHome, parsedAway);
-      setMessage(`Оновлено: ${match.homeTeam} ${parsedHome}:${parsedAway} ${match.awayTeam}.`);
+      setMessage(`Оновлено: ${getTeamLabel(match.homeTeam)} ${parsedHome}:${parsedAway} ${getTeamLabel(match.awayTeam)}.`);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Не вдалося оновити матч.");
     }
@@ -105,7 +105,7 @@ export default function PredictAdmin() {
               className="h-10 rounded-md border border-input bg-white px-3 text-sm text-[#343434]"
             >
               {predictMatches.slice(0, 20).map(match => (
-                <option key={match.id} value={match.id}>{match.homeTeam} vs {match.awayTeam}</option>
+                <option key={match.id} value={match.id}>{getTeamLabel(match.homeTeam)} vs {getTeamLabel(match.awayTeam)}</option>
               ))}
             </select>
             <Input value={homeScore} onChange={event => setHomeScore(event.target.value)} inputMode="numeric" placeholder="H" className="bg-white text-[#343434]" />
