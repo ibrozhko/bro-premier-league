@@ -30,6 +30,10 @@ const requiredEnvVars = [
   "FOOTBALL_DATA_API_KEY",
 ] as const;
 
+const footballDataMatchIds: Record<number, string> = {
+  537369: "WC2026-G-14",
+};
+
 export default async function handler(request: ApiRequest, response: ApiResponse) {
   if (request.method !== "GET" && request.method !== "POST") {
     response.status(405).json({ error: "Method not allowed" });
@@ -201,6 +205,11 @@ function mapStage(stage?: string) {
 }
 
 function findLocalMatch(match: FootballDataMatch, stage: string) {
+  const mappedExternalId = footballDataMatchIds[match.id];
+  if (mappedExternalId) {
+    return predictMatches.find(localMatch => localMatch.externalId === mappedExternalId);
+  }
+
   const homeTeam = normalizeTeamName(match.homeTeam.name ?? match.homeTeam.shortName ?? "");
   const awayTeam = normalizeTeamName(match.awayTeam.name ?? match.awayTeam.shortName ?? "");
 
