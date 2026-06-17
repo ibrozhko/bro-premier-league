@@ -216,6 +216,7 @@ function normalizeTeamName(name: string) {
   const aliases: Record<string, string> = {
     "Bosnia-Herzegovina": "Bosnia and Herzegovina",
     "Bosnia & Herzegovina": "Bosnia and Herzegovina",
+    "Cabo Verde": "Cape Verde",
     "Congo DR": "DR Congo",
     "Congo, The Democratic Republic of the": "DR Congo",
     "Côte d'Ivoire": "Ivory Coast",
