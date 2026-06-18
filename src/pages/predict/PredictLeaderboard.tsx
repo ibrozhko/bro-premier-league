@@ -73,7 +73,13 @@ export default function PredictLeaderboard() {
               ) : null}
               {index + 1}
             </span>
-            <span className="min-w-0 truncate font-semibold text-[#343434]">{user.displayName || user.username}</span>
+            <span className="min-w-0">
+              <span className="block truncate font-semibold text-[#343434]">{user.displayName || user.username}</span>
+              <span className="mt-1 flex gap-3 text-xs font-semibold uppercase tracking-wide text-[#343434]/55 sm:hidden">
+                <span>Напрям {getCorrectPredictionCount(user)}</span>
+                <span>Точні {getExactPredictionCount(user)}</span>
+              </span>
+            </span>
             <span className="text-right font-heading text-xl text-[#2937da]">{user.totalPoints}</span>
             <span className="hidden text-right text-sm text-[#343434]/75 sm:block">{getTournamentPoints(user)}</span>
             <span className="hidden text-right text-sm text-[#343434]/75 sm:block">{getCorrectPredictionCount(user)}</span>
