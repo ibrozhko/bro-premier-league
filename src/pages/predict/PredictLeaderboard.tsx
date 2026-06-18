@@ -1,6 +1,6 @@
 import { Medal, ShieldCheck, Target, Trophy, UsersRound } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getCorrectPredictionCount, getTournamentPoints } from "@/data/predictData";
+import { getCorrectPredictionCount, getExactPredictionCount, getTournamentPoints } from "@/data/predictData";
 import { getPredictUsers } from "@/lib/predictStore";
 import type { PredictUser } from "@/data/predictData";
 
@@ -57,15 +57,16 @@ export default function PredictLeaderboard() {
       </section>
 
       <div className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
-        <div className="grid grid-cols-[44px_minmax(0,1fr)_72px] gap-2 border-b border-[#2937da]/10 bg-[#f3f3f6] px-3 py-3 text-xs font-bold uppercase tracking-wide text-[#343434]/65 sm:grid-cols-[56px_1fr_92px_110px_100px]">
+        <div className="grid grid-cols-[44px_minmax(0,1fr)_72px] gap-2 border-b border-[#2937da]/10 bg-[#f3f3f6] px-3 py-3 text-xs font-bold uppercase tracking-wide text-[#343434]/65 sm:grid-cols-[56px_1fr_92px_96px_92px_92px]">
           <span>#</span>
           <span>Ім'я</span>
           <span className="text-right">Бали</span>
           <span className="hidden text-right sm:block">Турнірні</span>
-          <span className="hidden text-right sm:block">Вірні</span>
+          <span className="hidden text-right sm:block">Напрям</span>
+          <span className="hidden text-right sm:block">Точні</span>
         </div>
         {users.map((user, index) => (
-          <div key={user.id} className="grid grid-cols-[44px_minmax(0,1fr)_72px] items-center gap-2 border-b border-[#2937da]/10 px-3 py-4 last:border-b-0 sm:grid-cols-[56px_1fr_92px_110px_100px]">
+          <div key={user.id} className="grid grid-cols-[44px_minmax(0,1fr)_72px] items-center gap-2 border-b border-[#2937da]/10 px-3 py-4 last:border-b-0 sm:grid-cols-[56px_1fr_92px_96px_92px_92px]">
             <span className="flex items-center gap-2 font-heading text-xl text-[#2937da]">
               {index < 3 ? (
                 <Medal className="h-5 w-5" />
@@ -76,6 +77,7 @@ export default function PredictLeaderboard() {
             <span className="text-right font-heading text-xl text-[#2937da]">{user.totalPoints}</span>
             <span className="hidden text-right text-sm text-[#343434]/75 sm:block">{getTournamentPoints(user)}</span>
             <span className="hidden text-right text-sm text-[#343434]/75 sm:block">{getCorrectPredictionCount(user)}</span>
+            <span className="hidden text-right text-sm text-[#343434]/75 sm:block">{getExactPredictionCount(user)}</span>
           </div>
         ))}
       </div>

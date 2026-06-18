@@ -10,6 +10,7 @@ import {
   isVisibleForPrediction,
   predictMatches,
   stageLabels,
+  statusLabels,
   type MatchPrediction,
   type PredictMatch,
   type PredictUser,
@@ -17,9 +18,51 @@ import {
 import { getCurrentPredictUser, getPredictMatches, saveMatchPrediction } from "@/lib/predictStore";
 
 type Draft = Record<number, { home: string; away: string; advancing: "home" | "away" | "" }>;
+type PeriodFilter = "near" | "yesterday" | "today" | "tomorrow" | "future" | "all";
+
+const periodOptions: Array<{ value: PeriodFilter; label: string }> = [
+  { value: "near", label: "Сьогодні-завтра" },
+  { value: "yesterday", label: "Вчора" },
+  { value: "today", label: "Сьогодні" },
+  { value: "tomorrow", label: "Завтра" },
+  { value: "future", label: "Майбутні" },
+  { value: "all", label: "Усі" },
+];
 
 function sortByKickoff(matches: PredictMatch[]) {
   return [...matches].sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime() || a.id - b.id);
+}
+
+function dayStart(date: Date) {
+  const next = new Date(date);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function isInDay(match: PredictMatch, day: Date) {
+  const kickoff = new Date(match.matchDate).getTime();
+  const start = dayStart(day).getTime();
+  const end = addDays(dayStart(day), 1).getTime();
+  return kickoff >= start && kickoff < end;
+}
+
+function matchesPeriod(match: PredictMatch, period: PeriodFilter, now = new Date()) {
+  const today = dayStart(now);
+  const kickoff = new Date(match.matchDate).getTime();
+  const tomorrow = addDays(today, 1);
+
+  if (period === "all") return true;
+  if (period === "yesterday") return isInDay(match, addDays(today, -1));
+  if (period === "today") return isInDay(match, today);
+  if (period === "tomorrow") return isInDay(match, tomorrow);
+  if (period === "future") return kickoff >= tomorrow.getTime();
+  return kickoff >= today.getTime() && kickoff < addDays(today, 2).getTime();
 }
 
 export default function PredictPredictions() {
@@ -28,6 +71,7 @@ export default function PredictPredictions() {
   const [message, setMessage] = useState("");
   const [draft, setDraft] = useState<Draft>({});
   const [matchList, setMatchList] = useState<PredictMatch[]>(predictMatches);
+  const [period, setPeriod] = useState<PeriodFilter>("near");
 
   useEffect(() => {
     Promise.all([
@@ -69,8 +113,13 @@ export default function PredictPredictions() {
 
   const visibleMatches = useMemo(() => {
     if (!user) return [];
-    return sortByKickoff(matchList.filter(match => isVisibleForPrediction(match, user.predictions[match.id])));
-  }, [matchList, user]);
+    return sortByKickoff(matchList.filter(match => {
+      const isVisible = period === "all" || period === "future"
+        ? isVisibleForPrediction(match, user.predictions[match.id])
+        : Boolean(user.predictions[match.id]) || !isLocked(match);
+      return isVisible && matchesPeriod(match, period);
+    }));
+  }, [matchList, period, user]);
 
   if (isLoading) {
     return (
@@ -133,15 +182,31 @@ export default function PredictPredictions() {
   return (
     <main className="content-shell py-10">
       <div className="page-header">
-        <div className="page-kicker">Сьогодні та завтра</div>
+        <div className="page-kicker">Навігація по матчах</div>
         <h2 className="h-page">Зробити ставки</h2>
-        <p className="t-meta mt-2">Дедлайн кожного прогнозу настає рівно у kickoff за київським часом.</p>
+        <p className="t-meta mt-2">Дедлайн кожного прогнозу настає рівно у kickoff за київським часом. Збережені прогнози показують реальний результат після синку.</p>
       </div>
       {message && <div className="mb-5 rounded-md border border-[#2937da]/20 bg-white px-4 py-3 text-sm text-[#343434]">{message}</div>}
+      <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+        {periodOptions.map(option => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => setPeriod(option.value)}
+            className={`h-10 shrink-0 rounded-md border px-4 text-sm font-semibold transition-colors ${
+              period === option.value
+                ? "border-[#2937da] bg-[#2937da] text-white"
+                : "border-[#2937da]/20 bg-white text-[#2937da] hover:border-[#bbf903] hover:bg-[#bbf903] hover:text-[#111111]"
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
       <div className="space-y-4">
         {visibleMatches.length === 0 && (
           <div className="rounded-md border border-[#2937da]/15 bg-white p-6 text-[#343434]/75">
-            Немає доступних матчів у вікні ставок. Збережені майбутні прогнози з'являться тут автоматично.
+            Немає матчів у цьому періоді. Перемкни фільтр, щоб подивитися минулі або майбутні прогнози.
           </div>
         )}
         {visibleMatches.map(match => (
@@ -219,8 +284,19 @@ function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
       )}
 
       {saved && (
-        <div className="border-t border-[#2937da]/10 bg-[#f3f3f6] px-4 py-3 text-sm text-[#343434]/75">
-          Прогноз: {saved.predictedHomeScore}:{saved.predictedAwayScore}. Очки: {saved.pointsOutcome + saved.pointsAdvancing}.
+        <div className="grid gap-3 border-t border-[#2937da]/10 bg-[#f3f3f6] px-4 py-3 text-sm text-[#343434]/75 sm:grid-cols-3">
+          <div>
+            <span className="font-semibold text-[#343434]">Прогноз:</span> {saved.predictedHomeScore}:{saved.predictedAwayScore}
+          </div>
+          <div>
+            <span className="font-semibold text-[#343434]">Результат:</span>{" "}
+            {match.status === "finished" && match.homeScore !== null && match.awayScore !== null
+              ? `${match.homeScore}:${match.awayScore}`
+              : statusLabels[match.status]}
+          </div>
+          <div className="sm:text-right">
+            <span className="font-semibold text-[#343434]">Очки:</span> {saved.pointsOutcome + saved.pointsAdvancing}
+          </div>
         </div>
       )}
     </form>
