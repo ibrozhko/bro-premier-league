@@ -141,7 +141,7 @@ function MatchRow({ match }: { match: WorldCupMatch }) {
         </div>
         <MatchStatus played={played} className="sm:hidden" />
       </div>
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-5">
         <TeamName value={match.home} align="right" />
         <div className="rounded-md bg-[#ff008c]/10 px-2 py-2 text-center font-heading text-lg leading-none text-[#ff008c] sm:min-w-[68px] sm:py-1 sm:text-2xl">
           {played ? `${match.homeScore}:${match.awayScore}` : "VS"}
@@ -172,8 +172,8 @@ function TeamName({ value, align }: { value: string; align: "left" | "right" }) 
 
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="break-words text-base font-semibold leading-tight text-[#343434] sm:truncate sm:text-sm sm:font-medium">{player}</div>
-      <div className="mt-0.5 break-words text-xs leading-tight text-[#343434]/58 sm:truncate">{team ?? value}</div>
+      <div className="break-words text-base font-semibold leading-tight text-[#343434] sm:truncate sm:text-lg">{player}</div>
+      <div className="mt-0.5 break-words text-xs leading-tight text-[#343434]/58 sm:truncate sm:text-sm">{team ?? value}</div>
     </div>
   );
 }

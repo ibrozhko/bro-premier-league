@@ -154,7 +154,7 @@ function GroupCard({ groupId, title, featured = false }: { groupId: WorldCupGrou
         <Crown className="h-5 w-5 text-[#bbf903]" />
       </div>
       <div className="overflow-x-auto p-4">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="w-full min-w-[560px] text-sm sm:text-base">
           <thead>
             <tr className="border-b border-[#ff008c]/15 text-[0.68rem] uppercase tracking-wide text-[#343434]/55">
               <th className="py-2 text-left">#</th>
@@ -172,8 +172,8 @@ function GroupCard({ groupId, title, featured = false }: { groupId: WorldCupGrou
               <tr key={row.name} className="border-b border-[#ff008c]/10 last:border-b-0">
                 <td className="py-3 font-heading text-xl leading-none text-[#ff008c]">{index + 1}</td>
                 <td className="py-3">
-                  <div className="font-semibold">{row.player}</div>
-                  <div className="text-xs text-[#343434]/58">{row.team}</div>
+                  <div className="text-base font-semibold leading-tight sm:text-lg">{row.player}</div>
+                  <div className="mt-0.5 text-sm text-[#343434]/58">{row.team}</div>
                 </td>
                 <td className="py-3 text-center">{row.played}</td>
                 <td className="py-3 text-center">{row.won}</td>
@@ -199,7 +199,7 @@ function MatchCard({ match, compact = false }: { match: WorldCupMatch; compact?:
           <div className="text-xs font-bold uppercase tracking-wide text-[#ff008c]">{matchLabel(match)}</div>
           <div className="text-xs font-semibold text-[#343434]/58">{formatMatchDateOnly(match)}</div>
         </div>
-        <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
           <TeamName value={match.home} align="right" />
           <ScoreBox match={match} />
           <TeamName value={match.away} align="left" />
@@ -215,8 +215,8 @@ function TeamName({ value, align }: { value: string; align: "left" | "right" }) 
 
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="truncate font-semibold text-[#343434]">{player}</div>
-      <div className="truncate text-xs text-[#343434]/58">{team ?? value}</div>
+      <div className="truncate text-base font-semibold leading-tight text-[#343434] sm:text-lg">{player}</div>
+      <div className="mt-0.5 truncate text-sm text-[#343434]/58">{team ?? value}</div>
     </div>
   );
 }
