@@ -131,26 +131,35 @@ function MatchRow({ match }: { match: WorldCupMatch }) {
   const played = isPlayed(match);
 
   return (
-    <div className="grid grid-cols-[74px_1fr_64px] items-center gap-2 px-3 py-4 sm:grid-cols-[110px_1fr_90px] sm:gap-4 sm:px-6">
-      <div>
-        <div className="font-heading text-xl leading-none text-[#ff008c] sm:text-2xl">{match.round}</div>
-        <div className="mt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#343434]/55">
-          {matchLabel(match)}
+    <div className="px-3 py-4 sm:grid sm:grid-cols-[110px_1fr_90px] sm:items-center sm:gap-4 sm:px-6">
+      <div className="mb-3 flex items-center justify-between gap-3 sm:mb-0 sm:block">
+        <div>
+          <div className="font-heading text-xl leading-none text-[#ff008c] sm:text-2xl">{match.round}</div>
+          <div className="mt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#343434]/55">
+            {matchLabel(match)}
+          </div>
         </div>
+        <MatchStatus played={played} className="sm:hidden" />
       </div>
-      <div className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
         <TeamName value={match.home} align="right" />
-        <div className="min-w-[54px] rounded-md bg-[#ff008c]/10 px-2 py-1 text-center font-heading text-lg leading-none text-[#ff008c] sm:min-w-[68px] sm:text-2xl">
+        <div className="rounded-md bg-[#ff008c]/10 px-2 py-2 text-center font-heading text-lg leading-none text-[#ff008c] sm:min-w-[68px] sm:py-1 sm:text-2xl">
           {played ? `${match.homeScore}:${match.awayScore}` : "VS"}
         </div>
         <TeamName value={match.away} align="left" />
       </div>
-      <div className="text-right">
-        <span className={`inline-flex rounded-md px-2 py-1 text-[0.65rem] font-bold uppercase ${played ? "bg-[#343434] text-white" : "bg-accent text-accent-foreground"}`}>
-          {played ? "Зіграно" : "Скоро"}
-        </span>
+      <div className="hidden text-right sm:block">
+        <MatchStatus played={played} />
       </div>
     </div>
+  );
+}
+
+function MatchStatus({ played, className = "" }: { played: boolean; className?: string }) {
+  return (
+    <span className={`inline-flex rounded-md px-2 py-1 text-[0.65rem] font-bold uppercase ${played ? "bg-[#343434] text-white" : "bg-accent text-accent-foreground"} ${className}`}>
+      {played ? "Зіграно" : "Скоро"}
+    </span>
   );
 }
 
@@ -163,8 +172,8 @@ function TeamName({ value, align }: { value: string; align: "left" | "right" }) 
 
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="truncate font-medium">{player}</div>
-      <div className="truncate text-xs text-[#343434]/58">{team ?? value}</div>
+      <div className="break-words text-base font-semibold leading-tight text-[#343434] sm:truncate sm:text-sm sm:font-medium">{player}</div>
+      <div className="mt-0.5 break-words text-xs leading-tight text-[#343434]/58 sm:truncate">{team ?? value}</div>
     </div>
   );
 }
