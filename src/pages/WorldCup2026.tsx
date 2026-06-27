@@ -34,7 +34,7 @@ export default function WorldCup2026() {
             <img src={logoFull} alt="Bro Premier League Logo" className="h-[124%] w-[124%] max-w-none object-contain" />
           </div>
           <h1 className="font-heading text-[2.2rem] leading-none text-[#343434] sm:text-[3.1rem] md:text-[4rem]">
-            BPL <span className="text-[#bbf903]">World Cup 2026</span>
+            BPL World Cup <span className="text-[#ff008c]">2026</span>
           </h1>
           <p className="mx-auto mt-3 max-w-[320px] text-sm text-[#343434]/75 sm:max-w-none sm:text-lg md:text-xl">
             FC 26 · Турнір до ЧС 2026 · 15 гравців · 3 групи · 38 матчів
