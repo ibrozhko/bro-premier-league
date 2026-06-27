@@ -62,6 +62,15 @@ export default function Footer() {
                 <span>{t("footer.twitch")}</span>
               </a>
               <a
+                href="https://www.twitch.tv/bpl2027"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-medium transition-colors hover:border-[#bbf903] hover:bg-white/20"
+              >
+                <Twitch className="h-5 w-5 text-[#bbf903]" />
+                <span>{t("footer.twitch2")}</span>
+              </a>
+              <a
                 href="https://www.youtube.com/@BroPremierLeague"
                 target="_blank"
                 rel="noopener noreferrer"

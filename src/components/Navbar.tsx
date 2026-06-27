@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, Twitch, X, Youtube } from "lucide-react";
 import logoFull from "@/assets/logo-full.png";
 import { useLanguage } from "@/lib/i18n";
 
@@ -14,6 +14,12 @@ const navLinks = [
 ] as const;
 
 const worldCupPaths = ["/", "/world-cup-2026", "/fixtures", "/players", "/top-scorers", "/best-defense"];
+
+const channelLinks = [
+  { href: "https://www.twitch.tv/bpl2026", label: "Twitch 1", icon: Twitch },
+  { href: "https://www.twitch.tv/bpl2027", label: "Twitch 2", icon: Twitch },
+  { href: "https://www.youtube.com/@BroPremierLeague", label: "YouTube", icon: Youtube },
+] as const;
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -45,6 +51,29 @@ export default function Navbar() {
               {t(l.labelKey)}
             </Link>
           ))}
+          <div className="ml-2 flex items-center gap-1 border-l border-white/20 pl-2">
+            {channelLinks.map(link => {
+              const Icon = link.icon;
+
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={link.label}
+                  title={link.label}
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors ${
+                    isWorldCup
+                      ? "bg-[#bbf903] text-[#111111] hover:bg-white"
+                      : "bg-accent text-accent-foreground hover:bg-white hover:text-[#111111]"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              );
+            })}
+          </div>
           <button
             onClick={toggleLanguage}
             className={`ml-2 rounded-md border px-3 py-2 text-xs font-semibold ${
@@ -76,9 +105,27 @@ export default function Navbar() {
                   : isWorldCup ? "text-white/85" : "text-white/80"
               }`}
             >
-              {t(l.labelKey)}
+            {t(l.labelKey)}
             </Link>
           ))}
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {channelLinks.map(link => {
+              const Icon = link.icon;
+
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-[#bbf903] px-3 py-2 text-xs font-bold text-[#111111]"
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{link.label}</span>
+                </a>
+              );
+            })}
+          </div>
           <button
             onClick={() => {
               toggleLanguage();

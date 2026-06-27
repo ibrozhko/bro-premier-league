@@ -62,6 +62,7 @@ type TranslationKey =
   | "footer.ruleRound"
   | "footer.follow"
   | "footer.twitch"
+  | "footer.twitch2"
   | "footer.youtube"
   | "footer.support"
   | "footer.live"
@@ -128,6 +129,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "footer.ruleRound": "Кожен тур — 4 матчі + 1 відпочиває",
     "footer.follow": "Стежити за лігою",
     "footer.twitch": "BPL на Twitch",
+    "footer.twitch2": "BPL на Twitch 2",
     "footer.youtube": "BPL на YouTube",
     "footer.support": "На розвиток ліги",
     "footer.live": "Трансляції матчів та турнірів у прямому ефірі.",
@@ -193,6 +195,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "footer.ruleRound": "Each matchday — 4 matches + 1 bye",
     "footer.follow": "Follow the league",
     "footer.twitch": "BPL on Twitch",
+    "footer.twitch2": "BPL on Twitch 2",
     "footer.youtube": "BPL on YouTube",
     "footer.support": "Support the league",
     "footer.live": "Live broadcasts of matches and tournaments.",
