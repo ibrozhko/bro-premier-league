@@ -6,6 +6,10 @@ export type Language = "uk" | "en";
 
 type TranslationKey =
   | "nav.home"
+  | "nav.worldCup"
+  | "nav.schedule"
+  | "nav.groups"
+  | "nav.playoffs"
   | "nav.fixtures"
   | "nav.players"
   | "nav.topScorers"
@@ -68,6 +72,10 @@ type TranslationKey =
 const translations: Record<Language, Record<TranslationKey, string>> = {
   uk: {
     "nav.home": "Головна",
+    "nav.worldCup": "ЧМ 2026",
+    "nav.schedule": "Розклад",
+    "nav.groups": "Групи",
+    "nav.playoffs": "Плей-оф",
     "nav.fixtures": "Матчі",
     "nav.players": "Гравці",
     "nav.topScorers": "Бомбардири",
@@ -129,6 +137,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
   },
   en: {
     "nav.home": "Home",
+    "nav.worldCup": "WC 2026",
+    "nav.schedule": "Schedule",
+    "nav.groups": "Groups",
+    "nav.playoffs": "Playoffs",
     "nav.fixtures": "Fixtures",
     "nav.players": "Players",
     "nav.topScorers": "Top Scorers",

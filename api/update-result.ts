@@ -44,7 +44,8 @@ type LeagueData = {
 
 type UpdatePayload = {
   password?: string;
-  action?: "updateResult" | "updatePlayers" | "startSeason";
+  action?: "updateResult" | "updatePlayers" | "startSeason" | "updateWorldCupResult";
+  matchId?: string;
   matchdayNumber?: number;
   home?: number;
   away?: number;
@@ -94,10 +95,31 @@ export default async function handler(request: ApiRequest, response: ApiResponse
   }
 
   try {
-    const file = await getGitHubFile(dataPath());
-    const currentData = JSON.parse(Buffer.from(file.content, "base64").toString("utf8")) as LeagueData;
     const action = payload.action ?? "updateResult";
     const today = formatToday();
+
+    if (action === "updateWorldCupResult") {
+      const validationError = validateWorldCupResultPayload(payload);
+      if (validationError) {
+        response.status(400).json({ error: validationError });
+        return;
+      }
+
+      const file = await getGitHubFile(worldCupDataPath());
+      const currentSource = Buffer.from(file.content, "base64").toString("utf8");
+      const nextSource = updateWorldCupResultSource(currentSource, payload);
+
+      await commitFiles(
+        [{ path: worldCupDataPath(), content: nextSource }],
+        `Update World Cup ${payload.matchId}: ${scoreText(payload.homeScore)}-${scoreText(payload.awayScore)}`,
+      );
+
+      response.status(200).json({ message: "Результат ЧС оновлено" });
+      return;
+    }
+
+    const file = await getGitHubFile(dataPath());
+    const currentData = JSON.parse(Buffer.from(file.content, "base64").toString("utf8")) as LeagueData;
 
     if (action === "updateResult") {
       const validationError = validateResultPayload(payload);
@@ -223,6 +245,22 @@ function parseBody(body: unknown): UpdatePayload | null {
 function validateResultPayload(payload: UpdatePayload): string | null {
   if (!Number.isInteger(payload.matchdayNumber) || !Number.isInteger(payload.home) || !Number.isInteger(payload.away)) {
     return "Не вистачає даних матчу.";
+  }
+
+  if (!isValidScore(payload.homeScore) || !isValidScore(payload.awayScore)) {
+    return "Рахунок має бути числом 0 або більше, або null для очищення.";
+  }
+
+  if ((payload.homeScore === null) !== (payload.awayScore === null)) {
+    return "Для очищення результату обидва значення мають бути null.";
+  }
+
+  return null;
+}
+
+function validateWorldCupResultPayload(payload: UpdatePayload): string | null {
+  if (!payload.matchId || typeof payload.matchId !== "string") {
+    return "Не вистачає ID матчу ЧС.";
   }
 
   if (!isValidScore(payload.homeScore) || !isValidScore(payload.awayScore)) {
@@ -392,6 +430,19 @@ function updateResult(data: LeagueData, payload: Required<UpdatePayload>, today:
   };
 }
 
+function updateWorldCupResultSource(source: string, payload: UpdatePayload) {
+  const matchId = payload.matchId!.trim();
+  const pattern = new RegExp(`(\\{ id: "${escapeRegExp(matchId)}"[^\\n]*homeScore: )[^,]+(, awayScore: )[^,]+(, note: )`, "m");
+
+  if (!pattern.test(source)) {
+    throw new Error(`Матч ЧС ${matchId} не знайдено.`);
+  }
+
+  return source.replace(pattern, (_match, beforeHome: string, betweenScores: string, afterAway: string) =>
+    `${beforeHome}${scoreText(payload.homeScore)}${betweenScores}${scoreText(payload.awayScore)}${afterAway}`,
+  );
+}
+
 async function getGitHubFile(path: string): Promise<GitHubFile> {
   const result = await fetch(githubContentsUrl(path), {
     headers: githubHeaders(),
@@ -504,12 +555,20 @@ function dataPath() {
     : configuredPath;
 }
 
+function worldCupDataPath() {
+  return "src/data/worldCup2026Data.ts";
+}
+
 function formatJson(data: unknown) {
   return `${JSON.stringify(data, null, 2)}\n`;
 }
 
 function scoreText(score: number | null | undefined) {
   return score === null || score === undefined ? "null" : score;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function formatToday() {

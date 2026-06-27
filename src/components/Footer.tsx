@@ -1,13 +1,30 @@
+import { useLocation } from "react-router-dom";
 import { Twitch, Youtube } from "lucide-react";
 import logoFull from "@/assets/logo-full.png";
 import { useLanguage } from "@/lib/i18n";
 
+const worldCupPaths = ["/", "/world-cup-2026", "/fixtures", "/players", "/top-scorers", "/best-defense"];
+
 export default function Footer() {
   const { t } = useLanguage();
+  const location = useLocation();
+  const isWorldCup = worldCupPaths.includes(location.pathname);
+  const about = isWorldCup
+    ? "BPL World Cup 2026 · 15 гравців · 3 групи по 5 · плей-оф на 8 учасників · фінал 19.07.2026."
+    : t("footer.about");
+  const rules = isWorldCup
+    ? [
+        "Група: кожен з кожним, одна гра",
+        "Перемога — 3 очки",
+        "Нічия — 1 очко",
+        "Вихід: 1-2 місця + 2 найкращі треті",
+        "Тайбрейк: очки → різниця → забиті",
+      ]
+    : [t("footer.ruleWin"), t("footer.ruleDraw"), t("footer.ruleLoss"), t("footer.ruleTiebreak"), t("footer.ruleRound")];
 
   return (
-    <footer className="border-t border-white/20 bg-background mt-16">
-      <div className="h-px bg-accent" />
+    <footer className={`border-t ${isWorldCup ? "border-[#ff008c] bg-[#ff008c] text-white" : "border-white/20 bg-background"}`}>
+      <div className={`h-px ${isWorldCup ? "bg-[#bbf903]" : "bg-accent"}`} />
       <div className="content-shell py-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Logo & About */}
@@ -18,20 +35,16 @@ export default function Footer() {
               </span>
               <span className="h-card">Bro Premier League</span>
             </div>
-            <p className="t-meta leading-relaxed">
-              {t("footer.about")}
+            <p className={isWorldCup ? "text-sm leading-relaxed text-white/80" : "t-meta leading-relaxed"}>
+              {about}
             </p>
           </div>
 
           {/* Rules */}
           <div>
             <h3 className="h-card mb-3">{t("footer.rules")}</h3>
-            <ul className="t-meta space-y-1.5">
-              <li>{t("footer.ruleWin")}</li>
-              <li>{t("footer.ruleDraw")}</li>
-              <li>{t("footer.ruleLoss")}</li>
-              <li>{t("footer.ruleTiebreak")}</li>
-              <li>{t("footer.ruleRound")}</li>
+            <ul className={isWorldCup ? "space-y-1.5 text-sm text-white/80" : "t-meta space-y-1.5"}>
+              {rules.map(rule => <li key={rule}>{rule}</li>)}
             </ul>
           </div>
 
@@ -43,7 +56,7 @@ export default function Footer() {
                 href="https://www.twitch.tv/bpl2026"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-white/10 border border-white/20 hover:border-accent hover:bg-white/15 transition-colors rounded-md px-4 py-2.5 text-sm font-medium"
+                className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-medium transition-colors hover:border-[#bbf903] hover:bg-white/20"
               >
                 <Twitch className="h-5 w-5 text-purple-400" />
                 <span>{t("footer.twitch")}</span>
@@ -52,7 +65,7 @@ export default function Footer() {
                 href="https://www.youtube.com/@BroPremierLeague"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-white/10 border border-white/20 hover:border-accent hover:bg-white/15 transition-colors rounded-md px-4 py-2.5 text-sm font-medium"
+                className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-medium transition-colors hover:border-[#bbf903] hover:bg-white/20"
               >
                 <Youtube className="h-5 w-5 text-red-500" />
                 <span>{t("footer.youtube")}</span>
@@ -61,13 +74,13 @@ export default function Footer() {
                 href="https://send.monobank.ua/jar/A3ngJfhe2x"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-white/10 border border-white/20 hover:border-accent hover:bg-white/15 transition-colors rounded-md px-4 py-2.5 text-sm font-medium"
+                className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-medium transition-colors hover:border-[#bbf903] hover:bg-white/20"
               >
                 <span className="text-lg">🏦</span>
                 <span>{t("footer.support")}</span>
               </a>
             </div>
-            <p className="text-xs text-muted-foreground mt-4">
+            <p className={isWorldCup ? "mt-4 text-xs text-white/70" : "text-xs text-muted-foreground mt-4"}>
               {t("footer.live")}
             </p>
           </div>

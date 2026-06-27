@@ -6,10 +6,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
-import Fixtures from "./pages/Fixtures";
-import Players from "./pages/Players";
-import TopScorers from "./pages/TopScorers";
-import BestDefense from "./pages/BestDefense";
+import WorldCup2026 from "./pages/WorldCup2026";
+import WorldCupFixtures from "./pages/WorldCupFixtures";
+import WorldCupTopScorers from "./pages/WorldCupTopScorers";
+import WorldCupBestDefense from "./pages/WorldCupBestDefense";
 import Apply from "./pages/Apply";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
@@ -36,10 +36,11 @@ function AppFrame() {
       {!isPredict && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/fixtures" element={<Fixtures />} />
-        <Route path="/players" element={<Players />} />
-        <Route path="/top-scorers" element={<TopScorers />} />
-        <Route path="/best-defense" element={<BestDefense />} />
+        <Route path="/world-cup-2026" element={<WorldCup2026 />} />
+        <Route path="/fixtures" element={<WorldCupFixtures />} />
+        <Route path="/players" element={<WorldCup2026 />} />
+        <Route path="/top-scorers" element={<WorldCupTopScorers />} />
+        <Route path="/best-defense" element={<WorldCupBestDefense />} />
         <Route path="/apply" element={<Apply />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<Admin />} />

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, Medal, ShieldCheck } from "lucide-react";
 import { getCurrentPredictUser, getPredictMatches, getPredictUsers } from "@/lib/predictStore";
 import { formatKyivDate, getTeamLabel, predictMatches, type PredictMatch, type PredictUser } from "@/data/predictData";
-import logoFull from "@/assets/logo-full.png";
+import logoPredict from "@/assets/logo-circle.png";
 
 type Leader = PredictUser & { totalPoints: number };
 
@@ -43,7 +43,7 @@ export default function PredictLanding() {
       <section className="border-b border-white/15 bg-[#2937da] py-9 text-center text-white sm:py-12 md:py-16">
         <div className="content-shell">
           <div className="mx-auto mb-6 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-white p-3 shadow-[0_18px_38px_rgba(0,0,0,0.18)] sm:h-40 sm:w-40 sm:p-4 md:h-48 md:w-48 md:p-5">
-            <img src={logoFull} alt="Bro Premier League" className="h-[124%] w-[124%] max-w-none object-contain" />
+            <img src={logoPredict} alt="Bro Premier League" className="h-[124%] w-[124%] max-w-none object-contain" />
           </div>
           <div className="page-kicker text-[#bbf903]">Fantasy World Cup 2026</div>
           <h2 className="mx-auto max-w-none font-heading text-[2.35rem] leading-none text-white sm:text-[3.4rem] md:whitespace-nowrap md:text-[4.5rem]">

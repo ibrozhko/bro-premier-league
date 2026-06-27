@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ClipboardList, LogOut, Plus, RotateCcw, Save, Trash2, Users, X } from "lucide-react";
+import { ClipboardList, LogOut, RotateCcw, Save, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { getAdminSession, logoutAdmin, type AdminUser } from "@/lib/adminAuth";
@@ -11,58 +11,35 @@ import {
   type ApplicationStatus,
   type SeasonApplication,
 } from "@/lib/applications";
-import { currentSeason, matchdays, getPlayer, players, type Player } from "@/data/leagueData";
+import { isPlayed, worldCupMatches, type WorldCupMatch } from "@/data/worldCup2026Data";
 
 type Status = {
   type: "idle" | "success" | "error";
   message: string;
 };
 
-type AdminTab = "results" | "players" | "season" | "applications";
+type AdminTab = "results" | "applications";
 
-const platforms: Player["platform"][] = ["PS5", "Xbox", "PC"];
-const defaultClubColors = [
-  "217 78% 57%",
-  "42 87% 55%",
-  "0 70% 50%",
-  "145 63% 42%",
-  "280 65% 60%",
-  "190 76% 48%",
-];
+const inputClass = "h-11 w-full border border-[#ff008c]/20 bg-white px-3 text-base text-[#343434] outline-none placeholder:text-[#343434]/40 focus-visible:ring-2 focus-visible:ring-[#ff008c]";
+const adminPanelClass = "light-panel rounded-md p-4 sm:p-6";
 
 export default function Admin() {
   const navigate = useNavigate();
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [activeTab, setActiveTab] = useState<AdminTab>("results");
-  const [matchdayNumber, setMatchdayNumber] = useState(matchdays.find(md => md.matches.some(m => m.homeScore === null))?.number ?? matchdays[0].number);
-  const selectedMatchday = useMemo(
-    () => matchdays.find(md => md.number === matchdayNumber) ?? matchdays[0],
-    [matchdayNumber],
+  const [matchId, setMatchId] = useState(worldCupMatches.find(match => !isPlayed(match))?.id ?? worldCupMatches[0].id);
+  const selectedMatch = useMemo(
+    () => worldCupMatches.find(match => match.id === matchId) ?? worldCupMatches[0],
+    [matchId],
   );
-  const [matchIndex, setMatchIndex] = useState(0);
-  const selectedMatch = selectedMatchday.matches[Math.min(matchIndex, selectedMatchday.matches.length - 1)];
   const [homeScore, setHomeScore] = useState(selectedMatch.homeScore?.toString() ?? "");
   const [awayScore, setAwayScore] = useState(selectedMatch.awayScore?.toString() ?? "");
-  const [editablePlayers, setEditablePlayers] = useState<Player[]>(() => players.map(player => ({ ...player })));
   const [applications, setApplicationList] = useState<SeasonApplication[]>([]);
   const [applicationsStatus, setApplicationsStatus] = useState<Status>({ type: "idle", message: "" });
   const [isLoadingApplications, setIsLoadingApplications] = useState(false);
-  const [seasonConfirmation, setSeasonConfirmation] = useState("");
-  const [generateSchedule, setGenerateSchedule] = useState(true);
-  const [seasonStartDate, setSeasonStartDate] = useState(() => getDefaultSeasonStartDate());
   const [status, setStatus] = useState<Status>({ type: "idle", message: "" });
   const [isSaving, setIsSaving] = useState(false);
-
-  const homePlayer = getPlayer(selectedMatch.home);
-  const awayPlayer = getPlayer(selectedMatch.away);
-  const nextSeason = currentSeason + 1;
-  const usedPlayerIds = useMemo(() => getUsedPlayerIds(), []);
-
-  useEffect(() => {
-    if (activeTab !== "applications" || !adminUser) return;
-    void loadApplications();
-  }, [activeTab, adminUser]);
 
   useEffect(() => {
     getAdminSession()
@@ -78,25 +55,15 @@ export default function Admin() {
       .finally(() => setIsCheckingSession(false));
   }, [navigate]);
 
-  function chooseMatchday(value: number) {
-    const nextMatchday = matchdays.find(md => md.number === value) ?? matchdays[0];
-    const nextIndex = nextMatchday.matches.findIndex(m => m.homeScore === null);
-    const safeIndex = nextIndex >= 0 ? nextIndex : 0;
-    const nextMatch = nextMatchday.matches[safeIndex];
+  useEffect(() => {
+    setHomeScore(selectedMatch.homeScore?.toString() ?? "");
+    setAwayScore(selectedMatch.awayScore?.toString() ?? "");
+  }, [selectedMatch]);
 
-    setMatchdayNumber(value);
-    setMatchIndex(safeIndex);
-    setHomeScore(nextMatch.homeScore?.toString() ?? "");
-    setAwayScore(nextMatch.awayScore?.toString() ?? "");
-  }
-
-  function chooseMatch(index: number) {
-    const nextMatch = selectedMatchday.matches[index];
-
-    setMatchIndex(index);
-    setHomeScore(nextMatch.homeScore?.toString() ?? "");
-    setAwayScore(nextMatch.awayScore?.toString() ?? "");
-  }
+  useEffect(() => {
+    if (activeTab !== "applications" || !adminUser) return;
+    void loadApplications();
+  }, [activeTab, adminUser]);
 
   async function sendAdminAction(body: Record<string, unknown>) {
     setIsSaving(true);
@@ -131,10 +98,8 @@ export default function Admin() {
 
   async function updateResult(nextHomeScore: number | null, nextAwayScore: number | null) {
     await sendAdminAction({
-      action: "updateResult",
-      matchdayNumber,
-      home: selectedMatch.home,
-      away: selectedMatch.away,
+      action: "updateWorldCupResult",
+      matchId: selectedMatch.id,
       homeScore: nextHomeScore,
       awayScore: nextAwayScore,
     });
@@ -152,53 +117,6 @@ export default function Admin() {
     }
 
     await updateResult(parsedHomeScore, parsedAwayScore);
-  }
-
-  async function handlePlayersSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    await sendAdminAction({
-      action: "updatePlayers",
-      players: editablePlayers,
-    });
-  }
-
-  async function handleSeasonSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    await sendAdminAction({
-      action: "startSeason",
-      confirmation: seasonConfirmation,
-      season: nextSeason,
-      players: editablePlayers,
-      generateSchedule,
-      startDate: seasonStartDate,
-    });
-  }
-
-  function updatePlayer(playerId: number, patch: Partial<Player>) {
-    setEditablePlayers(current =>
-      current.map(player => player.id === playerId ? { ...player, ...patch } : player),
-    );
-  }
-
-  function addPlayer() {
-    setEditablePlayers(current => {
-      const nextId = Math.max(0, ...current.map(player => player.id)) + 1;
-
-      return [
-        ...current,
-        {
-          id: nextId,
-          name: `Гравець ${nextId}`,
-          club: "Новий клуб",
-          platform: "PS5",
-          clubColor: defaultClubColors[nextId % defaultClubColors.length],
-        },
-      ];
-    });
-  }
-
-  function removePlayer(playerId: number) {
-    setEditablePlayers(current => current.filter(player => player.id !== playerId));
   }
 
   async function loadApplications() {
@@ -252,9 +170,6 @@ export default function Admin() {
     }
   }
 
-  const inputClass = "h-11 w-full border border-[#2937da]/20 bg-white px-3 text-base text-[#343434] outline-none placeholder:text-[#343434]/40 focus-visible:ring-2 focus-visible:ring-primary";
-  const adminPanelClass = "light-panel rounded-md p-4 sm:p-6";
-
   async function handleLogout() {
     await logoutAdmin();
     navigate("/admin/login", { replace: true });
@@ -279,15 +194,15 @@ export default function Admin() {
       <div className="content-shell">
         <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="page-kicker">Операційна панель</div>
+            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#ff008c]">Операційна панель</div>
             <h1 className="h-page">Адмінка</h1>
-            <p className="t-body text-muted-foreground">Сезон {currentSeason}: результати, гравці та підготовка нового сезону.</p>
+            <p className="t-body text-muted-foreground">BPL World Cup 2026: результати матчів і заявки.</p>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
             <div className="t-meta">{adminUser.name ?? adminUser.username}</div>
             <div className="flex gap-2">
-              <a className="inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-primary hover:underline" href="/fixtures">
-                До календаря
+              <a className="inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-[#ff008c] hover:underline" href="/fixtures">
+                До матчів
               </a>
               <Button type="button" variant="secondary" onClick={handleLogout}>
                 <LogOut />
@@ -297,17 +212,15 @@ export default function Admin() {
           </div>
         </div>
 
-        <div className="mb-6 grid grid-cols-2 gap-px border border-[#2937da]/20 bg-[#2937da]/20 sm:grid-cols-4">
+        <div className="mb-6 grid grid-cols-2 gap-px border border-[#ff008c]/20 bg-[#ff008c]/20">
           {[
-            { value: "results", label: "Результати" },
-            { value: "players", label: "Гравці" },
-            { value: "season", label: "Сезон" },
+            { value: "results", label: "Результати ЧС" },
             { value: "applications", label: `Заявки${applications.length ? ` · ${applications.length}` : ""}` },
           ].map(tab => (
             <button
               key={tab.value}
               className={`h-10 bg-white px-2 text-sm font-medium transition-colors ${
-                activeTab === tab.value ? "bg-accent text-accent-foreground" : "text-primary hover:bg-[#f3f3f6]"
+                activeTab === tab.value ? "bg-[#bbf903] text-[#111111]" : "text-[#ff008c] hover:bg-[#f3f3f6]"
               }`}
               type="button"
               onClick={() => setActiveTab(tab.value as AdminTab)}
@@ -320,63 +233,36 @@ export default function Admin() {
         {activeTab === "results" && (
           <form onSubmit={handleResultSubmit} className="space-y-6">
             <section className={adminPanelClass}>
-              <div className="mb-5 grid gap-4 sm:grid-cols-[160px_1fr]">
-                <div>
-                  <label className="t-label mb-2 block" htmlFor="matchday">
-                    Тур
-                  </label>
-                  <select
-                    id="matchday"
-                    className={inputClass}
-                    value={matchdayNumber}
-                    onChange={event => chooseMatchday(Number(event.target.value))}
-                  >
-                    {matchdays.map(md => (
-                      <option key={md.number} value={md.number}>
-                        Тур {md.number}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="t-label mb-2 block" htmlFor="match">
-                    Матч
-                  </label>
-                  <select
-                    id="match"
-                    className={inputClass}
-                    value={matchIndex}
-                    onChange={event => chooseMatch(Number(event.target.value))}
-                  >
-                    {selectedMatchday.matches.map((match, index) => {
-                      const home = getPlayer(match.home);
-                      const away = getPlayer(match.away);
-                      const score = match.homeScore === null || match.awayScore === null
-                        ? "не зіграно"
-                        : `${match.homeScore}-${match.awayScore}`;
-
-                      return (
-                        <option key={`${match.home}-${match.away}`} value={index}>
-                          {home.name} - {away.name} · {score}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
+              <div className="mb-5">
+                <label className="t-label mb-2 block" htmlFor="wc-match">
+                  Матч
+                </label>
+                <select
+                  id="wc-match"
+                  className={inputClass}
+                  value={matchId}
+                  onChange={event => setMatchId(event.target.value)}
+                >
+                  {worldCupMatches.map(match => (
+                    <option key={match.id} value={match.id}>
+                      {match.date} · {matchLabel(match)} · {match.home} - {match.away} · {scoreLabel(match)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="border border-[#2937da]/15 bg-[#f3f3f6] p-4">
+              <div className="border border-[#ff008c]/15 bg-[#f3f3f6] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="rounded-md bg-white px-2.5 py-1 text-xs font-bold uppercase text-[#ff008c]">
+                    {matchLabel(selectedMatch)}
+                  </span>
+                  <span className="t-meta">{selectedMatch.day} {selectedMatch.date}</span>
+                </div>
+
                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                  <div className="min-w-0 text-right">
-                    <div className="h-card truncate">{homePlayer.name}</div>
-                    <div className="t-meta truncate">{homePlayer.club}</div>
-                  </div>
-                  <div className="font-heading text-2xl text-primary">VS</div>
-                  <div className="min-w-0 text-left">
-                    <div className="h-card truncate">{awayPlayer.name}</div>
-                    <div className="t-meta truncate">{awayPlayer.club}</div>
-                  </div>
+                  <TeamName value={selectedMatch.home} align="right" />
+                  <div className="font-heading text-2xl text-[#ff008c]">VS</div>
+                  <TeamName value={selectedMatch.away} align="left" />
                 </div>
 
                 <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -403,7 +289,7 @@ export default function Admin() {
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Button className="w-full sm:w-auto" type="submit" disabled={isSaving}>
                   <Save />
-                  {isSaving ? "Оновлюю..." : "Оновити"}
+                  {isSaving ? "Оновлюю..." : "Оновити результат"}
                 </Button>
                 <Button
                   className="w-full sm:w-auto"
@@ -420,242 +306,22 @@ export default function Admin() {
           </form>
         )}
 
-        {activeTab === "players" && (
-          <form onSubmit={handlePlayersSubmit} className="space-y-4">
-            <section className="light-panel rounded-md p-4 sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="h-card">Склад ліги</h2>
-                  <p className="t-body text-muted-foreground">
-                    Зараз у списку {editablePlayers.length} гравців. Нові гравці отримують наступний вільний ID.
-                  </p>
-                </div>
-                <Button className="w-full sm:w-auto" type="button" variant="secondary" onClick={addPlayer}>
-                  <Plus />
-                  Додати гравця
-                </Button>
-              </div>
-            </section>
-
-            {editablePlayers.map(player => (
-              <section key={player.id} className="light-panel rounded-md p-4 sm:p-5">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="h-card">ID {player.id}</div>
-                    <div className="t-meta">Гравець сезону {currentSeason}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 border border-[#2937da]/20" style={{ backgroundColor: `hsl(${player.clubColor})` }} />
-                    <button
-                      aria-label={`Видалити ${player.name}`}
-                      className="inline-flex h-9 w-9 items-center justify-center border border-[#2937da]/20 text-[#343434]/60 transition-colors hover:bg-[#f3f3f6] hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                      type="button"
-                      onClick={() => removePlayer(player.id)}
-                      title={usedPlayerIds.has(player.id) ? "Для нового сезону з генерацією календаря" : "Видалити"}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <AdminInput label="Імʼя" value={player.name} onChange={value => updatePlayer(player.id, { name: value })} />
-                  <AdminInput label="Клуб" value={player.club} onChange={value => updatePlayer(player.id, { club: value })} />
-                  <div>
-                    <label className="t-label mb-2 block">Платформа</label>
-                    <select
-                      className={inputClass}
-                      value={player.platform}
-                      onChange={event => updatePlayer(player.id, { platform: event.target.value as Player["platform"] })}
-                    >
-                      {platforms.map(platform => (
-                        <option key={platform} value={platform}>{platform}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <AdminInput label="Колір HSL" value={player.clubColor} onChange={value => updatePlayer(player.id, { clubColor: value })} />
-                </div>
-              </section>
-            ))}
-
-            <Button className="w-full sm:w-auto" type="submit" disabled={isSaving}>
-              <Users />
-              {isSaving ? "Зберігаю..." : "Зберегти гравців"}
-            </Button>
-          </form>
-        )}
-
-        {activeTab === "season" && (
-          <form onSubmit={handleSeasonSubmit} className="space-y-6">
-            <section className={adminPanelClass}>
-              <div className="mb-4">
-                <h2 className="h-card">Почати сезон {nextSeason}</h2>
-                <p className="t-body text-muted-foreground">
-                  Поточний сезон {currentSeason} буде збережений в архів. Новий сезон можна створити з календарем під {editablePlayers.length} гравців.
-                </p>
-              </div>
-
-              <label className="mb-4 flex items-start gap-3 border border-[#2937da]/15 bg-[#f3f3f6] p-3">
-                <input
-                  className="mt-1 h-4 w-4 accent-primary"
-                  checked={generateSchedule}
-                  type="checkbox"
-                  onChange={event => setGenerateSchedule(event.target.checked)}
-                />
-                <span>
-                  <span className="t-body block font-medium">Згенерувати календар під актуальний список гравців</span>
-                  <span className="t-meta block">
-                    Double round-robin: кожен з кожним вдома і на виїзді. Якщо гравців непарна кількість, буде автоматичний пропуск туру.
-                  </span>
-                </span>
-              </label>
-
-              {generateSchedule && (
-                <div className="mb-4">
-                  <label className="t-label mb-2 block" htmlFor="season-start-date">
-                    Дата першого туру
-                  </label>
-                  <input
-                    id="season-start-date"
-                    className={inputClass}
-                    type="date"
-                    value={seasonStartDate}
-                    onChange={event => setSeasonStartDate(event.target.value)}
-                  />
-                </div>
-              )}
-
-              <label className="t-label mb-2 block" htmlFor="season-confirmation">
-                Підтвердження
-              </label>
-              <input
-                id="season-confirmation"
-                className={inputClass}
-                value={seasonConfirmation}
-                onChange={event => setSeasonConfirmation(event.target.value)}
-                placeholder={`Введи SEASON ${nextSeason}`}
-              />
-
-              <Button
-                className="mt-5 w-full sm:w-auto"
-                type="submit"
-                variant="destructive"
-                disabled={isSaving || seasonConfirmation !== `SEASON ${nextSeason}`}
-              >
-                <RotateCcw />
-                {isSaving ? "Готую..." : `Архівувати і почати сезон ${nextSeason}`}
-              </Button>
-            </section>
-          </form>
-        )}
-
         {activeTab === "applications" && (
-          <section className={adminPanelClass}>
-            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="h-card flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5 text-primary" />
-                  Заявки на сезон 2
-                </h2>
-                <p className="t-body text-muted-foreground">
-                  Кандидати зберігаються в Supabase. Для перегляду потрібен вхід в адмінку.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button
-                  className="w-full sm:w-auto"
-                  type="button"
-                  variant="secondary"
-                  disabled={isLoadingApplications}
-                  onClick={loadApplications}
-                >
-                  <RotateCcw />
-                  {isLoadingApplications ? "Оновлюю..." : "Оновити список"}
-                </Button>
-                <a className="inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-medium text-primary hover:underline" href="/apply">
-                  Відкрити форму
-                </a>
-              </div>
-            </div>
-
-            {applicationsStatus.message && (
-              <div
-                className={`mb-4 rounded-md border p-3 t-body ${
-                  applicationsStatus.type === "success"
-                    ? "border-primary/30 bg-white text-primary"
-                    : "border-destructive/50 bg-white text-destructive"
-                }`}
-              >
-                {applicationsStatus.message}
-              </div>
-            )}
-
-            {applications.length === 0 ? (
-              <div className="border border-[#2937da]/15 bg-[#f3f3f6] p-5">
-                <div className="h-card">{isLoadingApplications ? "Завантажую заявки..." : "Заявок поки немає"}</div>
-                <p className="t-body mt-1 text-muted-foreground">Коли кандидат заповнить форму, заявка зʼявиться в цьому списку.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {applications.map(application => (
-                  <article key={application.id} className="border border-[#2937da]/15 bg-white p-4">
-                    <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
-                      <div className="min-w-0">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <div className="h-card">{application.name}</div>
-                            <div className="t-meta">
-                              {application.platform} · {application.eaId} · {formatApplicationDate(application.createdAt)}
-                            </div>
-                          </div>
-                          <span className="t-body font-medium text-primary">
-                            {application.contact}
-                          </span>
-                        </div>
-
-                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                          <ApplicationMeta label="Улюблений клуб" value={application.preferredClub || "Не вказано"} />
-                          <ApplicationMeta label="Доступність" value={application.availability} />
-                          <ApplicationMeta label="Досвід" value={application.experience} wide />
-                          {application.comment && <ApplicationMeta label="Коментар" value={application.comment} wide />}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-3">
-                        <label>
-                          <span className="t-label mb-2 block">Статус</span>
-                          <select
-                            className={inputClass}
-                            value={application.status}
-                            onChange={event => updateApplicationStatus(application.id, event.target.value as ApplicationStatus)}
-                          >
-                            {applicationStatuses.map(status => (
-                              <option key={status.value} value={status.value}>{status.label}</option>
-                            ))}
-                          </select>
-                        </label>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => removeApplication(application.id)}
-                        >
-                          <Trash2 />
-                          Видалити
-                        </Button>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
+          <ApplicationsPanel
+            applications={applications}
+            applicationsStatus={applicationsStatus}
+            isLoadingApplications={isLoadingApplications}
+            loadApplications={loadApplications}
+            removeApplication={removeApplication}
+            updateApplicationStatus={updateApplicationStatus}
+          />
         )}
 
         {status.message && (
           <div
             className={`mt-6 rounded-md border p-4 t-body ${
               status.type === "success"
-                ? "border-primary/30 bg-white text-primary"
+                ? "border-[#ff008c]/30 bg-white text-[#ff008c]"
                 : "border-destructive/50 bg-white text-destructive"
             }`}
           >
@@ -667,15 +333,126 @@ export default function Admin() {
   );
 }
 
-function AdminInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function ApplicationsPanel({
+  applications,
+  applicationsStatus,
+  isLoadingApplications,
+  loadApplications,
+  removeApplication,
+  updateApplicationStatus,
+}: {
+  applications: SeasonApplication[];
+  applicationsStatus: Status;
+  isLoadingApplications: boolean;
+  loadApplications: () => void;
+  removeApplication: (applicationId: string) => void;
+  updateApplicationStatus: (applicationId: string, nextStatus: ApplicationStatus) => void;
+}) {
   return (
-    <div>
-      <label className="t-label mb-2 block">{label}</label>
-      <input
-        className="h-11 w-full border border-[#2937da]/20 bg-white px-3 text-base text-[#343434] outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        value={value}
-        onChange={event => onChange(event.target.value)}
-      />
+    <section className={adminPanelClass}>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="h-card flex items-center gap-2">
+            <ClipboardList className="h-5 w-5 text-[#ff008c]" />
+            Заявки на сезон
+          </h2>
+          <p className="t-body text-muted-foreground">
+            Кандидати зберігаються в Supabase. Для перегляду потрібен вхід в адмінку.
+          </p>
+        </div>
+        <Button
+          className="w-full sm:w-auto"
+          type="button"
+          variant="secondary"
+          disabled={isLoadingApplications}
+          onClick={loadApplications}
+        >
+          <RotateCcw />
+          {isLoadingApplications ? "Оновлюю..." : "Оновити список"}
+        </Button>
+      </div>
+
+      {applicationsStatus.message && (
+        <div
+          className={`mb-4 rounded-md border p-3 t-body ${
+            applicationsStatus.type === "success"
+              ? "border-[#ff008c]/30 bg-white text-[#ff008c]"
+              : "border-destructive/50 bg-white text-destructive"
+          }`}
+        >
+          {applicationsStatus.message}
+        </div>
+      )}
+
+      {applications.length === 0 ? (
+        <div className="border border-[#ff008c]/15 bg-[#f3f3f6] p-5">
+          <div className="h-card">{isLoadingApplications ? "Завантажую заявки..." : "Заявок поки немає"}</div>
+          <p className="t-body mt-1 text-muted-foreground">Коли кандидат заповнить форму, заявка зʼявиться в цьому списку.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {applications.map(application => (
+            <article key={application.id} className="border border-[#ff008c]/15 bg-white p-4">
+              <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
+                <div className="min-w-0">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="h-card">{application.name}</div>
+                      <div className="t-meta">
+                        {application.platform} · {application.eaId} · {formatApplicationDate(application.createdAt)}
+                      </div>
+                    </div>
+                    <span className="t-body font-medium text-[#ff008c]">
+                      {application.contact}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <ApplicationMeta label="Улюблений клуб" value={application.preferredClub || "Не вказано"} />
+                    <ApplicationMeta label="Доступність" value={application.availability} />
+                    <ApplicationMeta label="Досвід" value={application.experience} wide />
+                    {application.comment && <ApplicationMeta label="Коментар" value={application.comment} wide />}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <label>
+                    <span className="t-label mb-2 block">Статус</span>
+                    <select
+                      className={inputClass}
+                      value={application.status}
+                      onChange={event => updateApplicationStatus(application.id, event.target.value as ApplicationStatus)}
+                    >
+                      {applicationStatuses.map(status => (
+                        <option key={status.value} value={status.value}>{status.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => removeApplication(application.id)}
+                  >
+                    <Trash2 />
+                    Видалити
+                  </Button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function TeamName({ value, align }: { value: string; align: "left" | "right" }) {
+  const [player, team] = value.split(" - ");
+
+  return (
+    <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
+      <div className="h-card truncate">{player}</div>
+      <div className="t-meta truncate">{team ?? value}</div>
     </div>
   );
 }
@@ -689,6 +466,14 @@ function ApplicationMeta({ label, value, wide = false }: { label: string; value:
   );
 }
 
+function matchLabel(match: WorldCupMatch) {
+  return match.group ? `Група ${match.group}` : match.stage;
+}
+
+function scoreLabel(match: WorldCupMatch) {
+  return isPlayed(match) ? `${match.homeScore}-${match.awayScore}` : "не зіграно";
+}
+
 function formatApplicationDate(value: string) {
   return new Intl.DateTimeFormat("uk-UA", {
     day: "2-digit",
@@ -697,28 +482,4 @@ function formatApplicationDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
-}
-
-function getUsedPlayerIds() {
-  const ids = new Set<number>();
-
-  matchdays.forEach(matchday => {
-    ids.add(matchday.bye);
-    matchday.matches.forEach(match => {
-      ids.add(match.home);
-      ids.add(match.away);
-    });
-  });
-
-  ids.delete(0);
-  return ids;
-}
-
-function getDefaultSeasonStartDate() {
-  const date = new Date();
-  const day = date.getDay();
-  const daysUntilSaturday = (6 - day + 7) % 7 || 7;
-  date.setDate(date.getDate() + daysUntilSaturday);
-
-  return date.toISOString().slice(0, 10);
 }

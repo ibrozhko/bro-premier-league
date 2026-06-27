@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, BarChart3, CalendarDays, Shield, Trophy, UserRound, UsersRound } from "lucide-react";
 import { getCurrentPredictUser } from "@/lib/predictStore";
 import type { PredictUser } from "@/data/predictData";
-import logoFull from "@/assets/logo-full.png";
+import logoPredict from "@/assets/logo-circle.png";
 
 const links = [
   { to: "/predict", label: "Огляд", icon: Trophy },
@@ -34,7 +34,7 @@ export default function PredictLayout() {
             </NavLink>
             <NavLink to="/predict" className="flex min-w-0 items-center gap-2">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-1 brand-glow">
-                <img src={logoFull} alt="BPL Predict" className="h-[124%] w-[124%] max-w-none object-contain" />
+                <img src={logoPredict} alt="BPL Predict" className="h-[124%] w-[124%] max-w-none object-contain" />
               </span>
               <div className="min-w-0 text-right sm:text-left">
                 <div className="page-kicker text-[#bbf903]">Fantasy World Cup 2026</div>
@@ -143,7 +143,7 @@ function PredictFooter() {
           <div>
             <div className="mb-4 flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white p-1 brand-glow">
-                <img src={logoFull} alt="BPL Predict" className="h-[124%] w-[124%] max-w-none object-contain" />
+                <img src={logoPredict} alt="BPL Predict" className="h-[124%] w-[124%] max-w-none object-contain" />
               </span>
               <div>
                 <div className="page-kicker text-[#bbf903]">Fantasy World Cup 2026</div>

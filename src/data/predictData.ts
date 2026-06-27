@@ -359,7 +359,7 @@ function stageForKnockout(index: number): MatchStage {
   return "final";
 }
 
-function resultFor() {
+function resultFor(_id?: number) {
   return { homeScore: null, awayScore: null, status: "scheduled" as const };
 }
 
@@ -367,7 +367,7 @@ export const predictMatches: PredictMatch[] = [
   ...groupSchedule.map(({ matchNo, groupName, matchDate, homeTeam, awayTeam }) => {
     const id = matchNo;
     const result = resultFor(id);
-    const winner =
+    const winner: PredictMatch["winner"] =
       result.homeScore === null || result.awayScore === null
         ? null
         : result.homeScore > result.awayScore
@@ -396,7 +396,7 @@ export const predictMatches: PredictMatch[] = [
   ...knockoutSchedule.map(([homeTeam, awayTeam], index) => {
     const id = groupSchedule.length + index + 1;
     const result = resultFor(id);
-    const winner =
+    const winner: PredictMatch["winner"] =
       result.homeScore === null || result.awayScore === null
         ? null
         : result.homeScore > result.awayScore
