@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, Crown, Shield, Trophy } from "lucide-react";
 import {
   calculateWorldCupStandings,
+  getPlayedWorldCupMatches,
+  getWorldCupBestDefense,
+  getWorldCupTopScorers,
   isPlayed,
   worldCupGroups,
   worldCupMatches,
@@ -13,7 +16,10 @@ import logoFull from "@/assets/logo-full.png";
 
 export default function WorldCup2026() {
   const [activeGroupIndex, setActiveGroupIndex] = useState(0);
+  const playedMatches = getPlayedWorldCupMatches();
   const firstRoundMatches = worldCupMatches.filter(match => match.round === "Тур 1");
+  const topAttack = getWorldCupTopScorers()[0];
+  const bestDefense = getWorldCupBestDefense()[0];
   const activeGroup = worldCupGroups[activeGroupIndex] ?? worldCupGroups[0];
 
   return (
@@ -35,6 +41,13 @@ export default function WorldCup2026() {
           <p className="mt-3 inline-flex rounded-full border border-[#ff008c]/30 bg-white px-3 py-1 text-[0.68rem] uppercase tracking-wide text-[#ff008c] sm:text-xs">
             Оновлено: 27.06.2026
           </p>
+
+          <div className="mx-auto mt-6 grid max-w-3xl grid-cols-2 gap-px text-left lg:grid-cols-4">
+            <HeroStat label="Зіграно" value={`${playedMatches.length}/${worldCupMatches.length}`} />
+            <HeroStat label="Голів" value={getWorldCupTopScorers().reduce((sum, row) => sum + row.goalsFor, 0)} />
+            <HeroStat label="Атака" value={topAttack?.player ?? "-"} meta={topAttack ? `${topAttack.goalsFor} голів` : "ще без голів"} />
+            <HeroStat label="Захист" value={bestDefense?.player ?? "-"} meta={bestDefense ? `${bestDefense.goalsAgainst} пропущено` : "ще без матчів"} />
+          </div>
         </div>
       </section>
 
@@ -92,6 +105,16 @@ export default function WorldCup2026() {
         </div>
       </section>
     </main>
+  );
+}
+
+function HeroStat({ label, value, meta }: { label: string; value: number | string; meta?: string }) {
+  return (
+    <div className="border border-[#ff008c]/15 bg-white p-3 shadow-sm">
+      <div className="text-[0.65rem] font-bold uppercase tracking-wide text-[#343434]/55">{label}</div>
+      <div className="mt-1 truncate font-heading text-2xl leading-none text-[#ff008c] sm:text-3xl">{value}</div>
+      {meta && <div className="mt-1 truncate text-xs text-[#343434]/65">{meta}</div>}
+    </div>
   );
 }
 
