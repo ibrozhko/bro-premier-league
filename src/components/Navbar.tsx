@@ -42,7 +42,7 @@ export default function Navbar() {
             <Link
               key={l.path}
               to={l.path}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 location.pathname === l.path || (l.path !== "/" && location.pathname.startsWith(l.path))
                   ? isWorldCup ? "bg-[#bbf903] text-[#111111]" : "bg-accent text-accent-foreground"
                   : isWorldCup ? "text-white/85 hover:bg-white/15 hover:text-white" : "text-white/80 hover:text-foreground hover:bg-white/10 hover:shadow-[inset_0_-2px_0_hsl(var(--accent))]"
@@ -51,7 +51,7 @@ export default function Navbar() {
               {t(l.labelKey)}
             </Link>
           ))}
-          <div className="ml-2 flex items-center gap-1 border-l border-white/20 pl-2">
+          <div className="ml-2 hidden items-center gap-1 border-l border-white/20 pl-2 xl:flex">
             {channelLinks.map(link => {
               const Icon = link.icon;
 
