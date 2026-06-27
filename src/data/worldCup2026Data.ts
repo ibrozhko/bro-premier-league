@@ -46,7 +46,7 @@ export const worldCupFinalDate = "2026-07-19T19:00:00+03:00";
 export const worldCupTeams: WorldCupTeam[] = [
   { group: "A" as WorldCupGroupId, seed: 1, player: "Сергій", team: "Туреччина 🇹🇷", name: "Сергій - Туреччина 🇹🇷", platform: "PS5", fc26Nick: "Flugergehaimer__" },
   { group: "A" as WorldCupGroupId, seed: 2, player: "Ігор", team: "Бельгія 🇧🇪", name: "Ігор - Бельгія 🇧🇪", platform: "PS5", fc26Nick: "BR7ZH" },
-  { group: "A" as WorldCupGroupId, seed: 3, player: "Артем", team: "Марокко 🇲🇦", name: "Артем - Марокко 🇲🇦" },
+  { group: "A" as WorldCupGroupId, seed: 3, player: "Артем", team: "Марокко 🇲🇦", name: "Артем - Марокко 🇲🇦", platform: "PC", fc26Nick: "fen1kssss" },
   { group: "A" as WorldCupGroupId, seed: 4, player: "Коля", team: "Аргентина 🇦🇷", name: "Коля - Аргентина 🇦🇷", platform: "Xbox", fc26Nick: "Fixius777" },
   { group: "A" as WorldCupGroupId, seed: 5, player: "Олексій", team: "Норвегія 🇳🇴", name: "Олексій - Норвегія 🇳🇴", platform: "PS5", fc26Nick: "Mer4iik" },
   { group: "B" as WorldCupGroupId, seed: 1, player: "Андрій", team: "Україна 🇺🇦", name: "Андрій - Україна 🇺🇦", platform: "PC", fc26Nick: "Juced99" },
