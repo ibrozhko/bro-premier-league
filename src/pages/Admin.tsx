@@ -22,6 +22,8 @@ type AdminTab = "results" | "applications";
 
 const inputClass = "h-11 w-full border border-[#ff008c]/20 bg-white px-3 text-base text-[#343434] outline-none placeholder:text-[#343434]/40 focus-visible:ring-2 focus-visible:ring-[#ff008c]";
 const adminPanelClass = "light-panel rounded-md p-4 sm:p-6";
+const adminPrimaryButtonClass = "bg-[#ff008c] text-white hover:bg-[#df007b] focus-visible:ring-[#ff008c]";
+const adminSecondaryButtonClass = "border border-[#ff008c]/25 bg-white text-[#ff008c] hover:bg-[#ff008c] hover:text-white focus-visible:ring-[#ff008c]";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -204,7 +206,7 @@ export default function Admin() {
               <a className="inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-[#ff008c] hover:underline" href="/fixtures">
                 До матчів
               </a>
-              <Button type="button" variant="secondary" onClick={handleLogout}>
+              <Button className={adminSecondaryButtonClass} type="button" variant="secondary" onClick={handleLogout}>
                 <LogOut />
                 Вийти
               </Button>
@@ -219,7 +221,7 @@ export default function Admin() {
           ].map(tab => (
             <button
               key={tab.value}
-              className={`h-10 bg-white px-2 text-sm font-medium transition-colors ${
+              className={`h-10 bg-white px-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff008c] ${
                 activeTab === tab.value ? "bg-[#bbf903] text-[#111111]" : "text-[#ff008c] hover:bg-[#f3f3f6]"
               }`}
               type="button"
@@ -287,12 +289,12 @@ export default function Admin() {
               </div>
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Button className="w-full sm:w-auto" type="submit" disabled={isSaving}>
+                <Button className={`w-full sm:w-auto ${adminPrimaryButtonClass}`} type="submit" disabled={isSaving}>
                   <Save />
                   {isSaving ? "Оновлюю..." : "Оновити результат"}
                 </Button>
                 <Button
-                  className="w-full sm:w-auto"
+                  className={`w-full sm:w-auto ${adminSecondaryButtonClass}`}
                   type="button"
                   variant="secondary"
                   disabled={isSaving}
@@ -361,7 +363,7 @@ function ApplicationsPanel({
           </p>
         </div>
         <Button
-          className="w-full sm:w-auto"
+          className={`w-full sm:w-auto ${adminSecondaryButtonClass}`}
           type="button"
           variant="secondary"
           disabled={isLoadingApplications}
@@ -429,6 +431,7 @@ function ApplicationsPanel({
                     </select>
                   </label>
                   <Button
+                    className={adminSecondaryButtonClass}
                     type="button"
                     variant="secondary"
                     onClick={() => removeApplication(application.id)}
