@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Gamepad2, Monitor, ShieldCheck, Trophy, UsersRound } from "lucide-react";
+import { Gamepad2, Medal, Monitor, ShieldCheck, Trophy, UsersRound } from "lucide-react";
 import {
   calculateWorldCupStandings,
   worldCupGroups,
@@ -91,9 +91,6 @@ export default function WorldCupPlayers() {
                       <span className="rounded-md bg-[#ff008c]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-[#ff008c]">
                         Група {team.group}
                       </span>
-                      <span className="rounded-md border border-[#ff008c]/20 bg-white px-2.5 py-1 text-xs font-semibold text-[#343434]/70">
-                        № у групі {team.seed}
-                      </span>
                     </div>
                     <h2 className="h-card truncate">{team.player}</h2>
                     <p className="t-meta mt-1 truncate">{team.team}</p>
@@ -102,6 +99,20 @@ export default function WorldCupPlayers() {
                     <PlatformIcon platform={team.platform} />
                   </div>
                 </div>
+
+                {team.achievements?.length ? (
+                  <div className="mb-5 flex flex-wrap gap-2">
+                    {team.achievements.map(achievement => (
+                      <span
+                        key={achievement}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-[#bbf903]/70 bg-[#bbf903]/20 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-[#343434]"
+                      >
+                        <Medal className="h-3.5 w-3.5 text-[#ff008c]" />
+                        {achievement}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
 
                 <div className="mb-5 rounded-md border border-[#ff008c]/20 bg-[#ff008c]/5 px-4 py-3">
                   <div className="mb-2 flex items-center justify-between gap-3">

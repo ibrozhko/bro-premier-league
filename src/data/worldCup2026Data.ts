@@ -8,6 +8,7 @@ export type WorldCupTeam = {
   name: string;
   platform?: "PS5" | "PC" | "Xbox";
   fc26Nick?: string;
+  achievements?: string[];
 };
 
 export type WorldCupMatch = {
@@ -47,12 +48,12 @@ export const worldCupTeams: WorldCupTeam[] = [
   { group: "A" as WorldCupGroupId, seed: 1, player: "Сергій", team: "Туреччина 🇹🇷", name: "Сергій - Туреччина 🇹🇷", platform: "PS5", fc26Nick: "Flugergehaimer__" },
   { group: "A" as WorldCupGroupId, seed: 2, player: "Ігор", team: "Бельгія 🇧🇪", name: "Ігор - Бельгія 🇧🇪", platform: "PS5", fc26Nick: "BR7ZH" },
   { group: "A" as WorldCupGroupId, seed: 3, player: "Артем", team: "Марокко 🇲🇦", name: "Артем - Марокко 🇲🇦", platform: "PC", fc26Nick: "fen1kssss" },
-  { group: "A" as WorldCupGroupId, seed: 4, player: "Коля", team: "Аргентина 🇦🇷", name: "Коля - Аргентина 🇦🇷", platform: "Xbox", fc26Nick: "Fixius777" },
-  { group: "A" as WorldCupGroupId, seed: 5, player: "Олексій", team: "Норвегія 🇳🇴", name: "Олексій - Норвегія 🇳🇴", platform: "PS5", fc26Nick: "Mer4iik" },
-  { group: "B" as WorldCupGroupId, seed: 1, player: "Андрій", team: "Україна 🇺🇦", name: "Андрій - Україна 🇺🇦", platform: "PC", fc26Nick: "Juced99" },
+  { group: "A" as WorldCupGroupId, seed: 4, player: "Коля", team: "Аргентина 🇦🇷", name: "Коля - Аргентина 🇦🇷", platform: "Xbox", fc26Nick: "Fixius777", achievements: ["Переможець кубку"] },
+  { group: "A" as WorldCupGroupId, seed: 5, player: "Олексій", team: "Норвегія 🇳🇴", name: "Олексій - Норвегія 🇳🇴", platform: "PS5", fc26Nick: "Mer4iik", achievements: ["3 місце сезону 1"] },
+  { group: "B" as WorldCupGroupId, seed: 1, player: "Андрій", team: "Україна 🇺🇦", name: "Андрій - Україна 🇺🇦", platform: "PC", fc26Nick: "Juced99", achievements: ["Переможець сезону 1"] },
   { group: "B" as WorldCupGroupId, seed: 2, player: "Женя", team: "Німеччина 🇩🇪", name: "Женя - Німеччина 🇩🇪", platform: "PC", fc26Nick: "evgnp11" },
-  { group: "B" as WorldCupGroupId, seed: 3, player: "Сергій", team: "Іспанія 🇪🇸", name: "Сергій - Іспанія 🇪🇸", platform: "PS5", fc26Nick: "posolua" },
-  { group: "B" as WorldCupGroupId, seed: 4, player: "Влад", team: "Хорватія 🇭🇷", name: "Влад - Хорватія 🇭🇷", platform: "PS5", fc26Nick: "d_Xyqenko" },
+  { group: "B" as WorldCupGroupId, seed: 3, player: "Сергій", team: "Іспанія 🇪🇸", name: "Сергій - Іспанія 🇪🇸", platform: "PS5", fc26Nick: "posolua", achievements: ["Фіналіст кубку"] },
+  { group: "B" as WorldCupGroupId, seed: 4, player: "Влад", team: "Хорватія 🇭🇷", name: "Влад - Хорватія 🇭🇷", platform: "PS5", fc26Nick: "d_Xyqenko", achievements: ["2 місце сезону 1"] },
   { group: "B" as WorldCupGroupId, seed: 5, player: "Дмитро", team: "Бразилія 🇧🇷", name: "Дмитро - Бразилія 🇧🇷", platform: "PS5", fc26Nick: "LusuyKrab" },
   { group: "C" as WorldCupGroupId, seed: 1, player: "Кірілл", team: "Нідерланди 🇳🇱", name: "Кірілл - Нідерланди 🇳🇱", platform: "PC", fc26Nick: "orid27" },
   { group: "C" as WorldCupGroupId, seed: 2, player: "Саня", team: "Португалія 🇵🇹", name: "Саня - Португалія 🇵🇹", platform: "PS5", fc26Nick: "b2k_alex" },
