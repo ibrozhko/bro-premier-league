@@ -7,6 +7,7 @@ import { useLanguage } from "@/lib/i18n";
 const navLinks = [
   { path: "/", labelKey: "nav.worldCup" },
   { path: "/fixtures", labelKey: "nav.fixtures" },
+  { path: "/players", labelKey: "nav.players" },
   { path: "/top-scorers", labelKey: "nav.topScorers" },
   { path: "/best-defense", labelKey: "nav.bestDefense" },
   { path: "/predict", labelKey: "nav.predict" },

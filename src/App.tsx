@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import WorldCup2026 from "./pages/WorldCup2026";
 import WorldCupFixtures from "./pages/WorldCupFixtures";
+import WorldCupPlayers from "./pages/WorldCupPlayers";
 import WorldCupTopScorers from "./pages/WorldCupTopScorers";
 import WorldCupBestDefense from "./pages/WorldCupBestDefense";
 import Apply from "./pages/Apply";
@@ -38,7 +39,7 @@ function AppFrame() {
         <Route path="/" element={<Home />} />
         <Route path="/world-cup-2026" element={<WorldCup2026 />} />
         <Route path="/fixtures" element={<WorldCupFixtures />} />
-        <Route path="/players" element={<WorldCup2026 />} />
+        <Route path="/players" element={<WorldCupPlayers />} />
         <Route path="/top-scorers" element={<WorldCupTopScorers />} />
         <Route path="/best-defense" element={<WorldCupBestDefense />} />
         <Route path="/apply" element={<Apply />} />

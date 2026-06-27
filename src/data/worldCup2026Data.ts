@@ -6,6 +6,8 @@ export type WorldCupTeam = {
   player: string;
   team: string;
   name: string;
+  platform?: "PS5" | "PC" | "Xbox";
+  fc26Nick?: string;
 };
 
 export type WorldCupMatch = {
@@ -42,21 +44,21 @@ export const worldCupStartDate = "2026-06-27T12:00:00+03:00";
 export const worldCupFinalDate = "2026-07-19T19:00:00+03:00";
 
 export const worldCupTeams: WorldCupTeam[] = [
-  { group: "A" as WorldCupGroupId, seed: 1, player: "Сергій", team: "Туреччина 🇹🇷", name: "Сергій - Туреччина 🇹🇷" },
-  { group: "A" as WorldCupGroupId, seed: 2, player: "Ігор", team: "Бельгія 🇧🇪", name: "Ігор - Бельгія 🇧🇪" },
+  { group: "A" as WorldCupGroupId, seed: 1, player: "Сергій", team: "Туреччина 🇹🇷", name: "Сергій - Туреччина 🇹🇷", platform: "PS5", fc26Nick: "Flugergehaimer__" },
+  { group: "A" as WorldCupGroupId, seed: 2, player: "Ігор", team: "Бельгія 🇧🇪", name: "Ігор - Бельгія 🇧🇪", platform: "PS5", fc26Nick: "BR7ZH" },
   { group: "A" as WorldCupGroupId, seed: 3, player: "Артем", team: "Марокко 🇲🇦", name: "Артем - Марокко 🇲🇦" },
-  { group: "A" as WorldCupGroupId, seed: 4, player: "Коля", team: "Аргентина 🇦🇷", name: "Коля - Аргентина 🇦🇷" },
-  { group: "A" as WorldCupGroupId, seed: 5, player: "Олексій", team: "Норвегія 🇳🇴", name: "Олексій - Норвегія 🇳🇴" },
-  { group: "B" as WorldCupGroupId, seed: 1, player: "Андрій", team: "Україна 🇺🇦", name: "Андрій - Україна 🇺🇦" },
-  { group: "B" as WorldCupGroupId, seed: 2, player: "Женя", team: "Німеччина 🇩🇪", name: "Женя - Німеччина 🇩🇪" },
-  { group: "B" as WorldCupGroupId, seed: 3, player: "Сергій", team: "Іспанія 🇪🇸", name: "Сергій - Іспанія 🇪🇸" },
-  { group: "B" as WorldCupGroupId, seed: 4, player: "Влад", team: "Хорватія 🇭🇷", name: "Влад - Хорватія 🇭🇷" },
-  { group: "B" as WorldCupGroupId, seed: 5, player: "Дмитро", team: "Бразилія 🇧🇷", name: "Дмитро - Бразилія 🇧🇷" },
-  { group: "C" as WorldCupGroupId, seed: 1, player: "Кірілл", team: "Нідерланди 🇳🇱", name: "Кірілл - Нідерланди 🇳🇱" },
-  { group: "C" as WorldCupGroupId, seed: 2, player: "Саня", team: "Португалія 🇵🇹", name: "Саня - Португалія 🇵🇹" },
-  { group: "C" as WorldCupGroupId, seed: 3, player: "Дімас", team: "Уругвай 🇺🇾", name: "Дімас - Уругвай 🇺🇾" },
-  { group: "C" as WorldCupGroupId, seed: 4, player: "Жека", team: "Франція 🇫🇷", name: "Жека - Франція 🇫🇷" },
-  { group: "C" as WorldCupGroupId, seed: 5, player: "Майкл", team: "Англія 🏴", name: "Майкл - Англія 🏴" },
+  { group: "A" as WorldCupGroupId, seed: 4, player: "Коля", team: "Аргентина 🇦🇷", name: "Коля - Аргентина 🇦🇷", platform: "Xbox", fc26Nick: "Fixius777" },
+  { group: "A" as WorldCupGroupId, seed: 5, player: "Олексій", team: "Норвегія 🇳🇴", name: "Олексій - Норвегія 🇳🇴", platform: "PS5", fc26Nick: "Mer4iik" },
+  { group: "B" as WorldCupGroupId, seed: 1, player: "Андрій", team: "Україна 🇺🇦", name: "Андрій - Україна 🇺🇦", platform: "PC", fc26Nick: "Juced99" },
+  { group: "B" as WorldCupGroupId, seed: 2, player: "Женя", team: "Німеччина 🇩🇪", name: "Женя - Німеччина 🇩🇪", platform: "PC", fc26Nick: "evgnp11" },
+  { group: "B" as WorldCupGroupId, seed: 3, player: "Сергій", team: "Іспанія 🇪🇸", name: "Сергій - Іспанія 🇪🇸", platform: "PS5", fc26Nick: "posolua" },
+  { group: "B" as WorldCupGroupId, seed: 4, player: "Влад", team: "Хорватія 🇭🇷", name: "Влад - Хорватія 🇭🇷", platform: "PS5", fc26Nick: "d_Xyqenko" },
+  { group: "B" as WorldCupGroupId, seed: 5, player: "Дмитро", team: "Бразилія 🇧🇷", name: "Дмитро - Бразилія 🇧🇷", platform: "PS5", fc26Nick: "LusuyKrab" },
+  { group: "C" as WorldCupGroupId, seed: 1, player: "Кірілл", team: "Нідерланди 🇳🇱", name: "Кірілл - Нідерланди 🇳🇱", platform: "PC", fc26Nick: "orid27" },
+  { group: "C" as WorldCupGroupId, seed: 2, player: "Саня", team: "Португалія 🇵🇹", name: "Саня - Португалія 🇵🇹", platform: "PS5", fc26Nick: "b2k_alex" },
+  { group: "C" as WorldCupGroupId, seed: 3, player: "Дімас", team: "Уругвай 🇺🇾", name: "Дімас - Уругвай 🇺🇾", platform: "PC", fc26Nick: "Viking240222" },
+  { group: "C" as WorldCupGroupId, seed: 4, player: "Жека", team: "Франція 🇫🇷", name: "Жека - Франція 🇫🇷", platform: "PS5", fc26Nick: "katrik_89" },
+  { group: "C" as WorldCupGroupId, seed: 5, player: "Майкл", team: "Англія 🏴", name: "Майкл - Англія 🏴", platform: "PS5", fc26Nick: "early_actor62" },
 ];
 
 export const worldCupMatches: WorldCupMatch[] = [
