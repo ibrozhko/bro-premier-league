@@ -186,6 +186,7 @@ export default function PredictPredictions() {
         <h2 className="h-page">Зробити ставки</h2>
         <p className="t-meta mt-2">Дедлайн кожного прогнозу настає рівно у kickoff за київським часом. Збережені прогнози показують реальний результат після синку.</p>
       </div>
+      <PlayoffRules />
       {message && <div className="mb-5 rounded-md border border-[#2937da]/20 bg-white px-4 py-3 text-sm text-[#343434]">{message}</div>}
       <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
         {periodOptions.map(option => (
@@ -221,6 +222,36 @@ export default function PredictPredictions() {
         ))}
       </div>
     </main>
+  );
+}
+
+function PlayoffRules() {
+  return (
+    <section className="mb-5 rounded-md border border-[#2937da]/15 bg-white p-4 shadow-[0_12px_30px_rgba(41,55,218,0.06)] sm:p-5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">Правила плей-офф</div>
+          <p className="mt-1 text-sm leading-6 text-[#343434]/72">
+            Напрям матчу — 10 балів, точний рахунок — ще 10, команда яка проходить далі — ще 5.
+            Якщо ставиш нічию, пенальті окремо не прогнозуємо: просто обери, хто пройде далі.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-px overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da]/15 text-center lg:min-w-[360px]">
+          <RulePill value="10" label="напрям" />
+          <RulePill value="+10" label="точний" />
+          <RulePill value="+5" label="прохід" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RulePill({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="bg-[#f3f3f6] px-3 py-3">
+      <div className="font-heading text-2xl leading-none text-[#2937da]">{value}</div>
+      <div className="mt-1 text-[0.64rem] font-bold uppercase tracking-wide text-[#343434]/65">{label}</div>
+    </div>
   );
 }
 

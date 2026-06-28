@@ -505,7 +505,9 @@ export function scorePrediction(match: PredictMatch, prediction: Omit<MatchPredi
         ? "away"
         : "draw";
 
-  const pointsOutcome = exact ? 10 : predictedWinner === match.winner ? 5 : 0;
+  const pointsOutcome = match.stage === "group"
+    ? exact ? 10 : predictedWinner === match.winner ? 5 : 0
+    : (predictedWinner === match.winner ? 10 : 0) + (exact ? 10 : 0);
   const pointsAdvancing = match.stage !== "group" && prediction.predictedAdvancing === match.teamAdvancing ? 5 : 0;
 
   return { pointsOutcome, pointsAdvancing };

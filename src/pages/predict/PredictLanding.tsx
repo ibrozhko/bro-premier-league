@@ -80,6 +80,8 @@ export default function PredictLanding() {
 
       <section className="coax-light py-8 sm:py-10">
         <div className="content-shell space-y-5">
+          <PlayoffRules />
+
           <section className="light-panel rounded-md border border-[#2937da]/15 bg-white px-4 py-4 shadow-[0_12px_30px_rgba(41,55,218,0.06)] sm:px-5">
             <div className="grid gap-4 sm:grid-cols-[48px_1fr_auto] sm:items-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[#2937da]/10 text-[#2937da]">
@@ -122,6 +124,40 @@ export default function PredictLanding() {
         </div>
       </section>
     </main>
+  );
+}
+
+function PlayoffRules() {
+  const rules = [
+    { label: "Напрям матчу", value: "10", meta: "перемога 1, нічия або перемога 2" },
+    { label: "Точний рахунок", value: "+10", meta: "бонус до вгаданого напряму" },
+    { label: "Хто пройде далі", value: "+5", meta: "обов'язково для плей-офф" },
+  ];
+
+  return (
+    <section className="light-panel overflow-hidden rounded-md border border-[#2937da]/15 bg-white shadow-[0_18px_48px_rgba(41,55,218,0.08)]">
+      <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[0.95fr_1.35fr] lg:items-center">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">Правила плей-офф</div>
+          <h3 className="mt-1 font-heading text-3xl leading-none text-[#343434] sm:text-4xl">Більше ризику, більше балів</h3>
+          <p className="mt-2 text-sm leading-6 text-[#343434]/68">
+            У плей-офф ставимо рахунок матчу і команду, яка проходить далі. Максимум за один матч — 25 балів.
+          </p>
+        </div>
+        <div className="grid gap-px overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da]/15 sm:grid-cols-3">
+          {rules.map(rule => (
+            <div key={rule.label} className="bg-[#f3f3f6] p-4">
+              <div className="font-heading text-3xl leading-none text-[#2937da]">{rule.value}</div>
+              <div className="mt-2 text-xs font-bold uppercase tracking-wide text-[#343434]">{rule.label}</div>
+              <div className="mt-1 text-xs leading-5 text-[#343434]/62">{rule.meta}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="border-t border-[#2937da]/10 bg-[#bbf903]/18 px-4 py-3 text-sm font-medium text-[#343434] sm:px-5">
+        Якщо ставиш нічию, серію пенальті окремо не прогнозуємо: для додаткових 5 балів просто обери, хто пройде далі.
+      </div>
+    </section>
   );
 }
 

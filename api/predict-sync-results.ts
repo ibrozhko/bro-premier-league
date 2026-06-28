@@ -127,7 +127,9 @@ async function recalculatePredictions(externalId: string, homeScore: number | nu
             ? "away"
             : "draw";
     const exact = row.predicted_home_score === homeScore && row.predicted_away_score === awayScore;
-    const pointsOutcome = exact ? 10 : predictedWinner === winner ? 5 : 0;
+    const pointsOutcome = row.predict_matches.stage === "group"
+      ? exact ? 10 : predictedWinner === winner ? 5 : 0
+      : (predictedWinner === winner ? 10 : 0) + (exact ? 10 : 0);
     const pointsAdvancing =
       row.predict_matches.stage !== "group" && row.predicted_advancing === row.predict_matches.team_advancing ? 5 : 0;
 
