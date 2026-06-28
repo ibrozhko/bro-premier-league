@@ -34,8 +34,11 @@ export type DbPrediction = {
   predicted_home_score: number;
   predicted_away_score: number;
   predicted_advancing: "home" | "away" | null;
+  predicted_home_penalties?: number | null;
+  predicted_away_penalties?: number | null;
   points_outcome: number;
   points_advancing: number;
+  points_penalty?: number | null;
   created_at: string;
 };
 
@@ -175,7 +178,7 @@ export async function getUserBundle(userId: string) {
   if (!user) return null;
 
   const [predictionRows, tournamentRows] = await Promise.all([
-    supabaseGet<DbPrediction[]>(`/predict_predictions?select=match_id,local_match_id,predicted_home_score,predicted_away_score,predicted_advancing,points_outcome,points_advancing,created_at&user_id=eq.${encodeURIComponent(user.id)}`),
+    supabaseGet<DbPrediction[]>(`/predict_predictions?select=match_id,local_match_id,predicted_home_score,predicted_away_score,predicted_advancing,predicted_home_penalties,predicted_away_penalties,points_outcome,points_advancing,points_penalty,created_at&user_id=eq.${encodeURIComponent(user.id)}`),
     supabaseGet<DbTournamentPrediction[]>(`/predict_tournament_predictions?select=champion,finalist,top_scorer,dark_horse,points_champion,points_finalist,points_top_scorer,points_dark_horse&user_id=eq.${encodeURIComponent(user.id)}&limit=1`),
   ]);
 
@@ -200,8 +203,11 @@ export function toClientUser(user: DbUser, predictions: DbPrediction[] = [], tou
         predictedHomeScore: prediction.predicted_home_score,
         predictedAwayScore: prediction.predicted_away_score,
         predictedAdvancing: prediction.predicted_advancing ?? undefined,
+        predictedHomePenalties: prediction.predicted_home_penalties ?? undefined,
+        predictedAwayPenalties: prediction.predicted_away_penalties ?? undefined,
         pointsOutcome: prediction.points_outcome,
         pointsAdvancing: prediction.points_advancing,
+        pointsPenalty: prediction.points_penalty ?? 0,
         updatedAt: prediction.created_at,
       },
     ])),

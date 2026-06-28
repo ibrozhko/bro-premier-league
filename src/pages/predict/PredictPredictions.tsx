@@ -17,7 +17,7 @@ import {
 } from "@/data/predictData";
 import { getCurrentPredictUser, getPredictMatches, saveMatchPrediction } from "@/lib/predictStore";
 
-type Draft = Record<number, { home: string; away: string; advancing: "home" | "away" | "" }>;
+type Draft = Record<number, { home: string; away: string; advancing: "home" | "away" | ""; penHome: string; penAway: string }>;
 type PeriodFilter = "near" | "yesterday" | "today" | "tomorrow" | "future" | "all";
 
 const periodOptions: Array<{ value: PeriodFilter; label: string }> = [
@@ -88,6 +88,8 @@ export default function PredictPredictions() {
               home: prediction.predictedHomeScore.toString(),
               away: prediction.predictedAwayScore.toString(),
               advancing: prediction.predictedAdvancing ?? "",
+              penHome: prediction.predictedHomePenalties?.toString() ?? "",
+              penAway: prediction.predictedAwayPenalties?.toString() ?? "",
             },
           ])));
         }
@@ -105,6 +107,8 @@ export default function PredictPredictions() {
         home: prediction.predictedHomeScore.toString(),
         away: prediction.predictedAwayScore.toString(),
         advancing: prediction.predictedAdvancing ?? "",
+        penHome: prediction.predictedHomePenalties?.toString() ?? "",
+        penAway: prediction.predictedAwayPenalties?.toString() ?? "",
       },
       ])),
       ...current,
@@ -144,7 +148,7 @@ export default function PredictPredictions() {
   }
 
   function update(matchId: number, patch: Partial<Draft[number]>) {
-    setDraft(current => ({ ...current, [matchId]: { home: "", away: "", advancing: "", ...current[matchId], ...patch } }));
+    setDraft(current => ({ ...current, [matchId]: { home: "", away: "", advancing: "", penHome: "", penAway: "", ...current[matchId], ...patch } }));
   }
 
   async function save(event: FormEvent<HTMLFormElement>, match: PredictMatch) {
@@ -165,12 +169,27 @@ export default function PredictPredictions() {
       setMessage("Для плей-офф обери команду, яка пройде далі.");
       return;
     }
+    const isPlayoffDraw = match.stage !== "group" && predictedHomeScore === predictedAwayScore;
+    const predictedHomePenalties = Number(current?.penHome);
+    const predictedAwayPenalties = Number(current?.penAway);
+    if (isPlayoffDraw) {
+      if (!Number.isInteger(predictedHomePenalties) || !Number.isInteger(predictedAwayPenalties) || predictedHomePenalties < 0 || predictedAwayPenalties < 0) {
+        setMessage("Для нічиєї у плей-офф вкажи рахунок серії пенальті.");
+        return;
+      }
+      if (predictedHomePenalties === predictedAwayPenalties) {
+        setMessage("У серії пенальті має бути переможець.");
+        return;
+      }
+    }
 
     try {
       const nextUser = await saveMatchPrediction(match, {
         predictedHomeScore,
         predictedAwayScore,
         predictedAdvancing: match.stage === "group" ? undefined : current.advancing as "home" | "away",
+        predictedHomePenalties: isPlayoffDraw ? predictedHomePenalties : undefined,
+        predictedAwayPenalties: isPlayoffDraw ? predictedAwayPenalties : undefined,
       });
       setUser(nextUser);
       setMessage("Прогноз збережено.");
@@ -215,7 +234,7 @@ export default function PredictPredictions() {
             key={match.id}
             match={match}
             saved={user.predictions[match.id]}
-            draft={draft[match.id] ?? { home: "", away: "", advancing: "" }}
+            draft={draft[match.id] ?? { home: "", away: "", advancing: "", penHome: "", penAway: "" }}
             onUpdate={patch => update(match.id, patch)}
             onSave={event => save(event, match)}
           />
@@ -233,13 +252,14 @@ function PlayoffRules() {
           <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">Правила плей-офф</div>
           <p className="mt-1 text-sm leading-6 text-[#343434]/72">
             Напрям матчу — 10 балів, точний рахунок — ще 10, команда яка проходить далі — ще 5.
-            Якщо ставиш нічию, пенальті окремо не прогнозуємо: просто обери, хто пройде далі.
+            Якщо ставиш нічию у плей-офф, додатково прогнозуємо рахунок серії пенальті. Точні пенальті — ще 10 балів.
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-px overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da]/15 text-center lg:min-w-[360px]">
+        <div className="grid grid-cols-4 gap-px overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da]/15 text-center lg:min-w-[420px]">
           <RulePill value="10" label="напрям" />
           <RulePill value="+10" label="точний" />
           <RulePill value="+5" label="прохід" />
+          <RulePill value="+10" label="пенальті" />
         </div>
       </div>
     </section>
@@ -258,12 +278,13 @@ function RulePill({ value, label }: { value: string; label: string }) {
 function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
   match: PredictMatch;
   saved?: MatchPrediction;
-  draft: { home: string; away: string; advancing: "home" | "away" | "" };
+  draft: { home: string; away: string; advancing: "home" | "away" | ""; penHome: string; penAway: string };
   onUpdate: (patch: Partial<Draft[number]>) => void;
   onSave: (event: FormEvent<HTMLFormElement>) => void;
 }) {
-  const locked = isLocked(match) || Boolean(saved);
+  const locked = isLocked(match);
   const lockedLabel = saved ? "Збережено" : "Закрито";
+  const showPenaltyInputs = match.stage !== "group" && draft.home !== "" && draft.home === draft.away;
 
   return (
     <form onSubmit={onSave} className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white">
@@ -299,9 +320,9 @@ function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
           />
         </div>
         <TeamPick code={match.awayCode} name={match.awayTeam} align="right" />
-        {!saved && (
-          <Button disabled={locked} className="h-11 rounded-md bg-[#2937da] text-white hover:bg-[#1f2ab4] disabled:bg-[#2937da]/40 disabled:text-white">
-            <Save className="mr-2 h-4 w-4" /> Зберегти
+        {!locked && (
+          <Button className="h-11 rounded-md bg-[#2937da] text-white hover:bg-[#1f2ab4] disabled:bg-[#2937da]/40 disabled:text-white">
+            <Save className="mr-2 h-4 w-4" /> {saved ? "Оновити" : "Зберегти"}
           </Button>
         )}
       </div>
@@ -314,19 +335,48 @@ function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
         </div>
       )}
 
+      {showPenaltyInputs && (
+        <div className="grid gap-2 border-t border-[#2937da]/10 bg-[#fff7fb] p-4 sm:grid-cols-[160px_1fr] sm:items-center">
+          <div>
+            <div className="t-label">Серія пенальті</div>
+            <div className="mt-1 text-xs text-[#343434]/60">Якщо у прогнозі нічия</div>
+          </div>
+          <div className="grid grid-cols-[72px_auto_72px] items-center justify-start gap-2">
+            <Input
+              className="h-11 bg-white text-center text-lg font-bold text-[#343434]"
+              inputMode="numeric"
+              value={draft.penHome}
+              disabled={locked}
+              onChange={event => onUpdate({ penHome: event.target.value })}
+            />
+            <span className="font-heading text-2xl text-[#ff008c]">:</span>
+            <Input
+              className="h-11 bg-white text-center text-lg font-bold text-[#343434]"
+              inputMode="numeric"
+              value={draft.penAway}
+              disabled={locked}
+              onChange={event => onUpdate({ penAway: event.target.value })}
+            />
+          </div>
+        </div>
+      )}
+
       {saved && (
         <div className="grid gap-3 border-t border-[#2937da]/10 bg-[#f3f3f6] px-4 py-3 text-sm text-[#343434]/75 sm:grid-cols-3">
           <div>
             <span className="font-semibold text-[#343434]">Прогноз:</span> {saved.predictedHomeScore}:{saved.predictedAwayScore}
+            {saved.predictedHomePenalties !== undefined && saved.predictedAwayPenalties !== undefined
+              ? ` пен. ${saved.predictedHomePenalties}:${saved.predictedAwayPenalties}`
+              : ""}
           </div>
           <div>
             <span className="font-semibold text-[#343434]">Результат:</span>{" "}
             {match.status === "finished" && match.homeScore !== null && match.awayScore !== null
-              ? `${match.homeScore}:${match.awayScore}`
+              ? `${match.homeScore}:${match.awayScore}${match.homePenalties !== null && match.homePenalties !== undefined && match.awayPenalties !== null && match.awayPenalties !== undefined ? ` пен. ${match.homePenalties}:${match.awayPenalties}` : ""}`
               : statusLabels[match.status]}
           </div>
           <div className="sm:text-right">
-            <span className="font-semibold text-[#343434]">Очки:</span> {saved.pointsOutcome + saved.pointsAdvancing}
+            <span className="font-semibold text-[#343434]">Очки:</span> {saved.pointsOutcome + saved.pointsAdvancing + saved.pointsPenalty}
           </div>
         </div>
       )}

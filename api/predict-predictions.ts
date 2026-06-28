@@ -4,6 +4,7 @@ import {
   parseBody,
   requirePredictEnv,
   supabaseGet,
+  supabasePatch,
   supabasePost,
   type ApiRequest,
   type ApiResponse,
@@ -22,6 +23,8 @@ type SavePayload = {
   predictedHomeScore: number;
   predictedAwayScore: number;
   predictedAdvancing?: "home" | "away";
+  predictedHomePenalties?: number;
+  predictedAwayPenalties?: number;
 };
 
 export default async function handler(request: ApiRequest, response: ApiResponse) {
@@ -59,6 +62,22 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       return;
     }
 
+    const predictedDraw = payload.predictedHomeScore === payload.predictedAwayScore;
+    const hasPenaltyPrediction =
+      Number.isInteger(payload.predictedHomePenalties) &&
+      Number.isInteger(payload.predictedAwayPenalties) &&
+      payload.predictedHomePenalties >= 0 &&
+      payload.predictedAwayPenalties >= 0 &&
+      payload.predictedHomePenalties !== payload.predictedAwayPenalties;
+    if (payload.match.stage !== "group" && predictedDraw && !hasPenaltyPrediction) {
+      response.status(400).json({ error: "Для нічиєї у плей-офф вкажи рахунок серії пенальті." });
+      return;
+    }
+    if (payload.match.stage !== "group" && !predictedDraw && (payload.predictedHomePenalties !== undefined || payload.predictedAwayPenalties !== undefined)) {
+      response.status(400).json({ error: "Пенальті прогнозуємо тільки якщо основний прогноз — нічия." });
+      return;
+    }
+
     const matchRows = await supabasePost<Array<{ id: number }>>(
       "/predict_matches?on_conflict=external_id",
       {
@@ -78,21 +97,25 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     const existing = await supabaseGet<Array<{ id: number }>>(
       `/predict_predictions?select=id&user_id=eq.${encodeURIComponent(userId)}&match_id=eq.${matchId}&limit=1`,
     );
-    if (existing.length > 0) {
-      response.status(409).json({ error: "Прогноз уже збережено і не редагується." });
-      return;
-    }
-
-    await supabasePost("/predict_predictions", {
+    const predictionRow = {
       user_id: userId,
       match_id: matchId,
       local_match_id: payload.match.id,
       predicted_home_score: payload.predictedHomeScore,
       predicted_away_score: payload.predictedAwayScore,
       predicted_advancing: payload.predictedAdvancing ?? null,
+      predicted_home_penalties: predictedDraw ? payload.predictedHomePenalties : null,
+      predicted_away_penalties: predictedDraw ? payload.predictedAwayPenalties : null,
       points_outcome: 0,
       points_advancing: 0,
-    }, "return=minimal");
+      points_penalty: 0,
+    };
+
+    if (existing.length > 0) {
+      await supabasePatch(`/predict_predictions?id=eq.${existing[0].id}`, predictionRow, "return=minimal");
+    } else {
+      await supabasePost("/predict_predictions", predictionRow, "return=minimal");
+    }
 
     response.status(200).json({ user: await getUserBundle(userId) });
   } catch (error) {

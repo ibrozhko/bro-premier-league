@@ -22,7 +22,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     const userId = await getSessionUserId(request);
     const [users, predictions, tournaments, currentUser] = await Promise.all([
       supabaseGet<DbUser[]>("/predict_users?select=*&order=total_points.desc"),
-      supabaseGet<Array<DbPrediction & { user_id: string }>>("/predict_predictions?select=user_id,match_id,local_match_id,predicted_home_score,predicted_away_score,predicted_advancing,points_outcome,points_advancing,created_at"),
+      supabaseGet<Array<DbPrediction & { user_id: string }>>("/predict_predictions?select=user_id,match_id,local_match_id,predicted_home_score,predicted_away_score,predicted_advancing,predicted_home_penalties,predicted_away_penalties,points_outcome,points_advancing,points_penalty,created_at"),
       supabaseGet<Array<DbTournamentPrediction & { user_id: string }>>("/predict_tournament_predictions?select=user_id,champion,finalist,top_scorer,dark_horse,points_champion,points_finalist,points_top_scorer,points_dark_horse"),
       userId ? getUserBundle(userId) : Promise.resolve(null),
     ]);

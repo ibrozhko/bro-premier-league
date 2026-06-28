@@ -26,6 +26,8 @@ create table if not exists predict_matches (
   away_team text not null,
   home_score int,
   away_score int,
+  home_penalties int,
+  away_penalties int,
   winner text check (winner in ('home', 'away', 'draw')),
   team_advancing text check (team_advancing in ('home', 'away')),
   status text default 'scheduled' check (status in ('scheduled', 'live', 'finished')),
@@ -40,13 +42,21 @@ create table if not exists predict_predictions (
   predicted_home_score int,
   predicted_away_score int,
   predicted_advancing text check (predicted_advancing in ('home', 'away')),
+  predicted_home_penalties int,
+  predicted_away_penalties int,
   points_outcome int default 0,
   points_advancing int default 0,
+  points_penalty int default 0,
   created_at timestamptz default now(),
   unique(user_id, match_id)
 );
 
+alter table predict_matches add column if not exists home_penalties int;
+alter table predict_matches add column if not exists away_penalties int;
 alter table predict_predictions add column if not exists local_match_id int;
+alter table predict_predictions add column if not exists predicted_home_penalties int;
+alter table predict_predictions add column if not exists predicted_away_penalties int;
+alter table predict_predictions add column if not exists points_penalty int default 0;
 
 create table if not exists predict_tournament_predictions (
   id serial primary key,
@@ -71,7 +81,7 @@ as $$
     coalesce(match_points.points, 0) +
     coalesce(tournament_points.points, 0)
   from (
-    select user_id, sum(points_outcome + points_advancing) as points
+    select user_id, sum(points_outcome + points_advancing + points_penalty) as points
     from predict_predictions
     group by user_id
   ) match_points

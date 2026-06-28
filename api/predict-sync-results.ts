@@ -20,6 +20,7 @@ type FootballDataMatch = {
   awayTeam: { name?: string; shortName?: string };
   score: {
     fullTime?: { home: number | null; away: number | null };
+    penalties?: { home: number | null; away: number | null };
     winner?: "HOME_TEAM" | "AWAY_TEAM" | "DRAW";
   };
 };
@@ -73,10 +74,22 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       const externalId = localMatch?.externalId ?? String(match.id);
       const rawHomeScore = status === "finished" ? fullTime?.home ?? null : null;
       const rawAwayScore = status === "finished" ? fullTime?.away ?? null : null;
-      const rawWinner = mapWinner(match.score.winner);
+      const rawHomePenalties = status === "finished" ? match.score.penalties?.home ?? null : null;
+      const rawAwayPenalties = status === "finished" ? match.score.penalties?.away ?? null : null;
+      const rawTeamAdvancing = stage === "group" ? null : mapWinner(match.score.winner);
+      const rawWinner = rawHomeScore === null || rawAwayScore === null
+        ? null
+        : rawHomeScore > rawAwayScore
+          ? "home"
+          : rawHomeScore < rawAwayScore
+            ? "away"
+            : "draw";
       const homeScore = localMatchResult?.isReversed ? rawAwayScore : rawHomeScore;
       const awayScore = localMatchResult?.isReversed ? rawHomeScore : rawAwayScore;
+      const homePenalties = localMatchResult?.isReversed ? rawAwayPenalties : rawHomePenalties;
+      const awayPenalties = localMatchResult?.isReversed ? rawHomePenalties : rawAwayPenalties;
       const winner = localMatchResult?.isReversed ? reverseWinner(rawWinner) : rawWinner;
+      const teamAdvancing = localMatchResult?.isReversed ? reverseWinner(rawTeamAdvancing) : rawTeamAdvancing;
 
       await supabaseUpsertMatch({
         external_id: externalId,
@@ -88,11 +101,14 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         away_team: localMatch?.awayTeam ?? normalizeTeamName(match.awayTeam.name ?? match.awayTeam.shortName ?? "TBD"),
         home_score: homeScore,
         away_score: awayScore,
+        home_penalties: homePenalties,
+        away_penalties: awayPenalties,
         winner,
+        team_advancing: teamAdvancing,
       });
 
       if (status === "finished") {
-        await recalculatePredictions(externalId, homeScore, awayScore, winner);
+        await recalculatePredictions(externalId, homeScore, awayScore, homePenalties, awayPenalties, winner);
         updated += 1;
       }
     }
@@ -104,7 +120,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
   }
 }
 
-async function recalculatePredictions(externalId: string, homeScore: number | null, awayScore: number | null, winner: string | null) {
+async function recalculatePredictions(externalId: string, homeScore: number | null, awayScore: number | null, homePenalties: number | null, awayPenalties: number | null, winner: string | null) {
   if (homeScore === null || awayScore === null || !winner) return;
 
   const rows = await supabaseGet<Array<{
@@ -112,9 +128,11 @@ async function recalculatePredictions(externalId: string, homeScore: number | nu
     predicted_home_score: number | null;
     predicted_away_score: number | null;
     predicted_advancing: string | null;
+    predicted_home_penalties: number | null;
+    predicted_away_penalties: number | null;
     predict_matches: { stage: string; team_advancing: string | null };
   }>>(
-    `/predict_predictions?select=id,predicted_home_score,predicted_away_score,predicted_advancing,predict_matches!inner(stage,team_advancing)&predict_matches.external_id=eq.${encodeURIComponent(externalId)}`,
+    `/predict_predictions?select=id,predicted_home_score,predicted_away_score,predicted_advancing,predicted_home_penalties,predicted_away_penalties,predict_matches!inner(stage,team_advancing)&predict_matches.external_id=eq.${encodeURIComponent(externalId)}`,
   );
 
   for (const row of rows) {
@@ -132,10 +150,20 @@ async function recalculatePredictions(externalId: string, homeScore: number | nu
       : (predictedWinner === winner ? 10 : 0) + (exact ? 10 : 0);
     const pointsAdvancing =
       row.predict_matches.stage !== "group" && row.predicted_advancing === row.predict_matches.team_advancing ? 5 : 0;
+    const pointsPenalty =
+      row.predict_matches.stage !== "group" &&
+      row.predicted_home_score === row.predicted_away_score &&
+      homePenalties !== null &&
+      awayPenalties !== null &&
+      row.predicted_home_penalties === homePenalties &&
+      row.predicted_away_penalties === awayPenalties
+        ? 10
+        : 0;
 
     await supabasePatch(`/predict_predictions?id=eq.${row.id}`, {
       points_outcome: pointsOutcome,
       points_advancing: pointsAdvancing,
+      points_penalty: pointsPenalty,
     });
   }
 }
