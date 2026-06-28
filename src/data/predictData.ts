@@ -341,7 +341,40 @@ const groupSchedule = [
   { matchNo: 72, groupName: "K", matchDate: "2026-06-27T23:30:00.000Z", homeTeam: "DR Congo", awayTeam: "Uzbekistan" },
 ];
 
-const knockoutSchedule = Array.from({ length: 32 }, () => ["TBD", "TBD"]);
+const knockoutSchedule: Array<{ homeTeam: string; awayTeam: string; matchDate?: string }> = [
+  { homeTeam: "South Africa", awayTeam: "Canada", matchDate: "2026-06-28T19:00:00.000Z" },
+  { homeTeam: "Germany", awayTeam: "Paraguay", matchDate: "2026-06-29T20:30:00.000Z" },
+  { homeTeam: "Netherlands", awayTeam: "Morocco", matchDate: "2026-06-30T20:00:00.000Z" },
+  { homeTeam: "Brazil", awayTeam: "Japan", matchDate: "2026-06-29T17:00:00.000Z" },
+  { homeTeam: "France", awayTeam: "Sweden", matchDate: "2026-06-30T17:00:00.000Z" },
+  { homeTeam: "Ivory Coast", awayTeam: "Norway", matchDate: "2026-07-01T01:00:00.000Z" },
+  { homeTeam: "Mexico", awayTeam: "Ecuador", matchDate: "2026-07-01T19:00:00.000Z" },
+  { homeTeam: "England", awayTeam: "DR Congo", matchDate: "2026-07-02T02:00:00.000Z" },
+  { homeTeam: "United States", awayTeam: "Bosnia and Herzegovina", matchDate: "2026-07-03T01:00:00.000Z" },
+  { homeTeam: "Belgium", awayTeam: "Senegal", matchDate: "2026-07-03T19:00:00.000Z" },
+  { homeTeam: "Portugal", awayTeam: "Croatia", matchDate: "2026-07-04T00:00:00.000Z" },
+  { homeTeam: "Spain", awayTeam: "Austria", matchDate: "2026-07-04T20:00:00.000Z" },
+  { homeTeam: "Switzerland", awayTeam: "Algeria", matchDate: "2026-07-05T17:00:00.000Z" },
+  { homeTeam: "Argentina", awayTeam: "Cape Verde", matchDate: "2026-07-05T20:00:00.000Z" },
+  { homeTeam: "Colombia", awayTeam: "Ghana", matchDate: "2026-07-06T19:00:00.000Z" },
+  { homeTeam: "Australia", awayTeam: "Egypt", matchDate: "2026-07-06T22:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-07T19:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-07T22:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-08T19:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-08T22:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-09T19:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-09T22:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-10T19:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-10T22:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-12T19:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-12T22:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-13T19:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-13T22:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-15T20:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-16T20:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-18T20:00:00.000Z" },
+  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-19T20:00:00.000Z" },
+];
 
 function addDays(baseIso: string, days: number, hourOffset = 0) {
   const date = new Date(baseIso);
@@ -393,7 +426,7 @@ export const predictMatches: PredictMatch[] = [
       status: result.status,
     };
   }),
-  ...knockoutSchedule.map(([homeTeam, awayTeam], index) => {
+  ...knockoutSchedule.map(({ homeTeam, awayTeam, matchDate }, index) => {
     const id = groupSchedule.length + index + 1;
     const result = resultFor(id);
     const winner: PredictMatch["winner"] =
@@ -409,7 +442,7 @@ export const predictMatches: PredictMatch[] = [
       id,
       externalId: `WC2026-K-${index + 1}`,
       stage: stageForKnockout(index),
-      matchDate: addDays("2026-06-28T18:00:00.000Z", Math.floor(index / 4), index % 4),
+      matchDate: matchDate ?? addDays("2026-06-28T18:00:00.000Z", Math.floor(index / 4), index % 4),
       homeTeam,
       awayTeam,
       homeCode: teamCodes[homeTeam],
