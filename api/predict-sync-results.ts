@@ -67,12 +67,16 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     for (const match of matches) {
       const status = mapStatus(match.status);
       const fullTime = match.score.fullTime;
-      const homeScore = status === "finished" ? fullTime?.home ?? null : null;
-      const awayScore = status === "finished" ? fullTime?.away ?? null : null;
-      const winner = mapWinner(match.score.winner);
       const stage = mapStage(match.stage);
-      const localMatch = findLocalMatch(match, stage);
+      const localMatchResult = findLocalMatch(match, stage);
+      const localMatch = localMatchResult?.match;
       const externalId = localMatch?.externalId ?? String(match.id);
+      const rawHomeScore = status === "finished" ? fullTime?.home ?? null : null;
+      const rawAwayScore = status === "finished" ? fullTime?.away ?? null : null;
+      const rawWinner = mapWinner(match.score.winner);
+      const homeScore = localMatchResult?.isReversed ? rawAwayScore : rawHomeScore;
+      const awayScore = localMatchResult?.isReversed ? rawHomeScore : rawAwayScore;
+      const winner = localMatchResult?.isReversed ? reverseWinner(rawWinner) : rawWinner;
 
       await supabaseUpsertMatch({
         external_id: externalId,
@@ -207,17 +211,32 @@ function mapStage(stage?: string) {
 function findLocalMatch(match: FootballDataMatch, stage: string) {
   const mappedExternalId = footballDataMatchIds[match.id];
   if (mappedExternalId) {
-    return predictMatches.find(localMatch => localMatch.externalId === mappedExternalId);
+    const match = predictMatches.find(localMatch => localMatch.externalId === mappedExternalId);
+    return match ? { match, isReversed: false } : null;
   }
 
   const homeTeam = normalizeTeamName(match.homeTeam.name ?? match.homeTeam.shortName ?? "");
   const awayTeam = normalizeTeamName(match.awayTeam.name ?? match.awayTeam.shortName ?? "");
 
-  return predictMatches.find(localMatch =>
+  const exactMatch = predictMatches.find(localMatch =>
     localMatch.stage === stage &&
     normalizeTeamName(localMatch.homeTeam) === homeTeam &&
     normalizeTeamName(localMatch.awayTeam) === awayTeam
   );
+  if (exactMatch) return { match: exactMatch, isReversed: false };
+
+  const reversedMatch = predictMatches.find(localMatch =>
+    localMatch.stage === stage &&
+    normalizeTeamName(localMatch.homeTeam) === awayTeam &&
+    normalizeTeamName(localMatch.awayTeam) === homeTeam
+  );
+  return reversedMatch ? { match: reversedMatch, isReversed: true } : null;
+}
+
+function reverseWinner(winner: string | null) {
+  if (winner === "home") return "away";
+  if (winner === "away") return "home";
+  return winner;
 }
 
 function normalizeTeamName(name: string) {
