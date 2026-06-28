@@ -21,8 +21,6 @@ export type PredictMatch = {
   awayCode: string;
   homeScore: number | null;
   awayScore: number | null;
-  homePenalties?: number | null;
-  awayPenalties?: number | null;
   winner: "home" | "away" | "draw" | null;
   teamAdvancing: "home" | "away" | null;
   status: MatchStatus;
@@ -32,12 +30,9 @@ export type MatchPrediction = {
   matchId: number;
   predictedHomeScore: number;
   predictedAwayScore: number;
-  predictedHomePenalties?: number;
-  predictedAwayPenalties?: number;
   predictedAdvancing?: "home" | "away";
   pointsOutcome: number;
   pointsAdvancing: number;
-  pointsPenalty: number;
   updatedAt: string;
 };
 
@@ -497,9 +492,9 @@ export function isVisibleForPrediction(match: PredictMatch, existing?: MatchPred
   return matchDate >= start.getTime() && matchDate < end.getTime();
 }
 
-export function scorePrediction(match: PredictMatch, prediction: Omit<MatchPrediction, "pointsOutcome" | "pointsAdvancing" | "pointsPenalty" | "updatedAt">) {
+export function scorePrediction(match: PredictMatch, prediction: Omit<MatchPrediction, "pointsOutcome" | "pointsAdvancing" | "updatedAt">) {
   if (match.status !== "finished" || match.homeScore === null || match.awayScore === null) {
-    return { pointsOutcome: 0, pointsAdvancing: 0, pointsPenalty: 0 };
+    return { pointsOutcome: 0, pointsAdvancing: 0 };
   }
 
   const exact = prediction.predictedHomeScore === match.homeScore && prediction.predictedAwayScore === match.awayScore;
@@ -514,24 +509,13 @@ export function scorePrediction(match: PredictMatch, prediction: Omit<MatchPredi
     ? exact ? 10 : predictedWinner === match.winner ? 5 : 0
     : (predictedWinner === match.winner ? 10 : 0) + (exact ? 10 : 0);
   const pointsAdvancing = match.stage !== "group" && prediction.predictedAdvancing === match.teamAdvancing ? 5 : 0;
-  const pointsPenalty =
-    match.stage !== "group" &&
-    predictedWinner === "draw" &&
-    match.homePenalties !== null &&
-    match.homePenalties !== undefined &&
-    match.awayPenalties !== null &&
-    match.awayPenalties !== undefined &&
-    prediction.predictedHomePenalties === match.homePenalties &&
-    prediction.predictedAwayPenalties === match.awayPenalties
-      ? 10
-      : 0;
 
-  return { pointsOutcome, pointsAdvancing, pointsPenalty };
+  return { pointsOutcome, pointsAdvancing };
 }
 
 export function getUserTotalPoints(user: PredictUser) {
   const matchPoints = Object.values(user.predictions).reduce((sum, prediction) => {
-    return sum + prediction.pointsOutcome + prediction.pointsAdvancing + prediction.pointsPenalty;
+    return sum + prediction.pointsOutcome + prediction.pointsAdvancing;
   }, 0);
   const tp = user.tournamentPrediction;
   return matchPoints + tp.pointsChampion + tp.pointsFinalist + tp.pointsTopScorer + tp.pointsDarkHorse;

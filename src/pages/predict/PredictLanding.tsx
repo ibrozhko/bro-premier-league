@@ -132,7 +132,6 @@ function PlayoffRules() {
     { label: "Напрям матчу", value: "10", meta: "перемога 1, нічия або перемога 2" },
     { label: "Точний рахунок", value: "+10", meta: "бонус до вгаданого напряму" },
     { label: "Хто пройде далі", value: "+5", meta: "обов'язково для плей-офф" },
-    { label: "Пенальті", value: "+10", meta: "якщо вгадав точну серію" },
   ];
 
   return (
@@ -142,11 +141,10 @@ function PlayoffRules() {
           <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">Правила плей-офф</div>
           <h3 className="mt-1 font-heading text-3xl leading-none text-[#343434] sm:text-4xl">Більше ризику, більше балів</h3>
           <p className="mt-2 text-sm leading-6 text-[#343434]/68">
-            У плей-офф ставимо рахунок матчу, команду яка проходить далі, а при нічиї ще й рахунок серії пенальті.
-            Максимум за один матч — 35 балів.
+            У плей-офф ставимо рахунок матчу і команду, яка проходить далі. Максимум за один матч — 25 балів.
           </p>
         </div>
-        <div className="grid gap-px overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da]/15 sm:grid-cols-4">
+        <div className="grid gap-px overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da]/15 sm:grid-cols-3">
           {rules.map(rule => (
             <div key={rule.label} className="bg-[#f3f3f6] p-4">
               <div className="font-heading text-3xl leading-none text-[#2937da]">{rule.value}</div>
@@ -157,7 +155,7 @@ function PlayoffRules() {
         </div>
       </div>
       <div className="border-t border-[#2937da]/10 bg-[#bbf903]/18 px-4 py-3 text-sm font-medium text-[#343434] sm:px-5">
-        Якщо ставиш нічию в плей-офф, поле пенальті з'явиться автоматично. Серія пенальті не може бути нічиєю.
+        Якщо ставиш нічию, серію пенальті окремо не прогнозуємо: для додаткових 5 балів просто обери, хто пройде далі.
       </div>
     </section>
   );

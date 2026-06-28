@@ -16,8 +16,6 @@ type MatchesResponse = {
     status: PredictMatch["status"];
     homeScore: number | null;
     awayScore: number | null;
-    homePenalties?: number | null;
-    awayPenalties?: number | null;
     winner: PredictMatch["winner"];
     teamAdvancing: PredictMatch["teamAdvancing"];
   }>;
@@ -62,8 +60,6 @@ export async function getPredictMatches() {
       status: row.status ?? match.status,
       homeScore: row.homeScore,
       awayScore: row.awayScore,
-      homePenalties: row.homePenalties ?? match.homePenalties,
-      awayPenalties: row.awayPenalties ?? match.awayPenalties,
       winner: row.winner,
       teamAdvancing: row.teamAdvancing,
     };
@@ -101,7 +97,7 @@ export async function registerPredictUser(input: {
 
 export async function saveMatchPrediction(
   match: PredictMatch,
-  prediction: Omit<MatchPrediction, "matchId" | "pointsOutcome" | "pointsAdvancing" | "pointsPenalty" | "updatedAt">,
+  prediction: Omit<MatchPrediction, "matchId" | "pointsOutcome" | "pointsAdvancing" | "updatedAt">,
 ) {
   const payload = await apiFetch<UserResponse>("/api/predict-predictions", {
     method: "POST",
@@ -117,8 +113,6 @@ export async function saveMatchPrediction(
       },
       predictedHomeScore: prediction.predictedHomeScore,
       predictedAwayScore: prediction.predictedAwayScore,
-      predictedHomePenalties: prediction.predictedHomePenalties,
-      predictedAwayPenalties: prediction.predictedAwayPenalties,
       predictedAdvancing: prediction.predictedAdvancing,
     }),
   });
