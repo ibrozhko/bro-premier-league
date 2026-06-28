@@ -107,6 +107,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
       const file = await getGitHubFile(worldCupDataPath());
       const currentSource = Buffer.from(file.content, "base64").toString("utf8");
+      assertCurrentWorldCupSource(currentSource);
       const nextSource = updateWorldCupResultSource(currentSource, payload);
 
       await commitFiles(
@@ -441,6 +442,22 @@ function updateWorldCupResultSource(source: string, payload: UpdatePayload) {
   return source.replace(pattern, (_match, beforeHome: string, betweenScores: string, afterAway: string) =>
     `${beforeHome}${scoreText(payload.homeScore)}${betweenScores}${scoreText(payload.awayScore)}${afterAway}`,
   );
+}
+
+function assertCurrentWorldCupSource(source: string) {
+  const requiredMarkers = [
+    "fc26Nick",
+    "platform?:",
+    "Кіріл - Нідерланди",
+    "WorldCupTeam",
+  ];
+  const missingMarker = requiredMarkers.find(marker => !source.includes(marker));
+
+  if (missingMarker || source.includes("Кірілл - Нідерланди")) {
+    throw new Error(
+      "GitHub-версія сайту застаріла. Спочатку синхронізуй main з актуальним продом, інакше адмінка може відкотити сторінки.",
+    );
+  }
 }
 
 async function getGitHubFile(path: string): Promise<GitHubFile> {
