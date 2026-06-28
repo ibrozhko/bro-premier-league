@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, BarChart3, CalendarDays, Shield, Trophy, UserRound, UsersRound } from "lucide-react";
 import { getCurrentPredictUser } from "@/lib/predictStore";
 import type { PredictUser } from "@/data/predictData";
-import logoPredict from "@/assets/logo-full.png";
+import logoPredict from "@/assets/logo-predict.png";
 
 const links = [
   { to: "/predict", label: "Огляд", icon: Trophy },
