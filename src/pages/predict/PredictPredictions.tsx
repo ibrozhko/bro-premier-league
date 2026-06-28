@@ -17,7 +17,7 @@ import {
 } from "@/data/predictData";
 import { getCurrentPredictUser, getPredictMatches, saveMatchPrediction } from "@/lib/predictStore";
 
-type Draft = Record<number, { home: string; away: string; advancing: "home" | "away" | "" }>;
+type Draft = Record<number, { home: string; away: string; penHome: string; penAway: string; advancing: "home" | "away" | "" }>;
 type PeriodFilter = "near" | "yesterday" | "today" | "tomorrow" | "future" | "all";
 
 const periodOptions: Array<{ value: PeriodFilter; label: string }> = [
@@ -87,6 +87,8 @@ export default function PredictPredictions() {
             {
               home: prediction.predictedHomeScore.toString(),
               away: prediction.predictedAwayScore.toString(),
+              penHome: prediction.predictedHomePenalties?.toString() ?? "",
+              penAway: prediction.predictedAwayPenalties?.toString() ?? "",
               advancing: prediction.predictedAdvancing ?? "",
             },
           ])));
@@ -104,6 +106,8 @@ export default function PredictPredictions() {
       {
         home: prediction.predictedHomeScore.toString(),
         away: prediction.predictedAwayScore.toString(),
+        penHome: prediction.predictedHomePenalties?.toString() ?? "",
+        penAway: prediction.predictedAwayPenalties?.toString() ?? "",
         advancing: prediction.predictedAdvancing ?? "",
       },
       ])),
@@ -144,7 +148,7 @@ export default function PredictPredictions() {
   }
 
   function update(matchId: number, patch: Partial<Draft[number]>) {
-    setDraft(current => ({ ...current, [matchId]: { home: "", away: "", advancing: "", ...current[matchId], ...patch } }));
+    setDraft(current => ({ ...current, [matchId]: { home: "", away: "", penHome: "", penAway: "", advancing: "", ...current[matchId], ...patch } }));
   }
 
   async function save(event: FormEvent<HTMLFormElement>, match: PredictMatch) {
@@ -156,10 +160,25 @@ export default function PredictPredictions() {
     const current = draft[match.id];
     const predictedHomeScore = Number(current?.home);
     const predictedAwayScore = Number(current?.away);
+    const isKnockoutDraw = match.stage !== "group" && predictedHomeScore === predictedAwayScore;
+    const predictedHomePenalties = Number(current?.penHome);
+    const predictedAwayPenalties = Number(current?.penAway);
 
     if (!Number.isInteger(predictedHomeScore) || !Number.isInteger(predictedAwayScore) || predictedHomeScore < 0 || predictedAwayScore < 0) {
       setMessage("Введи два невід'ємні цілі числа.");
       return;
+    }
+    if (isKnockoutDraw) {
+      if (
+        !Number.isInteger(predictedHomePenalties) ||
+        !Number.isInteger(predictedAwayPenalties) ||
+        predictedHomePenalties < 0 ||
+        predictedAwayPenalties < 0 ||
+        predictedHomePenalties === predictedAwayPenalties
+      ) {
+        setMessage("Для нічиєї в плей-офф введи рахунок серії пенальті без нічиєї.");
+        return;
+      }
     }
     if (match.stage !== "group" && current?.advancing !== "home" && current?.advancing !== "away") {
       setMessage("Для плей-офф обери команду, яка пройде далі.");
@@ -170,6 +189,8 @@ export default function PredictPredictions() {
       const nextUser = await saveMatchPrediction(match, {
         predictedHomeScore,
         predictedAwayScore,
+        predictedHomePenalties: isKnockoutDraw ? predictedHomePenalties : undefined,
+        predictedAwayPenalties: isKnockoutDraw ? predictedAwayPenalties : undefined,
         predictedAdvancing: match.stage === "group" ? undefined : current.advancing as "home" | "away",
       });
       setUser(nextUser);
@@ -215,7 +236,7 @@ export default function PredictPredictions() {
             key={match.id}
             match={match}
             saved={user.predictions[match.id]}
-            draft={draft[match.id] ?? { home: "", away: "", advancing: "" }}
+            draft={draft[match.id] ?? { home: "", away: "", penHome: "", penAway: "", advancing: "" }}
             onUpdate={patch => update(match.id, patch)}
             onSave={event => save(event, match)}
           />
@@ -233,13 +254,14 @@ function PlayoffRules() {
           <div className="text-xs font-bold uppercase tracking-wide text-[#2937da]">Правила плей-офф</div>
           <p className="mt-1 text-sm leading-6 text-[#343434]/72">
             Напрям матчу — 10 балів, точний рахунок — ще 10, команда яка проходить далі — ще 5.
-            Якщо ставиш нічию, пенальті окремо не прогнозуємо: просто обери, хто пройде далі.
+            Якщо ставиш нічию в плей-офф, введи рахунок серії пенальті: точна серія дає ще 10.
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-px overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da]/15 text-center lg:min-w-[360px]">
+        <div className="grid grid-cols-4 gap-px overflow-hidden rounded-md border border-[#2937da]/15 bg-[#2937da]/15 text-center lg:min-w-[460px]">
           <RulePill value="10" label="напрям" />
           <RulePill value="+10" label="точний" />
           <RulePill value="+5" label="прохід" />
+          <RulePill value="+10" label="пенальті" />
         </div>
       </div>
     </section>
@@ -258,12 +280,17 @@ function RulePill({ value, label }: { value: string; label: string }) {
 function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
   match: PredictMatch;
   saved?: MatchPrediction;
-  draft: { home: string; away: string; advancing: "home" | "away" | "" };
+  draft: Draft[number];
   onUpdate: (patch: Partial<Draft[number]>) => void;
   onSave: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const locked = isLocked(match) || Boolean(saved);
   const lockedLabel = saved ? "Збережено" : "Закрито";
+  const isPredictedDraw = match.stage !== "group" && draft.home !== "" && draft.away !== "" && draft.home === draft.away;
+  const savedPenalty =
+    saved?.predictedHomePenalties !== undefined && saved?.predictedAwayPenalties !== undefined
+      ? `, пен. ${saved.predictedHomePenalties}:${saved.predictedAwayPenalties}`
+      : "";
 
   return (
     <form onSubmit={onSave} className="overflow-hidden rounded-md border border-[#2937da]/15 bg-white">
@@ -307,17 +334,41 @@ function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
       </div>
 
       {match.stage !== "group" && (
-        <div className="grid gap-2 border-t border-[#2937da]/10 p-4 sm:grid-cols-[160px_1fr_1fr] sm:items-center">
-          <div className="t-label">Хто пройде далі</div>
-          <Choice label={getTeamLabel(match.homeTeam)} active={draft.advancing === "home"} disabled={locked} onClick={() => onUpdate({ advancing: "home" })} />
-          <Choice label={getTeamLabel(match.awayTeam)} active={draft.advancing === "away"} disabled={locked} onClick={() => onUpdate({ advancing: "away" })} />
+        <div className="grid gap-4 border-t border-[#2937da]/10 p-4">
+          {isPredictedDraw && (
+            <div className="grid gap-2 sm:grid-cols-[160px_1fr] sm:items-center">
+              <div className="t-label">Серія пенальті</div>
+              <div className="grid max-w-[210px] grid-cols-[72px_auto_72px] items-center gap-2">
+                <Input
+                  className="h-11 bg-white text-center text-lg font-bold text-[#343434]"
+                  inputMode="numeric"
+                  value={draft.penHome}
+                  disabled={locked}
+                  onChange={event => onUpdate({ penHome: event.target.value })}
+                />
+                <span className="font-heading text-xl text-[#2937da]">:</span>
+                <Input
+                  className="h-11 bg-white text-center text-lg font-bold text-[#343434]"
+                  inputMode="numeric"
+                  value={draft.penAway}
+                  disabled={locked}
+                  onChange={event => onUpdate({ penAway: event.target.value })}
+                />
+              </div>
+            </div>
+          )}
+          <div className="grid gap-2 sm:grid-cols-[160px_1fr_1fr] sm:items-center">
+            <div className="t-label">Хто пройде далі</div>
+            <Choice label={getTeamLabel(match.homeTeam)} active={draft.advancing === "home"} disabled={locked} onClick={() => onUpdate({ advancing: "home" })} />
+            <Choice label={getTeamLabel(match.awayTeam)} active={draft.advancing === "away"} disabled={locked} onClick={() => onUpdate({ advancing: "away" })} />
+          </div>
         </div>
       )}
 
       {saved && (
         <div className="grid gap-3 border-t border-[#2937da]/10 bg-[#f3f3f6] px-4 py-3 text-sm text-[#343434]/75 sm:grid-cols-3">
           <div>
-            <span className="font-semibold text-[#343434]">Прогноз:</span> {saved.predictedHomeScore}:{saved.predictedAwayScore}
+            <span className="font-semibold text-[#343434]">Прогноз:</span> {saved.predictedHomeScore}:{saved.predictedAwayScore}{savedPenalty}
           </div>
           <div>
             <span className="font-semibold text-[#343434]">Результат:</span>{" "}
@@ -326,7 +377,7 @@ function PredictionCard({ match, saved, draft, onUpdate, onSave }: {
               : statusLabels[match.status]}
           </div>
           <div className="sm:text-right">
-            <span className="font-semibold text-[#343434]">Очки:</span> {saved.pointsOutcome + saved.pointsAdvancing}
+            <span className="font-semibold text-[#343434]">Очки:</span> {saved.pointsOutcome + saved.pointsAdvancing + saved.pointsPenalty}
           </div>
         </div>
       )}

@@ -21,6 +21,8 @@ type SavePayload = {
   };
   predictedHomeScore: number;
   predictedAwayScore: number;
+  predictedHomePenalties?: number;
+  predictedAwayPenalties?: number;
   predictedAdvancing?: "home" | "away";
 };
 
@@ -59,6 +61,20 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       return;
     }
 
+    const isKnockoutDraw = payload.match.stage !== "group" && payload.predictedHomeScore === payload.predictedAwayScore;
+    if (isKnockoutDraw) {
+      if (
+        !Number.isInteger(payload.predictedHomePenalties) ||
+        !Number.isInteger(payload.predictedAwayPenalties) ||
+        payload.predictedHomePenalties < 0 ||
+        payload.predictedAwayPenalties < 0 ||
+        payload.predictedHomePenalties === payload.predictedAwayPenalties
+      ) {
+        response.status(400).json({ error: "Для нічиєї в плей-офф введи рахунок серії пенальті без нічиєї." });
+        return;
+      }
+    }
+
     const matchRows = await supabasePost<Array<{ id: number }>>(
       "/predict_matches?on_conflict=external_id",
       {
@@ -89,9 +105,12 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       local_match_id: payload.match.id,
       predicted_home_score: payload.predictedHomeScore,
       predicted_away_score: payload.predictedAwayScore,
+      predicted_home_penalties: isKnockoutDraw ? payload.predictedHomePenalties : null,
+      predicted_away_penalties: isKnockoutDraw ? payload.predictedAwayPenalties : null,
       predicted_advancing: payload.predictedAdvancing ?? null,
       points_outcome: 0,
       points_advancing: 0,
+      points_penalty: 0,
     }, "return=minimal");
 
     response.status(200).json({ user: await getUserBundle(userId) });

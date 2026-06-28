@@ -10,6 +10,8 @@ type DbMatch = {
   status: "scheduled" | "live" | "finished";
   home_score: number | null;
   away_score: number | null;
+  home_penalties: number | null;
+  away_penalties: number | null;
   winner: "home" | "away" | "draw" | null;
   team_advancing: "home" | "away" | null;
 };
@@ -24,7 +26,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     }
 
     const rows = await supabaseGet<DbMatch[]>(
-      "/predict_matches?select=external_id,status,home_score,away_score,winner,team_advancing",
+      "/predict_matches?select=external_id,status,home_score,away_score,home_penalties,away_penalties,winner,team_advancing",
     );
 
     response.status(200).json({
@@ -33,6 +35,8 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         status: row.status,
         homeScore: row.home_score,
         awayScore: row.away_score,
+        homePenalties: row.home_penalties,
+        awayPenalties: row.away_penalties,
         winner: row.winner,
         teamAdvancing: row.team_advancing,
       })),

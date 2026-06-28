@@ -49,7 +49,7 @@ export default function PredictProfile() {
     .map(prediction => ({ prediction, match: matchList.find(match => match.id === prediction.matchId) }))
     .filter(item => item.match)
     .sort((a, b) => new Date(a.match!.matchDate).getTime() - new Date(b.match!.matchDate).getTime());
-  const matchPoints = predictions.reduce((sum, item) => sum + item.prediction.pointsOutcome + item.prediction.pointsAdvancing, 0);
+  const matchPoints = predictions.reduce((sum, item) => sum + item.prediction.pointsOutcome + item.prediction.pointsAdvancing + item.prediction.pointsPenalty, 0);
   const tournamentPoints = getTournamentPoints(user);
 
   async function logout() {
@@ -138,7 +138,7 @@ export default function PredictProfile() {
                 </div>
                 <div className="text-right">
                   <div className="font-heading text-2xl leading-none text-[#2937da]">{prediction.predictedHomeScore}:{prediction.predictedAwayScore}</div>
-                  <div className="t-meta">{prediction.pointsOutcome + prediction.pointsAdvancing} балів</div>
+                  <div className="t-meta">{prediction.pointsOutcome + prediction.pointsAdvancing + prediction.pointsPenalty} балів</div>
                 </div>
               </div>
             ))}
