@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, Medal, ShieldCheck } from "lucide-react";
 import { getCurrentPredictUser, getPredictMatches, getPredictUsers } from "@/lib/predictStore";
 import { formatKyivDate, getTeamLabel, predictMatches, type PredictMatch, type PredictUser } from "@/data/predictData";
-import logoPredict from "@/assets/logo-circle.png";
+import logoPredict from "@/assets/logo-full.png";
 
 type Leader = PredictUser & { totalPoints: number };
 
