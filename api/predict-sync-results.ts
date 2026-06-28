@@ -245,6 +245,7 @@ function normalizeTeamName(name: string) {
     "Bosnia-Herzegovina": "Bosnia and Herzegovina",
     "Bosnia & Herzegovina": "Bosnia and Herzegovina",
     "Cabo Verde": "Cape Verde",
+    "Cape Verde Islands": "Cape Verde",
     "Congo DR": "DR Congo",
     "Congo, The Democratic Republic of the": "DR Congo",
     "Côte d'Ivoire": "Ivory Coast",
