@@ -71,7 +71,7 @@ export default function WorldCup2026() {
               Всі матчі <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </div>
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_1.15fr]">
+          <div className="mt-6 grid gap-6">
             <MatchCenterPanel
               title={matchCenter.previousRound ? `Результати · ${matchCenter.previousRound}` : "Результати"}
               empty="Попередній тур ще без зіграних матчів."
@@ -169,7 +169,7 @@ function MatchCenterPanel({ title, empty, matches, tone = "default" }: {
         <h3 className="font-heading text-3xl leading-none">{title}</h3>
         <CalendarDays className={tone === "muted" ? "h-5 w-5 text-[#bbf903]" : "h-5 w-5 text-white"} />
       </div>
-      <div className="grid gap-3 p-3 sm:p-4">
+      <div className="grid gap-3 p-3 sm:p-4 lg:grid-cols-2">
         {matches.length ? matches.map(match => <MatchCard key={match.id} match={match} compact />) : (
           <div className="rounded-md border border-[#ff008c]/15 bg-[#f3f3f6] p-4 text-sm text-[#343434]/70">{empty}</div>
         )}
