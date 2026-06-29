@@ -169,12 +169,26 @@ function MatchCenterPanel({ title, empty, matches, tone = "default" }: {
         <h3 className="font-heading text-3xl leading-none">{title}</h3>
         <CalendarDays className={tone === "muted" ? "h-5 w-5 text-[#bbf903]" : "h-5 w-5 text-white"} />
       </div>
-      <div className="grid gap-3 p-3 sm:p-4 lg:grid-cols-2">
-        {matches.length ? matches.map(match => <MatchCard key={match.id} match={match} compact />) : (
+      <div className="grid gap-2 p-3 sm:p-4">
+        {matches.length ? matches.map(match => <MatchCenterRow key={match.id} match={match} />) : (
           <div className="rounded-md border border-[#ff008c]/15 bg-[#f3f3f6] p-4 text-sm text-[#343434]/70">{empty}</div>
         )}
       </div>
     </section>
+  );
+}
+
+function MatchCenterRow({ match }: { match: WorldCupMatch }) {
+  return (
+    <article className="grid gap-3 rounded-md border border-[#ff008c]/15 bg-[#f3f3f6] px-3 py-3 sm:grid-cols-[150px_1fr_auto_1fr] sm:items-center sm:px-4">
+      <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#ff008c] sm:block">
+        <span>{matchLabel(match)}</span>
+        <span className="text-[#343434]/45 sm:mt-1 sm:block">{formatMatchDateOnly(match)}</span>
+      </div>
+      <TeamName value={match.home} align="left" />
+      <ScoreBox match={match} />
+      <TeamName value={match.away} align="left" />
+    </article>
   );
 }
 
