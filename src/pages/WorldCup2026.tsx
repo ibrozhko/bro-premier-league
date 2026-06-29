@@ -17,7 +17,7 @@ import logoFull from "@/assets/logo-full.png";
 export default function WorldCup2026() {
   const [activeGroupIndex, setActiveGroupIndex] = useState(0);
   const playedMatches = getPlayedWorldCupMatches();
-  const firstRoundMatches = worldCupMatches.filter(match => match.round === "Тур 1");
+  const matchCenter = getMatchCenterRounds();
   const topAttack = getWorldCupTopScorers()[0];
   const bestDefense = getWorldCupBestDefense()[0];
   const activeGroup = worldCupGroups[activeGroupIndex] ?? worldCupGroups[0];
@@ -65,14 +65,24 @@ export default function WorldCup2026() {
             <SectionHeader
               eyebrow="Match center"
               title="Матч-центр"
-              text="Розклад матчів першого туру."
+              text="Найближчий тур і результати попереднього, щоб швидко зрозуміти, що вже сталося і що граємо далі."
             />
             <Link to="/fixtures" className="inline-flex h-11 items-center rounded-md bg-[#ff008c] px-4 text-sm font-bold text-white hover:bg-[#df007b]">
               Всі матчі <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </div>
-          <div className="mt-6 grid gap-3 lg:grid-cols-2">
-            {firstRoundMatches.map(match => <MatchCard key={match.id} match={match} />)}
+          <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_1.15fr]">
+            <MatchCenterPanel
+              title={matchCenter.previousRound ? `Результати · ${matchCenter.previousRound}` : "Результати"}
+              empty="Попередній тур ще без зіграних матчів."
+              matches={matchCenter.previousMatches}
+              tone="muted"
+            />
+            <MatchCenterPanel
+              title={matchCenter.nextRound ? `Наступні матчі · ${matchCenter.nextRound}` : "Наступні матчі"}
+              empty="Усі матчі групового етапу вже зіграні."
+              matches={matchCenter.nextMatches}
+            />
           </div>
         </div>
       </section>
@@ -105,6 +115,66 @@ export default function WorldCup2026() {
         </div>
       </section>
     </main>
+  );
+}
+
+function getRoundNumber(round: string) {
+  const match = round.match(/\d+/);
+  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+}
+
+function getGroupRounds() {
+  return [...new Set(worldCupMatches.filter(match => match.group).map(match => match.round))]
+    .sort((a, b) => getRoundNumber(a) - getRoundNumber(b));
+}
+
+function getMatchCenterRounds() {
+  const rounds = getGroupRounds();
+  const latestPlayedMatch = [...worldCupMatches]
+    .filter(match => match.group && isPlayed(match))
+    .sort((a, b) => b.number - a.number)[0];
+  const latestPlayedRoundIndex = latestPlayedMatch ? rounds.indexOf(latestPlayedMatch.round) : -1;
+  const nextRound = rounds.slice(Math.max(latestPlayedRoundIndex, 0))
+    .find(round => worldCupMatches.some(match => match.round === round && !isPlayed(match)))
+    ?? rounds.find(round => worldCupMatches.some(match => match.round === round && !isPlayed(match)))
+    ?? "";
+  const nextRoundIndex = nextRound ? rounds.indexOf(nextRound) : -1;
+  const previousRound = rounds
+    .slice(0, nextRoundIndex >= 0 ? nextRoundIndex : rounds.length)
+    .reverse()
+    .find(round => worldCupMatches.some(match => match.round === round && isPlayed(match)))
+    ?? "";
+
+  return {
+    nextRound,
+    previousRound,
+    nextMatches: nextRound
+      ? worldCupMatches.filter(match => match.round === nextRound && !isPlayed(match)).sort((a, b) => a.number - b.number)
+      : [],
+    previousMatches: previousRound
+      ? worldCupMatches.filter(match => match.round === previousRound && isPlayed(match)).sort((a, b) => a.number - b.number)
+      : [],
+  };
+}
+
+function MatchCenterPanel({ title, empty, matches, tone = "default" }: {
+  title: string;
+  empty: string;
+  matches: WorldCupMatch[];
+  tone?: "default" | "muted";
+}) {
+  return (
+    <section className="overflow-hidden rounded-md border border-[#ff008c]/20 bg-white shadow-[0_18px_48px_rgba(255,0,140,0.08)]">
+      <div className={`flex items-center justify-between px-4 py-3 ${tone === "muted" ? "bg-[#343434] text-white" : "bg-[#ff008c] text-white"}`}>
+        <h3 className="font-heading text-3xl leading-none">{title}</h3>
+        <CalendarDays className={tone === "muted" ? "h-5 w-5 text-[#bbf903]" : "h-5 w-5 text-white"} />
+      </div>
+      <div className="grid gap-3 p-3 sm:p-4">
+        {matches.length ? matches.map(match => <MatchCard key={match.id} match={match} compact />) : (
+          <div className="rounded-md border border-[#ff008c]/15 bg-[#f3f3f6] p-4 text-sm text-[#343434]/70">{empty}</div>
+        )}
+      </div>
+    </section>
   );
 }
 
