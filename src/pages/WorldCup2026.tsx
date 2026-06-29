@@ -236,7 +236,7 @@ function GroupCard({ groupId, title, featured = false }: { groupId: WorldCupGrou
         <Crown className="h-5 w-5 text-[#bbf903]" />
       </div>
       <div className="overflow-x-auto p-4">
-        <table className="w-full min-w-[560px] text-sm sm:text-base">
+        <table className="w-full min-w-[760px] text-sm sm:text-base">
           <thead>
             <tr className="border-b border-[#ff008c]/15 text-[0.68rem] uppercase tracking-wide text-[#343434]/55">
               <th className="py-2 text-left">#</th>
@@ -245,6 +245,8 @@ function GroupCard({ groupId, title, featured = false }: { groupId: WorldCupGrou
               <th className="py-2 text-center">В</th>
               <th className="py-2 text-center">Н</th>
               <th className="py-2 text-center">П</th>
+              <th className="py-2 text-center">ЗГ</th>
+              <th className="py-2 text-center">ПГ</th>
               <th className="py-2 text-center">РГ</th>
               <th className="py-2 text-center">О</th>
             </tr>
@@ -261,6 +263,8 @@ function GroupCard({ groupId, title, featured = false }: { groupId: WorldCupGrou
                 <td className="py-3 text-center">{row.won}</td>
                 <td className="py-3 text-center">{row.drawn}</td>
                 <td className="py-3 text-center">{row.lost}</td>
+                <td className="py-3 text-center font-semibold">{row.goalsFor}</td>
+                <td className="py-3 text-center font-semibold">{row.goalsAgainst}</td>
                 <td className="py-3 text-center">{row.goalDifference > 0 ? "+" : ""}{row.goalDifference}</td>
                 <td className="py-3 text-center font-bold text-[#ff008c]">{row.points}</td>
               </tr>
