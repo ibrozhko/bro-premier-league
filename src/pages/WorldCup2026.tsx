@@ -169,9 +169,9 @@ function MatchCenterPanel({ title, empty, matches, tone = "default" }: {
         <h3 className="font-heading text-3xl leading-none">{title}</h3>
         <CalendarDays className={tone === "muted" ? "h-5 w-5 text-[#bbf903]" : "h-5 w-5 text-white"} />
       </div>
-      <div className="grid gap-2 p-3 sm:p-4">
+      <div className="divide-y divide-[#ff008c]/15">
         {matches.length ? matches.map(match => <MatchCenterRow key={match.id} match={match} />) : (
-          <div className="rounded-md border border-[#ff008c]/15 bg-[#f3f3f6] p-4 text-sm text-[#343434]/70">{empty}</div>
+          <div className="p-4 text-sm text-[#343434]/70">{empty}</div>
         )}
       </div>
     </section>
@@ -179,16 +179,36 @@ function MatchCenterPanel({ title, empty, matches, tone = "default" }: {
 }
 
 function MatchCenterRow({ match }: { match: WorldCupMatch }) {
+  const played = isPlayed(match);
+
   return (
-    <article className="grid gap-3 rounded-md border border-[#ff008c]/15 bg-[#f3f3f6] px-3 py-3 sm:grid-cols-[150px_1fr_auto_1fr] sm:items-center sm:px-4">
-      <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#ff008c] sm:block">
-        <span>{matchLabel(match)}</span>
-        <span className="text-[#343434]/45 sm:mt-1 sm:block">{formatMatchDateOnly(match)}</span>
+    <article className="px-3 py-4 sm:grid sm:grid-cols-[130px_1fr_90px] sm:items-center sm:gap-4 sm:px-6">
+      <div className="mb-3 flex items-center justify-between gap-3 sm:mb-0 sm:block">
+        <div>
+          <div className="font-heading text-xl leading-none text-[#ff008c] sm:text-2xl">{matchLabel(match)}</div>
+          <div className="mt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#343434]/55">
+            {formatMatchDateOnly(match)}
+          </div>
+        </div>
+        <MatchCenterStatus played={played} className="sm:hidden" />
       </div>
-      <TeamName value={match.home} align="left" />
-      <ScoreBox match={match} />
-      <TeamName value={match.away} align="left" />
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-5">
+        <TeamName value={match.home} align="right" />
+        <ScoreBox match={match} />
+        <TeamName value={match.away} align="left" />
+      </div>
+      <div className="hidden text-right sm:block">
+        <MatchCenterStatus played={played} />
+      </div>
     </article>
+  );
+}
+
+function MatchCenterStatus({ played, className = "" }: { played: boolean; className?: string }) {
+  return (
+    <span className={`inline-flex rounded-md px-2 py-1 text-[0.65rem] font-bold uppercase ${played ? "bg-[#343434] text-white" : "bg-[#bbf903] text-[#111111]"} ${className}`}>
+      {played ? "Зіграно" : "Скоро"}
+    </span>
   );
 }
 
@@ -301,8 +321,8 @@ function TeamName({ value, align }: { value: string; align: "left" | "right" }) 
 
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="truncate text-base font-semibold leading-tight text-[#343434] sm:text-lg">{player}</div>
-      <div className="mt-0.5 truncate text-sm text-[#343434]/58">{team ?? value}</div>
+      <div className="break-words text-base font-semibold leading-tight text-[#343434] sm:truncate sm:text-lg">{player}</div>
+      <div className="mt-0.5 break-words text-xs leading-tight text-[#343434]/58 sm:truncate sm:text-sm">{team ?? value}</div>
     </div>
   );
 }
@@ -317,7 +337,7 @@ function formatMatchDateOnly(match: WorldCupMatch) {
 
 function ScoreBox({ match }: { match: WorldCupMatch }) {
   return (
-    <div className="min-w-[58px] rounded-md bg-[#ff008c]/10 px-2.5 py-1 text-center font-heading text-xl leading-none text-[#ff008c] sm:min-w-[68px]">
+    <div className="min-w-[56px] rounded-md bg-[#ff008c]/10 px-2 py-2 text-center font-heading text-lg leading-none text-[#ff008c] sm:min-w-[68px] sm:py-1 sm:text-2xl">
       {isPlayed(match) ? `${match.homeScore}:${match.awayScore}` : "VS"}
     </div>
   );
