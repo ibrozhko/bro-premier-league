@@ -42,7 +42,7 @@ export default function WorldCup2026() {
             Оновлено: 27.06.2026
           </p>
 
-          <div className="mx-auto mt-6 grid max-w-3xl grid-cols-2 gap-px text-left lg:grid-cols-4">
+          <div className="mx-auto mt-6 grid max-w-5xl grid-cols-2 gap-px text-left lg:grid-cols-4">
             <HeroStat label="Зіграно" value={`${playedMatches.length}/${worldCupMatches.length}`} />
             <HeroStat label="Голів" value={getWorldCupTopScorers().reduce((sum, row) => sum + row.goalsFor, 0)} />
             <HeroStat label="Атака" value={topAttack?.player ?? "-"} meta={topAttack ? `${topAttack.goalsFor} голів` : "ще без голів"} />
