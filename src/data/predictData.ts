@@ -196,8 +196,26 @@ const teamCodes: Record<string, string> = {
   Zambia: "ZAM",
 };
 
+const teamAliases: Record<string, string> = {
+  "Bosnia-H.": "Bosnia and Herzegovina",
+  "Bosnia-Herzegovina": "Bosnia and Herzegovina",
+  "Bosnia & Herzegovina": "Bosnia and Herzegovina",
+  "Cape Verde Islands": "Cape Verde",
+  "Cabo Verde": "Cape Verde",
+  "Congo DR": "DR Congo",
+  "Curaçao": "Curacao",
+  "Korea Republic": "South Korea",
+  USA: "United States",
+  "United States of America": "United States",
+};
+
+export function normalizePredictTeamName(team: string) {
+  return teamAliases[team] ?? team;
+}
+
 export function getTeamCode(team: string) {
-  return teamCodes[team] ?? team.slice(0, 3).toUpperCase();
+  const normalized = normalizePredictTeamName(team);
+  return teamCodes[normalized] ?? normalized.slice(0, 3).toUpperCase();
 }
 
 export const teamLabels: Record<string, string> = {
@@ -272,7 +290,8 @@ export const statusLabels: Record<MatchStatus, string> = {
 };
 
 export function getTeamLabel(team: string) {
-  return teamLabels[team] ?? team;
+  const normalized = normalizePredictTeamName(team);
+  return teamLabels[normalized] ?? normalized;
 }
 
 const groupSchedule = [

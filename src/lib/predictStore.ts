@@ -79,7 +79,7 @@ export async function getPredictMatches() {
     return {
       ...match,
       stage: row.stage ?? match.stage,
-      groupName: row.groupName ?? match.groupName,
+      groupName: normalizeGroupName(row.groupName) ?? match.groupName,
       matchDate: row.matchDate ?? match.matchDate,
       homeTeam: row.homeTeam ?? match.homeTeam,
       awayTeam: row.awayTeam ?? match.awayTeam,
@@ -104,7 +104,7 @@ function rowToPredictMatch(row: MatchesResponse["matches"][number], index: numbe
     id: row.id ?? index + 1,
     externalId: row.externalId,
     stage: row.stage ?? "group",
-    groupName: row.groupName,
+    groupName: normalizeGroupName(row.groupName),
     matchDate: row.matchDate ?? new Date(0).toISOString(),
     homeTeam,
     awayTeam,
@@ -118,6 +118,10 @@ function rowToPredictMatch(row: MatchesResponse["matches"][number], index: numbe
     teamAdvancing: row.teamAdvancing,
     status: row.status,
   };
+}
+
+function normalizeGroupName(groupName?: string) {
+  return groupName?.replace(/^GROUP_/i, "");
 }
 
 export async function loginPredictUser(username: string, password: string) {
