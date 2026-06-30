@@ -1,5 +1,5 @@
-import { predictMatches } from "@/data/predictData";
-import type { MatchPrediction, PredictMatch, PredictUser, TournamentPrediction } from "@/data/predictData";
+import { getTeamCode, predictMatches } from "@/data/predictData";
+import type { MatchPrediction, MatchStage, PredictMatch, PredictUser, TournamentPrediction } from "@/data/predictData";
 
 type UsersResponse = {
   currentUser: PredictUser | null;
@@ -12,7 +12,13 @@ type UserResponse = {
 
 type MatchesResponse = {
   matches: Array<{
+    id?: number;
     externalId: string;
+    stage?: MatchStage;
+    groupName?: string;
+    matchDate?: string;
+    homeTeam?: string;
+    awayTeam?: string;
     status: PredictMatch["status"];
     homeScore: number | null;
     awayScore: number | null;
@@ -52,6 +58,19 @@ export async function getCurrentPredictUser() {
 export async function getPredictMatches() {
   const payload = await apiFetch<MatchesResponse>("/api/predict-matches");
   const rowsByExternalId = new Map(payload.matches.map(match => [match.externalId, match]));
+  const detailedRows = payload.matches.filter(row =>
+    row.stage &&
+    row.matchDate &&
+    row.homeTeam &&
+    row.awayTeam
+  );
+  const footballDataRows = detailedRows.filter(row => /^\d+$/.test(row.externalId));
+
+  if (footballDataRows.length >= predictMatches.length) {
+    return footballDataRows
+      .map((row, index) => rowToPredictMatch(row, index))
+      .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime() || a.id - b.id);
+  }
 
   return predictMatches.map(match => {
     const row = rowsByExternalId.get(match.externalId);
@@ -59,6 +78,13 @@ export async function getPredictMatches() {
 
     return {
       ...match,
+      stage: row.stage ?? match.stage,
+      groupName: row.groupName ?? match.groupName,
+      matchDate: row.matchDate ?? match.matchDate,
+      homeTeam: row.homeTeam ?? match.homeTeam,
+      awayTeam: row.awayTeam ?? match.awayTeam,
+      homeCode: row.homeTeam ? getTeamCode(row.homeTeam) : match.homeCode,
+      awayCode: row.awayTeam ? getTeamCode(row.awayTeam) : match.awayCode,
       status: row.status ?? match.status,
       homeScore: row.homeScore,
       awayScore: row.awayScore,
@@ -68,6 +94,30 @@ export async function getPredictMatches() {
       teamAdvancing: row.teamAdvancing,
     };
   });
+}
+
+function rowToPredictMatch(row: MatchesResponse["matches"][number], index: number): PredictMatch {
+  const homeTeam = row.homeTeam ?? "TBD";
+  const awayTeam = row.awayTeam ?? "TBD";
+
+  return {
+    id: row.id ?? index + 1,
+    externalId: row.externalId,
+    stage: row.stage ?? "group",
+    groupName: row.groupName,
+    matchDate: row.matchDate ?? new Date(0).toISOString(),
+    homeTeam,
+    awayTeam,
+    homeCode: getTeamCode(homeTeam),
+    awayCode: getTeamCode(awayTeam),
+    homeScore: row.homeScore,
+    awayScore: row.awayScore,
+    homePenalties: row.homePenalties,
+    awayPenalties: row.awayPenalties,
+    winner: row.winner,
+    teamAdvancing: row.teamAdvancing,
+    status: row.status,
+  };
 }
 
 export async function loginPredictUser(username: string, password: string) {
