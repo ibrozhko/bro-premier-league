@@ -196,10 +196,6 @@ const teamCodes: Record<string, string> = {
   Zambia: "ZAM",
 };
 
-export function getTeamCode(team: string) {
-  return teamCodes[team] ?? team.slice(0, 3).toUpperCase();
-}
-
 export const teamLabels: Record<string, string> = {
   TBD: "Буде визначено",
   Algeria: "Алжир",
