@@ -8,6 +8,7 @@ import {
   getWorldCupTopScorers,
   isPlayed,
   worldCupGroups,
+  worldCupLastUpdated,
   worldCupMatches,
   type WorldCupGroupId,
   type WorldCupMatch,
@@ -39,7 +40,7 @@ export default function WorldCup2026() {
             FC 26 · Турнір до ЧС 2026 · 15 гравців · 3 групи · 38 матчів
           </p>
           <p className="mt-3 inline-flex rounded-full border border-[#ff008c]/30 bg-white px-3 py-1 text-[0.68rem] uppercase tracking-wide text-[#ff008c] sm:text-xs">
-            Оновлено: 27.06.2026
+            Оновлено: {worldCupLastUpdated}
           </p>
 
           <div className="mx-auto mt-6 grid max-w-5xl grid-cols-2 gap-px text-left lg:grid-cols-4">

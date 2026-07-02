@@ -434,14 +434,21 @@ function updateResult(data: LeagueData, payload: Required<UpdatePayload>, today:
 function updateWorldCupResultSource(source: string, payload: UpdatePayload) {
   const matchId = payload.matchId!.trim();
   const pattern = new RegExp(`(\\{ id: "${escapeRegExp(matchId)}"[^\\n]*homeScore: )[^,]+(, awayScore: )[^,]+(, note: )`, "m");
+  const updatedPattern = /(export const worldCupLastUpdated = ")[^"]+(";)/;
 
   if (!pattern.test(source)) {
     throw new Error(`Матч ЧС ${matchId} не знайдено.`);
   }
 
-  return source.replace(pattern, (_match, beforeHome: string, betweenScores: string, afterAway: string) =>
+  const nextSource = source.replace(pattern, (_match, beforeHome: string, betweenScores: string, afterAway: string) =>
     `${beforeHome}${scoreText(payload.homeScore)}${betweenScores}${scoreText(payload.awayScore)}${afterAway}`,
   );
+
+  if (!updatedPattern.test(nextSource)) {
+    throw new Error("Поле worldCupLastUpdated не знайдено у файлі ЧС.");
+  }
+
+  return nextSource.replace(updatedPattern, `$1${formatToday()}$2`);
 }
 
 function assertCurrentWorldCupSource(source: string) {
