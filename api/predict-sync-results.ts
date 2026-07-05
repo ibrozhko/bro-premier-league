@@ -20,6 +20,8 @@ type FootballDataMatch = {
   awayTeam: { name?: string; shortName?: string };
   score: {
     fullTime?: { home: number | null; away: number | null };
+    regularTime?: { home: number | null; away: number | null };
+    extraTime?: { home: number | null; away: number | null };
     penalties?: { home: number | null; away: number | null };
     winner?: "HOME_TEAM" | "AWAY_TEAM" | "DRAW";
   };
@@ -67,15 +69,15 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
     for (const match of matches) {
       const status = mapStatus(match.status);
-      const fullTime = match.score.fullTime;
       const stage = mapStage(match.stage);
       const localMatchResult = findLocalMatch(match, stage);
       const localMatch = localMatchResult?.match;
       const externalId = localMatch?.externalId ?? String(match.id);
-      const rawHomeScore = status === "finished" ? fullTime?.home ?? null : null;
-      const rawAwayScore = status === "finished" ? fullTime?.away ?? null : null;
       const rawHomePenalties = status === "finished" ? match.score.penalties?.home ?? null : null;
       const rawAwayPenalties = status === "finished" ? match.score.penalties?.away ?? null : null;
+      const regularScore = status === "finished" ? regularTimeScore(match.score) : { home: null, away: null };
+      const rawHomeScore = regularScore.home;
+      const rawAwayScore = regularScore.away;
       const rawTeamAdvancing = stage === "group"
         ? null
         : mapTeamAdvancing(match.score.winner, rawHomeScore, rawAwayScore, rawHomePenalties, rawAwayPenalties);
@@ -227,6 +229,40 @@ function mapWinner(winner?: string) {
   if (winner === "AWAY_TEAM") return "away";
   if (winner === "DRAW") return "draw";
   return null;
+}
+
+function regularTimeScore(score: FootballDataMatch["score"]) {
+  if (isCompleteScore(score.regularTime)) return score.regularTime;
+
+  const fullTime = score.fullTime ?? { home: null, away: null };
+  if (!isCompleteScore(fullTime)) return { home: null, away: null };
+
+  if (isCompleteScore(score.extraTime)) {
+    return {
+      home: fullTime.home - score.extraTime.home,
+      away: fullTime.away - score.extraTime.away,
+    };
+  }
+
+  if (
+    isCompleteScore(score.penalties) &&
+    fullTime.home !== fullTime.away
+  ) {
+    const withoutPenalties = {
+      home: fullTime.home - score.penalties.home,
+      away: fullTime.away - score.penalties.away,
+    };
+
+    if (withoutPenalties.home === withoutPenalties.away) {
+      return withoutPenalties;
+    }
+  }
+
+  return fullTime;
+}
+
+function isCompleteScore(score?: { home: number | null; away: number | null }): score is { home: number; away: number } {
+  return typeof score?.home === "number" && typeof score.away === "number";
 }
 
 function mapTeamAdvancing(
