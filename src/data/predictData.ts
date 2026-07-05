@@ -543,9 +543,13 @@ export function getTournamentPoints(user: PredictUser) {
 }
 
 export function getCorrectPredictionCount(user: PredictUser) {
-  return Object.values(user.predictions).filter(prediction => prediction.pointsOutcome === 5).length;
+  return Object.values(user.predictions).filter(prediction => {
+    return prediction.matchId <= 72 ? prediction.pointsOutcome === 5 : prediction.pointsOutcome === 10;
+  }).length;
 }
 
 export function getExactPredictionCount(user: PredictUser) {
-  return Object.values(user.predictions).filter(prediction => prediction.pointsOutcome >= 10).length;
+  return Object.values(user.predictions).filter(prediction => {
+    return prediction.matchId <= 72 ? prediction.pointsOutcome === 10 : prediction.pointsOutcome === 20;
+  }).length;
 }

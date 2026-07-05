@@ -48,7 +48,7 @@ export default function PredictLeaderboard() {
           <div className="page-kicker">Система балів</div>
           <h3 className="h-section">Як рахуються очки</h3>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <ScoreTile icon={Target} title="Напрям" value="5 балів" text="Перемога однієї з команд або нічия." />
+            <ScoreTile icon={Target} title="Напрям" value="5 / 10" text="Група — 5, плей-офф — 10 за результат в основний час." />
             <ScoreTile icon={Trophy} title="Точний рахунок" value="10 балів" text="Повний збіг рахунку матчу." />
             <ScoreTile icon={ShieldCheck} title="Плей-офф" value="+5" text="Команда проходить у наступний раунд." />
             <ScoreTile icon={UsersRound} title="Інвайти" value="3 коди" text="Кожен гравець має власні запрошення." />

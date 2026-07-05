@@ -76,7 +76,9 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       const rawAwayScore = status === "finished" ? fullTime?.away ?? null : null;
       const rawHomePenalties = status === "finished" ? match.score.penalties?.home ?? null : null;
       const rawAwayPenalties = status === "finished" ? match.score.penalties?.away ?? null : null;
-      const rawTeamAdvancing = stage === "group" ? null : mapWinner(match.score.winner);
+      const rawTeamAdvancing = stage === "group"
+        ? null
+        : mapTeamAdvancing(match.score.winner, rawHomeScore, rawAwayScore, rawHomePenalties, rawAwayPenalties);
       const rawWinner = rawHomeScore === null || rawAwayScore === null
         ? null
         : rawHomeScore > rawAwayScore
@@ -224,6 +226,24 @@ function mapWinner(winner?: string) {
   if (winner === "HOME_TEAM") return "home";
   if (winner === "AWAY_TEAM") return "away";
   if (winner === "DRAW") return "draw";
+  return null;
+}
+
+function mapTeamAdvancing(
+  winner: string | undefined,
+  homeScore: number | null,
+  awayScore: number | null,
+  homePenalties: number | null,
+  awayPenalties: number | null,
+) {
+  if (winner === "HOME_TEAM") return "home";
+  if (winner === "AWAY_TEAM") return "away";
+  if (homePenalties !== null && awayPenalties !== null && homePenalties !== awayPenalties) {
+    return homePenalties > awayPenalties ? "home" : "away";
+  }
+  if (homeScore !== null && awayScore !== null && homeScore !== awayScore) {
+    return homeScore > awayScore ? "home" : "away";
+  }
   return null;
 }
 
