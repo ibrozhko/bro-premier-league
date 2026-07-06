@@ -10,7 +10,7 @@ export default function Footer() {
   const location = useLocation();
   const isWorldCup = worldCupPaths.includes(location.pathname);
   const about = isWorldCup
-    ? "BPL World Cup 2026 · 15 гравців · 3 групи по 5 · плей-оф на 8 учасників · фінал 19.07.2026."
+    ? "BPL World Cup 2026 · 15 гравців · 3 групи по 5 · плей-оф на 8 учасників · новий жереб на кожній стадії."
     : t("footer.about");
   const rules = isWorldCup
     ? [
@@ -18,6 +18,7 @@ export default function Footer() {
         "Перемога — 3 очки",
         "Нічия — 1 очко",
         "Вихід: 1-2 місця + 2 найкращі треті",
+        "Плей-оф: новий жереб перед кожною стадією",
         "Тайбрейк: очки → різниця → забиті",
       ]
     : [t("footer.ruleWin"), t("footer.ruleDraw"), t("footer.ruleLoss"), t("footer.ruleTiebreak"), t("footer.ruleRound")];

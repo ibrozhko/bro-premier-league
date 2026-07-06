@@ -131,26 +131,29 @@ function MatchRow({ match }: { match: WorldCupMatch }) {
   const played = isPlayed(match);
 
   return (
-    <div className="px-3 py-4 sm:grid sm:grid-cols-[110px_1fr_90px] sm:items-center sm:gap-4 sm:px-6">
-      <div className="mb-3 flex items-center justify-between gap-3 sm:mb-0 sm:block">
-        <div>
-          <div className="font-heading text-xl leading-none text-[#ff008c] sm:text-2xl">{match.round}</div>
-          <div className="mt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#343434]/55">
-            {matchLabel(match)}
+    <div className="px-3 py-4 sm:px-6">
+      <div className="sm:grid sm:grid-cols-[110px_1fr_90px] sm:items-center sm:gap-4">
+        <div className="mb-3 flex items-center justify-between gap-3 sm:mb-0 sm:block">
+          <div>
+            <div className="font-heading text-xl leading-none text-[#ff008c] sm:text-2xl">{match.round}</div>
+            <div className="mt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#343434]/55">
+              {matchLabel(match)}
+            </div>
           </div>
+          <MatchStatus played={played} className="sm:hidden" />
         </div>
-        <MatchStatus played={played} className="sm:hidden" />
-      </div>
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-5">
-        <TeamName value={match.home} align="right" />
-        <div className="rounded-md bg-[#ff008c]/10 px-2 py-2 text-center font-heading text-lg leading-none text-[#ff008c] sm:min-w-[68px] sm:py-1 sm:text-2xl">
-          {played ? `${match.homeScore}:${match.awayScore}` : "VS"}
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-5">
+          <TeamName value={match.home} align="right" />
+          <div className="rounded-md bg-[#ff008c]/10 px-2 py-2 text-center font-heading text-lg leading-none text-[#ff008c] sm:min-w-[68px] sm:py-1 sm:text-2xl">
+            {played ? `${match.homeScore}:${match.awayScore}` : "VS"}
+          </div>
+          <TeamName value={match.away} align="left" />
         </div>
-        <TeamName value={match.away} align="left" />
+        <div className="hidden text-right sm:block">
+          <MatchStatus played={played} />
+        </div>
       </div>
-      <div className="hidden text-right sm:block">
-        <MatchStatus played={played} />
-      </div>
+      {match.note && <p className="mt-3 text-xs font-medium leading-5 text-[#343434]/60 sm:ml-[126px]">{match.note}</p>}
     </div>
   );
 }

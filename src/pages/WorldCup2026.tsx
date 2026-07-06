@@ -37,7 +37,7 @@ export default function WorldCup2026() {
             BPL World Cup <span className="text-[#ff008c]">2026</span>
           </h1>
           <p className="mx-auto mt-3 max-w-[320px] text-sm text-[#343434]/75 sm:max-w-none sm:text-lg md:text-xl">
-            FC 26 · Турнір до ЧС 2026 · 15 гравців · 3 групи · 38 матчів
+            FC 26 · Турнір до ЧС 2026 · 15 гравців · 3 групи · плей-оф з жеребом
           </p>
           <p className="mt-3 inline-flex rounded-full border border-[#ff008c]/30 bg-white px-3 py-1 text-[0.68rem] uppercase tracking-wide text-[#ff008c] sm:text-xs">
             Оновлено: {worldCupLastUpdated}
@@ -56,7 +56,7 @@ export default function WorldCup2026() {
         <div className="content-shell grid gap-3 sm:grid-cols-3">
           <InfoPill icon={Trophy} label="Формат" value="3 групи по 5" />
           <InfoPill icon={Shield} label="Учасники" value="15 гравців" />
-          <InfoPill icon={CalendarDays} label="Фінал" value="19.07.2026" />
+          <InfoPill icon={CalendarDays} label="Плей-оф" value="жереб на кожній стадії" />
         </div>
       </section>
 
