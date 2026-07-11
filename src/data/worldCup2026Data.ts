@@ -43,7 +43,7 @@ export type WorldCupStanding = {
 
 export const worldCupStartDate = "2026-06-27T12:00:00+03:00";
 export const worldCupFinalDate = "2026-07-19T19:00:00+03:00";
-export const worldCupLastUpdated = "06.07.2026";
+export const worldCupLastUpdated = "11.07.2026";
 
 export const worldCupTeams: WorldCupTeam[] = [
   { group: "A" as WorldCupGroupId, seed: 1, player: "Сергій", team: "Туреччина 🇹🇷", name: "Сергій - Туреччина 🇹🇷", platform: "PS5", fc26Nick: "Flugergehaimer__" },
@@ -92,7 +92,7 @@ export const worldCupMatches: WorldCupMatch[] = [
   { id: "WC26-26", number: 26, date: "11.07.2026", day: "Сб", stage: "Група", group: "A" as WorldCupGroupId, round: "Тур 5", time: "13:30", home: "Коля - Аргентина 🇦🇷", away: "Олексій - Норвегія 🇳🇴", homeScore: null, awayScore: null, note: "" },
   { id: "WC26-27", number: 27, date: "11.07.2026", day: "Сб", stage: "Група", group: "B" as WorldCupGroupId, round: "Тур 5", time: "15:00", home: "Андрій - Україна 🇺🇦", away: "Женя - Німеччина 🇩🇪", homeScore: null, awayScore: null, note: "" },
   { id: "WC26-28", number: 28, date: "11.07.2026", day: "Сб", stage: "Група", group: "B" as WorldCupGroupId, round: "Тур 5", time: "16:30", home: "Влад - Хорватія 🇭🇷", away: "Дмитро - Бразилія 🇧🇷", homeScore: null, awayScore: null, note: "" },
-  { id: "WC26-29", number: 29, date: "11.07.2026", day: "Сб", stage: "Група", group: "C" as WorldCupGroupId, round: "Тур 5", time: "18:00", home: "Кіріл - Нідерланди 🇳🇱", away: "Саня - Португалія 🇵🇹", homeScore: null, awayScore: null, note: "" },
+  { id: "WC26-29", number: 29, date: "11.07.2026", day: "Сб", stage: "Група", group: "C" as WorldCupGroupId, round: "Тур 5", time: "18:00", home: "Кіріл - Нідерланди 🇳🇱", away: "Саня - Португалія 🇵🇹", homeScore: 6, awayScore: 1, note: "" },
   { id: "WC26-30", number: 30, date: "11.07.2026", day: "Сб", stage: "Група", group: "C" as WorldCupGroupId, round: "Тур 5", time: "19:30", home: "Жека - Франція 🇫🇷", away: "Майкл - Англія 🏴󠁧󠁢󠁥󠁮󠁧󠁿", homeScore: null, awayScore: null, note: "" },
   { id: "WC26-31", number: 31, date: "12.07.2026", day: "Нд", stage: "1/4", group: null, round: "QF-1", time: "12:00", home: "Жереб після груп", away: "Жереб після груп", homeScore: null, awayScore: null, note: "Пари 1/4 визначить окремий жереб після групового етапу." },
   { id: "WC26-32", number: 32, date: "12.07.2026", day: "Нд", stage: "1/4", group: null, round: "QF-2", time: "13:30", home: "Жереб після груп", away: "Жереб після груп", homeScore: null, awayScore: null, note: "Пари 1/4 визначить окремий жереб після групового етапу." },
