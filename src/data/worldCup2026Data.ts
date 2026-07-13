@@ -43,7 +43,7 @@ export type WorldCupStanding = {
 
 export const worldCupStartDate = "2026-06-27T12:00:00+03:00";
 export const worldCupFinalDate = "2026-07-19T19:00:00+03:00";
-export const worldCupLastUpdated = "12.07.2026";
+export const worldCupLastUpdated = "13.07.2026";
 
 export const worldCupTeams: WorldCupTeam[] = [
   { group: "A" as WorldCupGroupId, seed: 1, player: "Сергій", team: "Туреччина 🇹🇷", name: "Сергій - Туреччина 🇹🇷", platform: "PS5", fc26Nick: "Flugergehaimer__" },
@@ -89,7 +89,7 @@ export const worldCupMatches: WorldCupMatch[] = [
   { id: "WC26-23", number: 23, date: "05.07.2026", day: "Нд", stage: "Група", group: "C" as WorldCupGroupId, round: "Тур 4", time: "18:00", home: "Кіріл - Нідерланди 🇳🇱", away: "Дімас - Уругвай 🇺🇾", homeScore: 5, awayScore: 4, note: "" },
   { id: "WC26-24", number: 24, date: "05.07.2026", day: "Нд", stage: "Група", group: "C" as WorldCupGroupId, round: "Тур 4", time: "19:30", home: "Жека - Франція 🇫🇷", away: "Саня - Португалія 🇵🇹", homeScore: 3, awayScore: 1, note: "" },
   { id: "WC26-25", number: 25, date: "11.07.2026", day: "Сб", stage: "Група", group: "A" as WorldCupGroupId, round: "Тур 5", time: "12:00", home: "Сергій - Туреччина 🇹🇷", away: "Ігор - Бельгія 🇧🇪", homeScore: 7, awayScore: 0, note: "" },
-  { id: "WC26-26", number: 26, date: "11.07.2026", day: "Сб", stage: "Група", group: "A" as WorldCupGroupId, round: "Тур 5", time: "13:30", home: "Коля - Аргентина 🇦🇷", away: "Олексій - Норвегія 🇳🇴", homeScore: null, awayScore: null, note: "" },
+  { id: "WC26-26", number: 26, date: "11.07.2026", day: "Сб", stage: "Група", group: "A" as WorldCupGroupId, round: "Тур 5", time: "13:30", home: "Коля - Аргентина 🇦🇷", away: "Олексій - Норвегія 🇳🇴", homeScore: 5, awayScore: 7, note: "" },
   { id: "WC26-27", number: 27, date: "11.07.2026", day: "Сб", stage: "Група", group: "B" as WorldCupGroupId, round: "Тур 5", time: "15:00", home: "Андрій - Україна 🇺🇦", away: "Женя - Німеччина 🇩🇪", homeScore: null, awayScore: null, note: "" },
   { id: "WC26-28", number: 28, date: "11.07.2026", day: "Сб", stage: "Група", group: "B" as WorldCupGroupId, round: "Тур 5", time: "16:30", home: "Влад - Хорватія 🇭🇷", away: "Дмитро - Бразилія 🇧🇷", homeScore: null, awayScore: null, note: "" },
   { id: "WC26-29", number: 29, date: "11.07.2026", day: "Сб", stage: "Група", group: "C" as WorldCupGroupId, round: "Тур 5", time: "18:00", home: "Кіріл - Нідерланди 🇳🇱", away: "Саня - Португалія 🇵🇹", homeScore: 6, awayScore: 1, note: "" },
