@@ -377,8 +377,8 @@ const knockoutSchedule: Array<{ homeTeam: string; awayTeam: string; matchDate?: 
   { homeTeam: "Argentina", awayTeam: "Switzerland", matchDate: "2026-07-12T01:00:00.000Z" },
   { homeTeam: "France", awayTeam: "Spain", matchDate: "2026-07-14T19:00:00.000Z" },
   { homeTeam: "England", awayTeam: "Argentina", matchDate: "2026-07-15T19:00:00.000Z" },
-  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-18T20:00:00.000Z" },
-  { homeTeam: "TBD", awayTeam: "TBD", matchDate: "2026-07-19T20:00:00.000Z" },
+  { homeTeam: "England", awayTeam: "France", matchDate: "2026-07-18T21:00:00.000Z" },
+  { homeTeam: "Spain", awayTeam: "Argentina", matchDate: "2026-07-19T19:00:00.000Z" },
 ];
 
 function addDays(baseIso: string, days: number, hourOffset = 0) {
