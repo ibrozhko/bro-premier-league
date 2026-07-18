@@ -7,6 +7,7 @@ import {
   getWorldCupBestDefense,
   getWorldCupTopScorers,
   isPlayed,
+  matchDateTime,
   worldCupGroups,
   worldCupLastUpdated,
   worldCupMatches,
@@ -81,7 +82,7 @@ export default function WorldCup2026() {
             />
             <MatchCenterPanel
               title={matchCenter.nextRound ? `Наступні матчі · ${matchCenter.nextRound}` : "Наступні матчі"}
-              empty="Усі матчі групового етапу вже зіграні."
+              empty="Усі заплановані матчі вже зіграні."
               matches={matchCenter.nextMatches}
             />
           </div>
@@ -119,41 +120,35 @@ export default function WorldCup2026() {
   );
 }
 
-function getRoundNumber(round: string) {
-  const match = round.match(/\d+/);
-  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+function getMatchCenterKey(match: WorldCupMatch) {
+  return match.group ? match.round : match.stage;
 }
 
-function getGroupRounds() {
-  return [...new Set(worldCupMatches.filter(match => match.group).map(match => match.round))]
-    .sort((a, b) => getRoundNumber(a) - getRoundNumber(b));
+function sortMatchesByKickoff(a: WorldCupMatch, b: WorldCupMatch) {
+  return new Date(matchDateTime(a)).getTime() - new Date(matchDateTime(b)).getTime() || a.number - b.number;
 }
 
 function getMatchCenterRounds() {
-  const rounds = getGroupRounds();
-  const latestPlayedMatch = [...worldCupMatches]
-    .filter(match => match.group && isPlayed(match))
-    .sort((a, b) => b.number - a.number)[0];
-  const latestPlayedRoundIndex = latestPlayedMatch ? rounds.indexOf(latestPlayedMatch.round) : -1;
-  const nextRound = rounds.slice(Math.max(latestPlayedRoundIndex, 0))
-    .find(round => worldCupMatches.some(match => match.round === round && !isPlayed(match)))
-    ?? rounds.find(round => worldCupMatches.some(match => match.round === round && !isPlayed(match)))
+  const timelineKeys = [...new Set([...worldCupMatches].sort(sortMatchesByKickoff).map(getMatchCenterKey))];
+  const nextRound = timelineKeys.find(key =>
+    worldCupMatches.some(match => getMatchCenterKey(match) === key && !isPlayed(match))
+  )
     ?? "";
-  const nextRoundIndex = nextRound ? rounds.indexOf(nextRound) : -1;
-  const previousRound = rounds
-    .slice(0, nextRoundIndex >= 0 ? nextRoundIndex : rounds.length)
+  const nextRoundIndex = nextRound ? timelineKeys.indexOf(nextRound) : -1;
+  const previousRound = timelineKeys
+    .slice(0, nextRoundIndex >= 0 ? nextRoundIndex : timelineKeys.length)
     .reverse()
-    .find(round => worldCupMatches.some(match => match.round === round && isPlayed(match)))
+    .find(key => worldCupMatches.some(match => getMatchCenterKey(match) === key && isPlayed(match)))
     ?? "";
 
   return {
     nextRound,
     previousRound,
     nextMatches: nextRound
-      ? worldCupMatches.filter(match => match.round === nextRound && !isPlayed(match)).sort((a, b) => a.number - b.number)
+      ? worldCupMatches.filter(match => getMatchCenterKey(match) === nextRound && !isPlayed(match)).sort(sortMatchesByKickoff)
       : [],
     previousMatches: previousRound
-      ? worldCupMatches.filter(match => match.round === previousRound && isPlayed(match)).sort((a, b) => a.number - b.number)
+      ? worldCupMatches.filter(match => getMatchCenterKey(match) === previousRound && isPlayed(match)).sort(sortMatchesByKickoff)
       : [],
   };
 }
