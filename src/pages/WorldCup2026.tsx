@@ -140,16 +140,22 @@ function getMatchCenterRounds() {
     .reverse()
     .find(key => worldCupMatches.some(match => getMatchCenterKey(match) === key && isPlayed(match)))
     ?? "";
+  const playedQuarterFinals = worldCupMatches
+    .filter(match => getMatchCenterKey(match) === "1/4" && isPlayed(match))
+    .sort(sortMatchesByKickoff);
+  const resultsRound = playedQuarterFinals.length ? "1/4" : previousRound;
 
   return {
     nextRound,
-    previousRound,
+    previousRound: resultsRound,
     nextMatches: nextRound
       ? worldCupMatches.filter(match => getMatchCenterKey(match) === nextRound && !isPlayed(match)).sort(sortMatchesByKickoff)
       : [],
-    previousMatches: previousRound
-      ? worldCupMatches.filter(match => getMatchCenterKey(match) === previousRound && isPlayed(match)).sort(sortMatchesByKickoff)
-      : [],
+    previousMatches: playedQuarterFinals.length
+      ? playedQuarterFinals
+      : resultsRound
+        ? worldCupMatches.filter(match => getMatchCenterKey(match) === resultsRound && isPlayed(match)).sort(sortMatchesByKickoff)
+        : [],
   };
 }
 
