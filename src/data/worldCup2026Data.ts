@@ -43,7 +43,7 @@ export type WorldCupStanding = {
 
 export const worldCupStartDate = "2026-06-27T12:00:00+03:00";
 export const worldCupFinalDate = "2026-07-19T19:00:00+03:00";
-export const worldCupLastUpdated = "17.07.2026";
+export const worldCupLastUpdated = "20.07.2026";
 
 export const worldCupTeams: WorldCupTeam[] = [
   { group: "A" as WorldCupGroupId, seed: 1, player: "Сергій", team: "Туреччина 🇹🇷", name: "Сергій - Туреччина 🇹🇷", platform: "PS5", fc26Nick: "Flugergehaimer__" },
@@ -97,7 +97,7 @@ export const worldCupMatches: WorldCupMatch[] = [
   { id: "WC26-31", number: 31, date: "18.07.2026", day: "Сб", stage: "1/4", group: null, round: "QF-1", time: "12:00", home: "Ігор - Бельгія 🇧🇪", away: "Андрій - Україна 🇺🇦", homeScore: null, awayScore: null, note: "" },
   { id: "WC26-32", number: 32, date: "18.07.2026", day: "Сб", stage: "1/4", group: null, round: "QF-2", time: "13:30", home: "Кіріл - Нідерланди 🇳🇱", away: "Женя - Німеччина 🇩🇪", homeScore: null, awayScore: null, note: "" },
   { id: "WC26-33", number: 33, date: "18.07.2026", day: "Сб", stage: "1/4", group: null, round: "QF-3", time: "15:00", home: "Дімас - Уругвай 🇺🇾", away: "Олексій - Норвегія 🇳🇴", homeScore: 3, awayScore: 6, note: "" },
-  { id: "WC26-34", number: 34, date: "18.07.2026", day: "Сб", stage: "1/4", group: null, round: "QF-4", time: "16:30", home: "Сергій - Туреччина 🇹🇷", away: "Влад - Хорватія 🇭🇷", homeScore: null, awayScore: null, note: "" },
+  { id: "WC26-34", number: 34, date: "18.07.2026", day: "Сб", stage: "1/4", group: null, round: "QF-4", time: "16:30", home: "Сергій - Туреччина 🇹🇷", away: "Влад - Хорватія 🇭🇷", homeScore: 6, awayScore: 2, note: "" },
   { id: "WC26-35", number: 35, date: "18.07.2026", day: "Сб", stage: "1/2", group: null, round: "SF-1", time: "15:00", home: "Жереб після 1/4", away: "Жереб після 1/4", homeScore: null, awayScore: null, note: "Пари 1/2 визначить новий жереб після чвертьфіналів." },
   { id: "WC26-36", number: 36, date: "18.07.2026", day: "Сб", stage: "1/2", group: null, round: "SF-2", time: "17:00", home: "Жереб після 1/4", away: "Жереб після 1/4", homeScore: null, awayScore: null, note: "Пари 1/2 визначить новий жереб після чвертьфіналів." },
   { id: "WC26-37", number: 37, date: "19.07.2026", day: "Нд", stage: "Матч за 3 місце", group: null, round: "3rd", time: "17:00", home: "Після 1/2", away: "Після 1/2", homeScore: null, awayScore: null, note: "Учасники матчу за 3 місце стануть відомі після півфіналів." },
