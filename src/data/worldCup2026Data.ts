@@ -200,8 +200,60 @@ export function getWorldCupStandings() {
   return worldCupGroups.flatMap(group => calculateWorldCupStandings(group.id));
 }
 
+export function getWorldCupSeasonStats() {
+  const rows = new Map<string, WorldCupStanding>();
+
+  worldCupTeams.forEach(team => {
+    rows.set(team.name, {
+      player: team.player,
+      team: team.team,
+      name: team.name,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0,
+      points: 0,
+    });
+  });
+
+  worldCupMatches
+    .filter(isPlayed)
+    .forEach(match => {
+      const home = rows.get(match.home);
+      const away = rows.get(match.away);
+      if (!home || !away || match.homeScore === null || match.awayScore === null) return;
+
+      home.played += 1;
+      away.played += 1;
+      home.goalsFor += match.homeScore;
+      home.goalsAgainst += match.awayScore;
+      away.goalsFor += match.awayScore;
+      away.goalsAgainst += match.homeScore;
+
+      if (match.homeScore > match.awayScore) {
+        home.won += 1;
+        away.lost += 1;
+        home.points += 3;
+      } else if (match.homeScore < match.awayScore) {
+        away.won += 1;
+        home.lost += 1;
+        away.points += 3;
+      } else {
+        home.drawn += 1;
+        away.drawn += 1;
+        home.points += 1;
+        away.points += 1;
+      }
+    });
+
+  return [...rows.values()].map(row => ({ ...row, goalDifference: row.goalsFor - row.goalsAgainst }));
+}
+
 export function getWorldCupTopScorers() {
-  return getWorldCupStandings()
+  return getWorldCupSeasonStats()
     .sort((a, b) =>
       b.goalsFor - a.goalsFor ||
       b.points - a.points ||
@@ -211,7 +263,7 @@ export function getWorldCupTopScorers() {
 }
 
 export function getWorldCupBestDefense() {
-  return getWorldCupStandings()
+  return getWorldCupSeasonStats()
     .sort((a, b) =>
       a.goalsAgainst - b.goalsAgainst ||
       b.played - a.played ||
