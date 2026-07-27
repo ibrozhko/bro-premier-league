@@ -129,7 +129,7 @@ function sortMatchesByKickoff(a: WorldCupMatch, b: WorldCupMatch) {
 }
 
 function getMatchCenterRounds() {
-  const timelineKeys = [...new Set([...worldCupMatches].sort(sortMatchesByKickoff).map(getMatchCenterKey))];
+  const timelineKeys = [...new Set([...worldCupMatches].sort((a, b) => a.number - b.number).map(getMatchCenterKey))];
   const nextRound = timelineKeys.find(key =>
     worldCupMatches.some(match => getMatchCenterKey(match) === key && !isPlayed(match))
   )
