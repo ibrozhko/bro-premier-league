@@ -8,7 +8,7 @@ const worldCupPaths = ["/", "/world-cup-2026", "/fixtures", "/players", "/top-sc
 export default function Footer() {
   const { t } = useLanguage();
   const location = useLocation();
-  const isWorldCup = worldCupPaths.includes(location.pathname);
+  const isWorldCup = worldCupPaths.includes(location.pathname) || location.pathname.startsWith("/world-cup-2026/");
   const about = isWorldCup
     ? "BPL World Cup 2026 · 15 гравців · 3 групи по 5 · плей-оф на 8 учасників · новий жереб на кожній стадії."
     : t("footer.about");

@@ -14,7 +14,6 @@ type TranslationKey =
   | "nav.players"
   | "nav.topScorers"
   | "nav.bestDefense"
-  | "nav.predict"
   | "nav.apply"
   | "hero.subtitle"
   | "common.updated"
@@ -73,7 +72,7 @@ type TranslationKey =
 const translations: Record<Language, Record<TranslationKey, string>> = {
   uk: {
     "nav.home": "Головна",
-    "nav.worldCup": "ЧМ 2026",
+    "nav.worldCup": "ЧС 2026",
     "nav.schedule": "Розклад",
     "nav.groups": "Групи",
     "nav.playoffs": "Плей-оф",
@@ -81,7 +80,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "nav.players": "Гравці",
     "nav.topScorers": "Бомбардири",
     "nav.bestDefense": "Захист",
-    "nav.predict": "Прогнози ЧС",
     "nav.apply": "Заявка",
     "hero.subtitle": "FC 26 · Приватна Ліга · Сезон 1 · 9 Гравців · 72 Матчі",
     "common.updated": "Оновлено",
@@ -147,7 +145,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "nav.players": "Players",
     "nav.topScorers": "Top Scorers",
     "nav.bestDefense": "Defense",
-    "nav.predict": "WC Predictions",
     "nav.apply": "Apply",
     "hero.subtitle": "FC 26 · Private League · Season 1 · 9 Players · 72 Matches",
     "common.updated": "Updated",

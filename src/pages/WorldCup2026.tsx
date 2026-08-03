@@ -69,7 +69,7 @@ export default function WorldCup2026() {
               title="Матч-центр"
               text="Найближчий тур і результати попереднього, щоб швидко зрозуміти, що вже сталося і що граємо далі."
             />
-            <Link to="/fixtures" className="inline-flex h-11 items-center rounded-md bg-[#ff008c] px-4 text-sm font-bold text-white hover:bg-[#df007b]">
+            <Link to="/world-cup-2026/fixtures" className="inline-flex h-11 items-center rounded-md bg-[#ff008c] px-4 text-sm font-bold text-white hover:bg-[#df007b]">
               Всі матчі <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </div>

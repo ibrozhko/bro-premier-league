@@ -11,7 +11,8 @@ import {
   type ApplicationStatus,
   type SeasonApplication,
 } from "@/lib/applications";
-import { isPlayed, worldCupMatches, type WorldCupMatch } from "@/data/worldCup2026Data";
+import { isPlayed, worldCupMatches } from "@/data/worldCup2026Data";
+import { isSeason2Played, season2Rounds } from "@/data/season2Data";
 
 type Status = {
   type: "idle" | "success" | "error";
@@ -19,21 +20,69 @@ type Status = {
 };
 
 type AdminTab = "results" | "applications";
+type ResultsTournament = "season2" | "worldCup";
 
-const inputClass = "h-11 w-full border border-[#ff008c]/20 bg-white px-3 text-base text-[#343434] outline-none placeholder:text-[#343434]/40 focus-visible:ring-2 focus-visible:ring-[#ff008c]";
-const adminPanelClass = "light-panel rounded-md p-4 sm:p-6";
-const adminPrimaryButtonClass = "bg-[#ff008c] text-white hover:bg-[#df007b] focus-visible:ring-[#ff008c]";
-const adminSecondaryButtonClass = "border border-[#ff008c]/25 bg-white text-[#ff008c] hover:bg-[#ff008c] hover:text-white focus-visible:ring-[#ff008c]";
+type AdminMatchOption = {
+  id: string;
+  label: string;
+  dateLabel: string;
+  homeName: string;
+  homeMeta: string;
+  awayName: string;
+  awayMeta: string;
+  homeScore: number | null;
+  awayScore: number | null;
+};
+
+const inputClass = "h-11 w-full rounded-md border border-[#ff5a1f]/25 bg-white px-3 text-base text-[#111111] outline-none placeholder:text-[#111111]/35 focus-visible:ring-2 focus-visible:ring-[#bbf903]";
+const adminPanelClass = "rounded-md border border-[#111111]/12 bg-white p-4 shadow-sm sm:p-6";
+const adminPrimaryButtonClass = "bg-[#ff5a1f] text-white hover:bg-[#e64d16] focus-visible:ring-[#bbf903]";
+const adminSecondaryButtonClass = "border border-[#ff5a1f]/35 bg-white text-[#ff5a1f] hover:bg-[#ff5a1f] hover:text-white focus-visible:ring-[#bbf903]";
+const activePillClass = "rounded-md bg-[#bbf903] px-4 py-2 text-sm font-extrabold text-[#111111]";
+const inactivePillClass = "rounded-md border border-[#ff5a1f]/25 bg-white px-4 py-2 text-sm font-extrabold text-[#ff5a1f] hover:bg-[#fff3ee]";
+
+const worldCupMatchOptions: AdminMatchOption[] = worldCupMatches.map(match => {
+  const home = splitWorldCupTeam(match.home);
+  const away = splitWorldCupTeam(match.away);
+
+  return {
+    id: match.id,
+    label: match.group ? `ЧС 2026 · Група ${match.group} · ${match.round}` : `ЧС 2026 · ${match.stage}`,
+    dateLabel: `${match.day} ${match.date}`,
+    homeName: home.player,
+    homeMeta: home.team,
+    awayName: away.player,
+    awayMeta: away.team,
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+  };
+});
+
+const season2MatchOptions: AdminMatchOption[] = season2Rounds.flatMap(round =>
+  round.matches.map(match => ({
+    id: match.id,
+    label: `Season 2 · Тур ${round.round}`,
+    dateLabel: round.dayLabel,
+    homeName: match.home.name,
+    homeMeta: match.home.club,
+    awayName: match.away.name,
+    awayMeta: match.away.club,
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+  })),
+);
 
 export default function Admin() {
   const navigate = useNavigate();
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [activeTab, setActiveTab] = useState<AdminTab>("results");
-  const [matchId, setMatchId] = useState(worldCupMatches.find(match => !isPlayed(match))?.id ?? worldCupMatches[0].id);
+  const [resultsTournament, setResultsTournament] = useState<ResultsTournament>("season2");
+  const [matchId, setMatchId] = useState(getDefaultMatchId("season2"));
+  const matchOptions = resultsTournament === "season2" ? season2MatchOptions : worldCupMatchOptions;
   const selectedMatch = useMemo(
-    () => worldCupMatches.find(match => match.id === matchId) ?? worldCupMatches[0],
-    [matchId],
+    () => matchOptions.find(match => match.id === matchId) ?? matchOptions[0],
+    [matchId, matchOptions],
   );
   const [homeScore, setHomeScore] = useState(selectedMatch.homeScore?.toString() ?? "");
   const [awayScore, setAwayScore] = useState(selectedMatch.awayScore?.toString() ?? "");
@@ -56,6 +105,11 @@ export default function Admin() {
       .catch(() => navigate("/admin/login", { replace: true }))
       .finally(() => setIsCheckingSession(false));
   }, [navigate]);
+
+  useEffect(() => {
+    setMatchId(getDefaultMatchId(resultsTournament));
+    setStatus({ type: "idle", message: "" });
+  }, [resultsTournament]);
 
   useEffect(() => {
     setHomeScore(selectedMatch.homeScore?.toString() ?? "");
@@ -100,7 +154,7 @@ export default function Admin() {
 
   async function updateResult(nextHomeScore: number | null, nextAwayScore: number | null) {
     await sendAdminAction({
-      action: "updateWorldCupResult",
+      action: resultsTournament === "season2" ? "updateSeason2Result" : "updateWorldCupResult",
       matchId: selectedMatch.id,
       homeScore: nextHomeScore,
       awayScore: nextAwayScore,
@@ -179,9 +233,9 @@ export default function Admin() {
 
   if (isCheckingSession) {
     return (
-      <div className="coax-light min-h-screen py-12">
+      <div className="min-h-screen bg-[#f7f7f2] py-12">
         <div className="content-shell">
-          <div className="light-panel rounded-md p-6">
+          <div className={adminPanelClass}>
             <div className="h-card">Перевіряю доступ...</div>
           </div>
         </div>
@@ -192,18 +246,18 @@ export default function Admin() {
   if (!adminUser) return null;
 
   return (
-    <div className="coax-light min-h-screen py-10 sm:py-12">
+    <div className="min-h-screen bg-[#f7f7f2] py-10 text-[#111111] sm:py-12">
       <div className="content-shell">
         <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#ff008c]">Операційна панель</div>
+            <div className="mb-2 text-xs font-extrabold uppercase tracking-wide text-[#ff5a1f]">Операційна панель</div>
             <h1 className="h-page">Адмінка</h1>
-            <p className="t-body text-muted-foreground">BPL World Cup 2026: результати матчів і заявки.</p>
+            <p className="t-body text-muted-foreground">Результати ЧС 2026, Season 2 і заявки на участь.</p>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
             <div className="t-meta">{adminUser.name ?? adminUser.username}</div>
             <div className="flex gap-2">
-              <a className="inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-[#ff008c] hover:underline" href="/fixtures">
+              <a className="inline-flex h-10 items-center rounded-md px-3 text-sm font-bold text-[#ff5a1f] hover:underline" href="/matches">
                 До матчів
               </a>
               <Button className={adminSecondaryButtonClass} type="button" variant="secondary" onClick={handleLogout}>
@@ -214,15 +268,15 @@ export default function Admin() {
           </div>
         </div>
 
-        <div className="mb-6 grid grid-cols-2 gap-px border border-[#ff008c]/20 bg-[#ff008c]/20">
+        <div className="mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-md border border-[#111111]/12 bg-[#111111]/12">
           {[
-            { value: "results", label: "Результати ЧС" },
+            { value: "results", label: "Результати" },
             { value: "applications", label: `Заявки${applications.length ? ` · ${applications.length}` : ""}` },
           ].map(tab => (
             <button
               key={tab.value}
-              className={`h-10 bg-white px-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff008c] ${
-                activeTab === tab.value ? "bg-[#bbf903] text-[#111111]" : "text-[#ff008c] hover:bg-[#f3f3f6]"
+              className={`h-11 bg-white px-2 text-sm font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bbf903] ${
+                activeTab === tab.value ? "bg-[#111111] text-[#f7f7f2]" : "text-[#111111] hover:bg-[#fff3ee]"
               }`}
               type="button"
               onClick={() => setActiveTab(tab.value as AdminTab)}
@@ -235,36 +289,53 @@ export default function Admin() {
         {activeTab === "results" && (
           <form onSubmit={handleResultSubmit} className="space-y-6">
             <section className={adminPanelClass}>
+              <div className="mb-5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className={resultsTournament === "season2" ? activePillClass : inactivePillClass}
+                  onClick={() => setResultsTournament("season2")}
+                >
+                  Season 2
+                </button>
+                <button
+                  type="button"
+                  className={resultsTournament === "worldCup" ? activePillClass : inactivePillClass}
+                  onClick={() => setResultsTournament("worldCup")}
+                >
+                  ЧС 2026
+                </button>
+              </div>
+
               <div className="mb-5">
-                <label className="t-label mb-2 block" htmlFor="wc-match">
+                <label className="t-label mb-2 block" htmlFor="admin-match">
                   Матч
                 </label>
                 <select
-                  id="wc-match"
+                  id="admin-match"
                   className={inputClass}
                   value={matchId}
                   onChange={event => setMatchId(event.target.value)}
                 >
-                  {worldCupMatches.map(match => (
+                  {matchOptions.map(match => (
                     <option key={match.id} value={match.id}>
-                      {match.date} · {matchLabel(match)} · {match.home} - {match.away} · {scoreLabel(match)}
+                      {match.dateLabel} · {match.label} · {match.homeName} - {match.awayName} · {scoreLabel(match)}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="border border-[#ff008c]/15 bg-[#f3f3f6] p-4">
+              <div className="rounded-md border border-[#ff5a1f]/20 bg-[#fff8f4] p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="rounded-md bg-white px-2.5 py-1 text-xs font-bold uppercase text-[#ff008c]">
-                    {matchLabel(selectedMatch)}
+                  <span className="rounded-md bg-white px-2.5 py-1 text-xs font-extrabold uppercase text-[#ff5a1f]">
+                    {selectedMatch.label}
                   </span>
-                  <span className="t-meta">{selectedMatch.day} {selectedMatch.date}</span>
+                  <span className="t-meta">{selectedMatch.dateLabel}</span>
                 </div>
 
                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                  <TeamName value={selectedMatch.home} align="right" />
-                  <div className="font-heading text-2xl text-[#ff008c]">VS</div>
-                  <TeamName value={selectedMatch.away} align="left" />
+                  <TeamName name={selectedMatch.homeName} meta={selectedMatch.homeMeta} align="right" />
+                  <div className="font-heading text-2xl text-[#ff5a1f]">VS</div>
+                  <TeamName name={selectedMatch.awayName} meta={selectedMatch.awayMeta} align="left" />
                 </div>
 
                 <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -323,7 +394,7 @@ export default function Admin() {
           <div
             className={`mt-6 rounded-md border p-4 t-body ${
               status.type === "success"
-                ? "border-[#ff008c]/30 bg-white text-[#ff008c]"
+                ? "border-[#bbf903]/70 bg-white text-[#111111]"
                 : "border-destructive/50 bg-white text-destructive"
             }`}
           >
@@ -355,7 +426,7 @@ function ApplicationsPanel({
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="h-card flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-[#ff008c]" />
+            <ClipboardList className="h-5 w-5 text-[#ff5a1f]" />
             Заявки на сезон
           </h2>
           <p className="t-body text-muted-foreground">
@@ -378,7 +449,7 @@ function ApplicationsPanel({
         <div
           className={`mb-4 rounded-md border p-3 t-body ${
             applicationsStatus.type === "success"
-              ? "border-[#ff008c]/30 bg-white text-[#ff008c]"
+              ? "border-[#bbf903]/70 bg-white text-[#111111]"
               : "border-destructive/50 bg-white text-destructive"
           }`}
         >
@@ -387,14 +458,14 @@ function ApplicationsPanel({
       )}
 
       {applications.length === 0 ? (
-        <div className="border border-[#ff008c]/15 bg-[#f3f3f6] p-5">
+        <div className="rounded-md border border-[#ff5a1f]/20 bg-[#fff8f4] p-5">
           <div className="h-card">{isLoadingApplications ? "Завантажую заявки..." : "Заявок поки немає"}</div>
           <p className="t-body mt-1 text-muted-foreground">Коли кандидат заповнить форму, заявка зʼявиться в цьому списку.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {applications.map(application => (
-            <article key={application.id} className="border border-[#ff008c]/15 bg-white p-4">
+            <article key={application.id} className="rounded-md border border-[#111111]/12 bg-white p-4">
               <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
                 <div className="min-w-0">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -404,7 +475,7 @@ function ApplicationsPanel({
                         {application.platform} · {application.eaId} · {formatApplicationDate(application.createdAt)}
                       </div>
                     </div>
-                    <span className="t-body font-medium text-[#ff008c]">
+                    <span className="t-body font-medium text-[#ff5a1f]">
                       {application.contact}
                     </span>
                   </div>
@@ -425,8 +496,8 @@ function ApplicationsPanel({
                       value={application.status}
                       onChange={event => updateApplicationStatus(application.id, event.target.value as ApplicationStatus)}
                     >
-                      {applicationStatuses.map(status => (
-                        <option key={status.value} value={status.value}>{status.label}</option>
+                      {applicationStatuses.map(item => (
+                        <option key={item.value} value={item.value}>{item.label}</option>
                       ))}
                     </select>
                   </label>
@@ -449,13 +520,11 @@ function ApplicationsPanel({
   );
 }
 
-function TeamName({ value, align }: { value: string; align: "left" | "right" }) {
-  const [player, team] = value.split(" - ");
-
+function TeamName({ name, meta, align }: { name: string; meta: string; align: "left" | "right" }) {
   return (
     <div className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="h-card truncate">{player}</div>
-      <div className="t-meta truncate">{team ?? value}</div>
+      <div className="h-card truncate">{name}</div>
+      <div className="t-meta truncate">{meta}</div>
     </div>
   );
 }
@@ -469,12 +538,21 @@ function ApplicationMeta({ label, value, wide = false }: { label: string; value:
   );
 }
 
-function matchLabel(match: WorldCupMatch) {
-  return match.group ? `Група ${match.group}` : match.stage;
+function splitWorldCupTeam(value: string) {
+  const [player, team] = value.split(" - ");
+  return { player, team: team ?? value };
 }
 
-function scoreLabel(match: WorldCupMatch) {
-  return isPlayed(match) ? `${match.homeScore}-${match.awayScore}` : "не зіграно";
+function getDefaultMatchId(tournament: ResultsTournament) {
+  if (tournament === "season2") {
+    return season2Rounds.flatMap(round => round.matches).find(match => !isSeason2Played(match))?.id ?? season2Rounds[0].matches[0].id;
+  }
+
+  return worldCupMatches.find(match => !isPlayed(match))?.id ?? worldCupMatches[0].id;
+}
+
+function scoreLabel(match: AdminMatchOption) {
+  return match.homeScore !== null && match.awayScore !== null ? `${match.homeScore}-${match.awayScore}` : "не зіграно";
 }
 
 function formatApplicationDate(value: string) {

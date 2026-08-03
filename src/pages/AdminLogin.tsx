@@ -4,7 +4,7 @@ import { LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getAdminSession, loginAdmin } from "@/lib/adminAuth";
 
-const inputClass = "h-12 w-full border border-[#2937da]/20 bg-white px-3 text-base text-[#343434] outline-none placeholder:text-[#343434]/40 focus-visible:ring-2 focus-visible:ring-primary";
+const inputClass = "h-12 w-full rounded-md border border-[#ff5a1f]/25 bg-white px-3 text-base text-[#111111] outline-none placeholder:text-[#111111]/40 focus-visible:ring-2 focus-visible:ring-[#bbf903]";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -37,11 +37,11 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="coax-light min-h-screen py-12">
+    <div className="min-h-screen bg-[#f7f7f2] py-12 text-[#111111]">
       <div className="content-shell">
-        <form onSubmit={handleSubmit} className="light-panel mx-auto max-w-md rounded-md p-5 sm:p-7">
+        <form onSubmit={handleSubmit} className="mx-auto max-w-md rounded-md border border-[#111111]/12 bg-white p-5 shadow-sm sm:p-7">
           <div className="mb-6">
-            <div className="page-kicker">Операційна панель</div>
+            <div className="mb-2 text-xs font-extrabold uppercase tracking-wide text-[#ff5a1f]">Операційна панель</div>
             <h1 className="h-page">Вхід в адмінку</h1>
             <p className="t-body mt-2 text-muted-foreground">
               Доступ тільки для організаторів ліги.
@@ -69,7 +69,7 @@ export default function AdminLogin() {
             />
           </label>
 
-          <Button className="w-full" type="submit" disabled={isSubmitting || !username || !password}>
+          <Button className="w-full bg-[#ff5a1f] text-white hover:bg-[#e64d16] focus-visible:ring-[#bbf903]" type="submit" disabled={isSubmitting || !username || !password}>
             <LogIn />
             {isSubmitting ? "Входжу..." : "Увійти"}
           </Button>

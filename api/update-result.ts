@@ -44,7 +44,7 @@ type LeagueData = {
 
 type UpdatePayload = {
   password?: string;
-  action?: "updateResult" | "updatePlayers" | "startSeason" | "updateWorldCupResult";
+  action?: "updateResult" | "updatePlayers" | "startSeason" | "updateWorldCupResult" | "updateSeason2Result";
   matchId?: string;
   matchdayNumber?: number;
   home?: number;
@@ -116,6 +116,27 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       );
 
       response.status(200).json({ message: "Результат ЧС оновлено" });
+      return;
+    }
+
+    if (action === "updateSeason2Result") {
+      const validationError = validateSeason2ResultPayload(payload);
+      if (validationError) {
+        response.status(400).json({ error: validationError });
+        return;
+      }
+
+      const file = await getGitHubFile(season2DataPath());
+      const currentSource = Buffer.from(file.content, "base64").toString("utf8");
+      assertCurrentSeason2Source(currentSource);
+      const nextSource = updateSeason2ResultSource(currentSource, payload);
+
+      await commitFiles(
+        [{ path: season2DataPath(), content: nextSource }],
+        `Update Season 2 ${payload.matchId}: ${scoreText(payload.homeScore)}-${scoreText(payload.awayScore)}`,
+      );
+
+      response.status(200).json({ message: "Результат Season 2 оновлено" });
       return;
     }
 
@@ -262,6 +283,22 @@ function validateResultPayload(payload: UpdatePayload): string | null {
 function validateWorldCupResultPayload(payload: UpdatePayload): string | null {
   if (!payload.matchId || typeof payload.matchId !== "string") {
     return "Не вистачає ID матчу ЧС.";
+  }
+
+  if (!isValidScore(payload.homeScore) || !isValidScore(payload.awayScore)) {
+    return "Рахунок має бути числом 0 або більше, або null для очищення.";
+  }
+
+  if ((payload.homeScore === null) !== (payload.awayScore === null)) {
+    return "Для очищення результату обидва значення мають бути null.";
+  }
+
+  return null;
+}
+
+function validateSeason2ResultPayload(payload: UpdatePayload): string | null {
+  if (!payload.matchId || typeof payload.matchId !== "string") {
+    return "Не вистачає ID матчу Season 2.";
   }
 
   if (!isValidScore(payload.homeScore) || !isValidScore(payload.awayScore)) {
@@ -451,6 +488,74 @@ function updateWorldCupResultSource(source: string, payload: UpdatePayload) {
   return nextSource.replace(updatedPattern, `$1${formatToday()}$2`);
 }
 
+function updateSeason2ResultSource(source: string, payload: UpdatePayload) {
+  const matchId = payload.matchId!.trim();
+  const updatedPattern = /(export const season2LastUpdated = ")[^"]+(";)/;
+
+  if (!/^S2-\d{2}-\d{2}$/.test(matchId)) {
+    throw new Error(`Некоректний ID матчу Season 2: ${matchId}.`);
+  }
+
+  const overrides = getSeason2ResultOverrides(source);
+  if (payload.homeScore === null && payload.awayScore === null) {
+    overrides.delete(matchId);
+  } else {
+    overrides.set(matchId, {
+      homeScore: payload.homeScore!,
+      awayScore: payload.awayScore!,
+    });
+  }
+
+  const nextSource = source.replace(
+    season2OverridesPattern(),
+    buildSeason2ResultOverridesSource(overrides),
+  );
+
+  if (!updatedPattern.test(nextSource)) {
+    throw new Error("Поле season2LastUpdated не знайдено у файлі Season 2.");
+  }
+
+  return nextSource.replace(updatedPattern, `$1${formatToday()}$2`);
+}
+
+function getSeason2ResultOverrides(source: string) {
+  const objectMatch = source.match(season2OverridesPattern());
+  if (!objectMatch?.[1]) {
+    throw new Error("Блок season2ResultOverrides не знайдено у файлі Season 2.");
+  }
+
+  const overrides = new Map<string, { homeScore: number; awayScore: number }>();
+  const entryPattern = /"([^"]+)": \{ homeScore: (\d+), awayScore: (\d+) \}/g;
+  let entryMatch: RegExpExecArray | null;
+
+  while ((entryMatch = entryPattern.exec(objectMatch[1])) !== null) {
+    overrides.set(entryMatch[1], {
+      homeScore: Number(entryMatch[2]),
+      awayScore: Number(entryMatch[3]),
+    });
+  }
+
+  return overrides;
+}
+
+function buildSeason2ResultOverridesSource(overrides: Map<string, { homeScore: number; awayScore: number }>) {
+  const entries = [...overrides.entries()].sort(([firstId], [secondId]) => firstId.localeCompare(secondId));
+
+  if (!entries.length) {
+    return "export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {\n};";
+  }
+
+  const lines = entries.map(([id, score]) =>
+    `  "${id}": { homeScore: ${score.homeScore}, awayScore: ${score.awayScore} },`,
+  );
+
+  return `export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {\n${lines.join("\n")}\n};`;
+}
+
+function season2OverridesPattern() {
+  return /export const season2ResultOverrides: Record<string, \{ homeScore: number; awayScore: number \}> = \{([\s\S]*?)\};/;
+}
+
 function assertCurrentWorldCupSource(source: string) {
   const requiredMarkers = [
     "fc26Nick",
@@ -463,6 +568,22 @@ function assertCurrentWorldCupSource(source: string) {
   if (missingMarker || source.includes("Кірілл - Нідерланди")) {
     throw new Error(
       "GitHub-версія сайту застаріла. Спочатку синхронізуй main з актуальним продом, інакше адмінка може відкотити сторінки.",
+    );
+  }
+}
+
+function assertCurrentSeason2Source(source: string) {
+  const requiredMarkers = [
+    "season2ResultOverrides",
+    "BPL-SEASON-2-FINAL-DRAW",
+    "Лаціо",
+    "createSeason2Schedule",
+  ];
+  const missingMarker = requiredMarkers.find(marker => !source.includes(marker));
+
+  if (missingMarker || source.includes("fen1kssss\", platform: \"PC\", club: \"Фенербахче")) {
+    throw new Error(
+      "GitHub-версія Season 2 застаріла. Спочатку синхронізуй main з актуальним сайтом, інакше адмінка може відкотити календар.",
     );
   }
 }
@@ -581,6 +702,10 @@ function dataPath() {
 
 function worldCupDataPath() {
   return "src/data/worldCup2026Data.ts";
+}
+
+function season2DataPath() {
+  return "src/data/season2Data.ts";
 }
 
 function formatJson(data: unknown) {

@@ -10,9 +10,11 @@ const navLinks = [
   { path: "/players", labelKey: "nav.players" },
   { path: "/top-scorers", labelKey: "nav.topScorers" },
   { path: "/best-defense", labelKey: "nav.bestDefense" },
-  { path: "/predict", labelKey: "nav.predict" },
 ] as const;
 
+const season2Link = { path: "/", label: "Сезон 2" } as const;
+
+const isSeason2SiteMode = import.meta.env.VITE_BPL_SITE !== "worldcup";
 const worldCupPaths = ["/", "/world-cup-2026", "/fixtures", "/players", "/top-scorers", "/best-defense"];
 
 const channelLinks = [
@@ -25,12 +27,23 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const { language, toggleLanguage, t } = useLanguage();
-  const isWorldCup = worldCupPaths.includes(location.pathname);
+  const isWorldCup = worldCupPaths.includes(location.pathname) || location.pathname.startsWith("/world-cup-2026/");
+  const wcBasePath = isSeason2SiteMode ? "/world-cup-2026" : "";
+  const visibleNavLinks = navLinks.map(link =>
+    isSeason2SiteMode && isWorldCup && link.path === "/"
+      ? { path: season2Link.path, label: season2Link.label, highlight: true }
+      : {
+          ...link,
+          path: link.path === "/" ? (isSeason2SiteMode ? "/world-cup-2026" : "/") : `${wcBasePath}${link.path}`,
+          label: t(link.labelKey),
+          highlight: false,
+        }
+  );
 
   return (
     <nav className={`sticky top-0 z-50 border-b ${isWorldCup ? "border-[#ff008c] bg-[#ff008c] text-white shadow-[0_10px_30px_rgba(255,0,140,0.16)]" : "border-white/20 bg-background"}`}>
       <div className="content-shell flex items-center justify-between h-16">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to={isSeason2SiteMode && isWorldCup ? "/world-cup-2026" : "/"} className="flex items-center gap-2">
           <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white p-1 brand-glow">
             <img src={logoFull} alt="BPL" className="h-[124%] w-[124%] max-w-none object-contain" />
           </span>
@@ -38,17 +51,17 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
-          {navLinks.map(l => (
+          {visibleNavLinks.map(l => (
             <Link
               key={l.path}
               to={l.path}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                location.pathname === l.path || (l.path !== "/" && location.pathname.startsWith(l.path))
+                l.highlight || location.pathname === l.path || (l.path !== "/" && location.pathname.startsWith(l.path))
                   ? isWorldCup ? "bg-[#bbf903] text-[#111111]" : "bg-accent text-accent-foreground"
                   : isWorldCup ? "text-white/85 hover:bg-white/15 hover:text-white" : "text-white/80 hover:text-foreground hover:bg-white/10 hover:shadow-[inset_0_-2px_0_hsl(var(--accent))]"
               }`}
             >
-              {t(l.labelKey)}
+              {l.label}
             </Link>
           ))}
           <div className="ml-2 hidden items-center gap-1 border-l border-white/20 pl-2 xl:flex">
@@ -94,18 +107,18 @@ export default function Navbar() {
 
       {open && (
         <div className={`md:hidden border-t px-4 pb-4 ${isWorldCup ? "border-white/20 bg-[#ff008c]" : "border-white/20 bg-background"}`}>
-          {navLinks.map(l => (
+          {visibleNavLinks.map(l => (
             <Link
               key={l.path}
               to={l.path}
               onClick={() => setOpen(false)}
               className={`block py-3 text-sm font-medium border-b border-border last:border-0 ${
-                location.pathname === l.path || (l.path !== "/" && location.pathname.startsWith(l.path))
+                l.highlight || location.pathname === l.path || (l.path !== "/" && location.pathname.startsWith(l.path))
                   ? isWorldCup ? "text-[#bbf903]" : "text-accent"
                   : isWorldCup ? "text-white/85" : "text-white/80"
               }`}
             >
-            {t(l.labelKey)}
+            {l.label}
             </Link>
           ))}
           <div className="mt-4 grid grid-cols-3 gap-2">
