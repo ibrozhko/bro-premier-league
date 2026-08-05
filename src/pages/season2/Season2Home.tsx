@@ -188,12 +188,15 @@ function calculateCommunityOdds(aggregate: Season2PredictionAggregateMap[string]
   const homeVotes = aggregate.homeVotes ?? Math.round((aggregate.homePercent / 100) * aggregate.total);
   const drawVotes = aggregate.drawVotes ?? Math.round((aggregate.drawPercent / 100) * aggregate.total);
   const awayVotes = aggregate.awayVotes ?? Math.round((aggregate.awayPercent / 100) * aggregate.total);
-  const smoothedTotal = homeVotes + drawVotes + awayVotes + 3;
+  const baseHome = 1;
+  const baseDraw = 0.72;
+  const baseAway = 1;
+  const smoothedTotal = homeVotes + drawVotes + awayVotes + baseHome + baseDraw + baseAway;
 
   return {
-    home: formatOdds((homeVotes + 1) / smoothedTotal),
-    draw: formatOdds((drawVotes + 1) / smoothedTotal),
-    away: formatOdds((awayVotes + 1) / smoothedTotal),
+    home: formatOdds((homeVotes + baseHome) / smoothedTotal),
+    draw: formatOdds((drawVotes + baseDraw) / smoothedTotal),
+    away: formatOdds((awayVotes + baseAway) / smoothedTotal),
   };
 }
 
