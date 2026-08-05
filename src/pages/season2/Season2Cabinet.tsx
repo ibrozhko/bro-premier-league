@@ -132,47 +132,47 @@ function HomeTab({ player, data }: { player: Season2Player; data: PlayerCabinetD
 
   return (
     <div className="space-y-4">
-      <section className="rounded-md border border-white/10 bg-white/[0.06] p-3.5">
-        <div className="flex items-center justify-between gap-3">
+      <section className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
+        <div className="flex items-center justify-between gap-3 p-4">
           <div className="min-w-0">
-            <div className="truncate text-lg font-extrabold leading-tight text-white">{player.name}</div>
-            <p className="mt-1 truncate text-sm text-white/56">{player.club}</p>
+            <div className="truncate text-[1.35rem] font-extrabold leading-tight text-white">{player.name}</div>
+            <p className="mt-1 truncate text-[0.95rem] text-white/58">{player.club}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <CompactMetric label="Місце" value={`#${data.rank}`} />
             <CompactMetric label="Очки" value={data.standing.points} accent />
           </div>
         </div>
-      </section>
 
-      <section className="rounded-md border border-white/10 bg-white/[0.06] p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Наступний фокус</div>
-            <h2 className="mt-1 font-heading text-[1.65rem] leading-none">
-              {primaryMatch && !isSeason2Played(primaryMatch) ? "Твій матч" : primaryMatch ? "Останній матч" : "Очікуємо календар"}
-            </h2>
+        <div className="border-t border-white/10 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Наступний фокус</div>
+              <h2 className="mt-1 font-heading text-[1.45rem] leading-none">
+                {primaryMatch && !isSeason2Played(primaryMatch) ? "Твій матч" : primaryMatch ? "Останній матч" : "Очікуємо календар"}
+              </h2>
+            </div>
+            <CalendarDays className="h-5 w-5 text-[#ff5a1f]" />
           </div>
-          <CalendarDays className="h-5 w-5 text-[#ff5a1f]" />
+          {primaryMatch ? <MobileMatchCard match={primaryMatch} playerId={player.id} featured /> : (
+            <p className="mt-4 text-sm leading-6 text-white/58">Матчі ще не знайдені.</p>
+          )}
         </div>
-        {primaryMatch ? <MobileMatchCard match={primaryMatch} playerId={player.id} featured /> : (
-          <p className="mt-4 text-sm leading-6 text-white/58">Матчі ще не знайдені.</p>
-        )}
-      </section>
 
-      <section className="grid grid-cols-2 gap-3">
-        <HeroMetric label="Зіграно" value={data.standing.played} />
-        <HeroMetric label="Різниця" value={data.standing.goalDifference > 0 ? `+${data.standing.goalDifference}` : data.standing.goalDifference} />
-        <HeroMetric label="Голи" value={data.standing.goalsFor} />
-        <HeroMetric label="Пропущено" value={data.standing.goalsAgainst} />
-      </section>
+        <div className="grid grid-cols-4 border-t border-white/10">
+          <HeroMetric label="І" value={data.standing.played} />
+          <HeroMetric label="РГ" value={data.standing.goalDifference > 0 ? `+${data.standing.goalDifference}` : data.standing.goalDifference} />
+          <HeroMetric label="ЗГ" value={data.standing.goalsFor} />
+          <HeroMetric label="ПГ" value={data.standing.goalsAgainst} />
+        </div>
 
-      <section className="rounded-md border border-white/10 bg-white/[0.06] p-4">
-        <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Форма</div>
-        <div className="mt-4 flex gap-2">
-          {getFormValues(data.standing.form).map((value, index) => (
-            <span key={`${value}-${index}`} className={formClass(value)}>{value}</span>
-          ))}
+        <div className="border-t border-white/10 p-4">
+          <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Форма</div>
+          <div className="mt-4 flex gap-2">
+            {getFormValues(data.standing.form).map((value, index) => (
+              <span key={`${value}-${index}`} className={formClass(value)}>{value}</span>
+            ))}
+          </div>
         </div>
       </section>
     </div>
@@ -664,7 +664,7 @@ function MobileMatchCard({ match, playerId, featured = false }: { match: Season2
   const selected = match.home.id === playerId ? match.home : match.away;
 
   return (
-    <article className={`mt-3 rounded-md border ${featured ? "border-[#bbf903]/60 bg-[#bbf903]/10" : "border-white/10 bg-white/[0.04]"} p-3`}>
+    <article className={`mt-3 rounded-md ${featured ? "bg-[#bbf903]/10 ring-1 ring-inset ring-[#bbf903]/35" : "border border-white/10 bg-white/[0.04]"} p-3`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
@@ -699,21 +699,21 @@ function TeamBlock({ player, align }: { player: Season2Player; align: "left" | "
 
 function HeroMetric({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.06] p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-      <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-white/42">{label}</div>
-      <div className="mt-2 font-heading text-[1.75rem] leading-none text-[#ff5a1f]">{value}</div>
+    <div className="border-r border-white/10 p-3 text-center text-white last:border-r-0">
+      <div className="text-[0.58rem] font-extrabold uppercase tracking-wide text-white/38">{label}</div>
+      <div className="mt-2 font-heading text-[1.45rem] leading-none text-[#ff5a1f]">{value}</div>
     </div>
   );
 }
 
 function MobileSection({ icon: Icon, title, children }: { icon: typeof CalendarDays; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-md border border-white/10 bg-white/[0.06] p-4">
+    <section>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-heading text-[1.75rem] leading-none">{title}</h2>
+        <h2 className="font-heading text-[1.65rem] leading-none">{title}</h2>
         <Icon className="h-5 w-5 text-[#bbf903]" />
       </div>
-      {children}
+      <div className="mt-3">{children}</div>
     </section>
   );
 }
