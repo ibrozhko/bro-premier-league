@@ -15,7 +15,7 @@ import {
   type Season2DbPushSubscription,
   type Season2DbUser,
 } from "./_utils/season2Api.js";
-import * as webpush from "web-push";
+import webpush from "web-push";
 
 type AuthPayload = {
   action?: "login" | "logout";
