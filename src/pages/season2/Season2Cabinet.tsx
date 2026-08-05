@@ -683,7 +683,7 @@ function MobileMatchCard({ match, playerId, featured = false }: { match: Season2
   const selected = match.home.id === playerId ? match.home : match.away;
 
   return (
-    <article className={`mt-3 rounded-md ${featured ? "bg-[#bbf903]/10 ring-1 ring-inset ring-[#bbf903]/35" : "border border-white/10 bg-white/[0.04]"} p-3`}>
+    <article className={featured ? "mt-4" : "mt-3 rounded-md border border-white/10 bg-white/[0.04] p-3"}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
