@@ -150,48 +150,44 @@ function HomeTab({ player, data }: { player: Season2Player; data: PlayerCabinetD
   const primaryMatch = data.upcomingMatches[0] ?? data.recentMatches[0] ?? null;
 
   return (
-    <div className="space-y-4">
-      <section className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
-        <div className="flex items-center justify-between gap-3 p-4">
+    <div className="space-y-5">
+      <section className="rounded-md border border-white/10 bg-[#1e1e1e] p-4">
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="truncate text-[1.35rem] font-extrabold leading-tight text-white">{player.name}</div>
-            <p className="mt-1 truncate text-[0.95rem] text-white/58">{player.club}</p>
+            <div className="truncate text-[1.5rem] font-extrabold leading-tight text-white">{player.name}</div>
+            <p className="mt-1 truncate text-[1.05rem] text-white/60">{player.club}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <CompactMetric label="Місце" value={`#${data.rank}`} />
             <CompactMetric label="Очки" value={data.standing.points} accent />
           </div>
         </div>
+      </section>
 
-        <div className="border-t border-white/10 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Наступний фокус</div>
-              <h2 className="mt-1 font-heading text-[1.45rem] leading-none">
-                {primaryMatch && !isSeason2Played(primaryMatch) ? "Твій матч" : primaryMatch ? "Останній матч" : "Очікуємо календар"}
-              </h2>
-            </div>
-            <CalendarDays className="h-5 w-5 text-[#ff5a1f]" />
-          </div>
-          {primaryMatch ? <MobileMatchCard match={primaryMatch} playerId={player.id} featured /> : (
-            <p className="mt-4 text-sm leading-6 text-white/58">Матчі ще не знайдені.</p>
-          )}
-        </div>
+      <MobileSection
+        title={primaryMatch && !isSeason2Played(primaryMatch) ? "Твій матч" : primaryMatch ? "Останній матч" : "Очікуємо календар"}
+        icon={CalendarDays}
+      >
+        {primaryMatch ? <MobileMatchCard match={primaryMatch} playerId={player.id} /> : (
+          <EmptyState text="Матчі ще не знайдені." />
+        )}
+      </MobileSection>
 
-        <div className="grid grid-cols-4 border-t border-white/10">
+      <section className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
+        <div className="grid grid-cols-4">
           <HeroMetric label="І" value={data.standing.played} />
           <HeroMetric label="РГ" value={data.standing.goalDifference > 0 ? `+${data.standing.goalDifference}` : data.standing.goalDifference} />
           <HeroMetric label="ЗГ" value={data.standing.goalsFor} />
           <HeroMetric label="ПГ" value={data.standing.goalsAgainst} />
         </div>
+      </section>
 
-        <div className="border-t border-white/10 p-4">
-          <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Форма</div>
-          <div className="mt-4 flex gap-2">
-            {getFormValues(data.standing.form).map((value, index) => (
-              <span key={`${value}-${index}`} className={formClass(value)}>{value}</span>
-            ))}
-          </div>
+      <section className="rounded-md border border-white/10 bg-[#1e1e1e] p-4">
+        <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Форма</div>
+        <div className="mt-4 flex gap-2">
+          {getFormValues(data.standing.form).map((value, index) => (
+            <span key={`${value}-${index}`} className={formClass(value)}>{value}</span>
+          ))}
         </div>
       </section>
     </div>
