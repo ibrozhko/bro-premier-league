@@ -3,6 +3,10 @@
     {
       "path": "/api/predict-sync-results",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/season2-scheduled-push",
+      "schedule": "30 16 5 8 *"
     }
   ],
   "redirects": [
