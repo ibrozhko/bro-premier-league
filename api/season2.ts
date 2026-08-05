@@ -428,15 +428,16 @@ function isStalePushError(error: unknown) {
 }
 
 function isAuthorizedServiceRequest(request: ApiRequest) {
-  const expectedToken = process.env.SEASON2_PUSH_SECRET
-    ?? process.env.CRON_SECRET
-    ?? process.env.SEASON2_SESSION_SECRET
-    ?? process.env.PREDICT_SESSION_SECRET
-    ?? process.env.VAPID_PRIVATE_KEY
-    ?? "";
-  if (!expectedToken) return false;
+  const token = getBearerToken(request);
+  if (!token) return false;
 
-  return getBearerToken(request) === expectedToken;
+  return [
+    process.env.SEASON2_PUSH_SECRET,
+    process.env.CRON_SECRET,
+    process.env.SEASON2_SESSION_SECRET,
+    process.env.PREDICT_SESSION_SECRET,
+    process.env.VAPID_PRIVATE_KEY,
+  ].filter(Boolean).includes(token);
 }
 
 function getBearerToken(request: ApiRequest) {
