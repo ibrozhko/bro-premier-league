@@ -432,6 +432,7 @@ function isAuthorizedServiceRequest(request: ApiRequest) {
     ?? process.env.CRON_SECRET
     ?? process.env.SEASON2_SESSION_SECRET
     ?? process.env.PREDICT_SESSION_SECRET
+    ?? process.env.VAPID_PRIVATE_KEY
     ?? "";
   if (!expectedToken) return false;
 
