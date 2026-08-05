@@ -10,7 +10,7 @@ import webpush from "web-push";
 const scheduledPushes = {
   preseason1930: {
     title: "BPL Season 2",
-    body: "А ти сьогодні тренувався? Початок сезону 2 вже зовсім близько.",
+    body: "Тестуємо push по-дорослому. Якщо це бачиш — BPL Cabinet готовий до сезону.",
     url: "/cabinet",
   },
 } as const;
