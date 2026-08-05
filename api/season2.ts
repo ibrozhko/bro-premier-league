@@ -39,6 +39,9 @@ type SavePayload = {
 
 type MatchAggregate = {
   total: number;
+  homeVotes: number;
+  drawVotes: number;
+  awayVotes: number;
   homePercent: number;
   drawPercent: number;
   awayPercent: number;
@@ -242,6 +245,9 @@ async function handlePredictionStats(request: ApiRequest, response: ApiResponse)
 
     return [matchId, {
       total,
+      homeVotes,
+      drawVotes,
+      awayVotes,
       homePercent: Math.round((homeVotes / total) * 100),
       drawPercent: Math.round((drawVotes / total) * 100),
       awayPercent: Math.round((awayVotes / total) * 100),

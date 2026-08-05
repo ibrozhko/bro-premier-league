@@ -170,16 +170,37 @@ function CommunityPrediction({
 }) {
   const aggregate = getSeason2PredictionAggregate(match, predictionAggregates);
   if (!aggregate) return null;
+  const odds = calculateCommunityOdds(aggregate);
 
   return (
     <div className="col-span-3 rounded-md border border-[#111111]/10 bg-[#111111]/[0.035] px-3 py-2 text-center text-xs font-bold text-[#111111]/58 sm:col-span-5 sm:text-sm">
-      <span className="text-[#ff5a1f]">{match.home.name} {aggregate.homePercent}%</span>
+      <span className="mr-2 text-[0.66rem] uppercase tracking-wide text-[#111111]/42 sm:text-xs">Лінія спільноти</span>
+      <span className="text-[#ff5a1f]">{match.home.name} {odds.home}</span>
       <span className="mx-2 text-[#111111]/32">·</span>
-      <span>нічия {aggregate.drawPercent}%</span>
+      <span>X {odds.draw}</span>
       <span className="mx-2 text-[#111111]/32">·</span>
-      <span className="text-[#ff5a1f]">{match.away.name} {aggregate.awayPercent}%</span>
+      <span className="text-[#ff5a1f]">{match.away.name} {odds.away}</span>
     </div>
   );
+}
+
+function calculateCommunityOdds(aggregate: Season2PredictionAggregateMap[string]) {
+  const homeVotes = aggregate.homeVotes ?? Math.round((aggregate.homePercent / 100) * aggregate.total);
+  const drawVotes = aggregate.drawVotes ?? Math.round((aggregate.drawPercent / 100) * aggregate.total);
+  const awayVotes = aggregate.awayVotes ?? Math.round((aggregate.awayPercent / 100) * aggregate.total);
+  const smoothedTotal = homeVotes + drawVotes + awayVotes + 3;
+
+  return {
+    home: formatOdds((homeVotes + 1) / smoothedTotal),
+    draw: formatOdds((drawVotes + 1) / smoothedTotal),
+    away: formatOdds((awayVotes + 1) / smoothedTotal),
+  };
+}
+
+function formatOdds(probability: number) {
+  const bookmakerMargin = 0.92;
+  const odds = Math.min(9.99, Math.max(1.15, bookmakerMargin / probability));
+  return odds.toFixed(2);
 }
 
 export function StandingsTable({ standings }: { standings: ReturnType<typeof calculateSeason2Standings> }) {

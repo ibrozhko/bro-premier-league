@@ -12,6 +12,9 @@ export type Season2LockedPredictionRounds = Record<string, Record<string, boolea
 
 export type Season2PredictionAggregate = {
   total: number;
+  homeVotes?: number;
+  drawVotes?: number;
+  awayVotes?: number;
   homePercent: number;
   drawPercent: number;
   awayPercent: number;
@@ -133,6 +136,9 @@ export function getSeason2PredictionAggregate(match: Season2Match, aggregates?: 
 
   return {
     total: votes.length,
+    homeVotes,
+    drawVotes,
+    awayVotes,
     homePercent: Math.round((homeVotes / votes.length) * 100),
     drawPercent: Math.round((drawVotes / votes.length) * 100),
     awayPercent: Math.round((awayVotes / votes.length) * 100),
