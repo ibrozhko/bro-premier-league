@@ -39,6 +39,18 @@ export type Season2DbPrediction = {
   created_at: string;
 };
 
+export type Season2DbPushSubscription = {
+  id: string;
+  user_id: string;
+  player_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_agent: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type SessionPayload = {
   userId: string;
   expiresAt: number;
@@ -82,6 +94,14 @@ export async function supabasePost<T>(path: string, body: unknown, prefer = "ret
   if (!response.ok) throw new Error(`Supabase POST ${path} failed: ${response.status} ${await safeErrorText(response)}`);
   if (prefer.includes("return=minimal")) return undefined as T;
   return response.json() as Promise<T>;
+}
+
+export async function supabaseDelete(path: string) {
+  const response = await fetch(`${supabaseRestUrl()}${path}`, {
+    method: "DELETE",
+    headers: supabaseHeaders(),
+  });
+  if (!response.ok) throw new Error(`Supabase DELETE ${path} failed: ${response.status} ${await safeErrorText(response)}`);
 }
 
 export async function getSessionUserId(request: ApiRequest) {

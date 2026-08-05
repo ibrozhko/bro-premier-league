@@ -25,6 +25,19 @@ create table if not exists season2_predictions (
   unique(user_id, match_id)
 );
 
+create table if not exists season2_push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references season2_users(id) on delete cascade not null,
+  player_id text not null,
+  endpoint text not null,
+  p256dh text not null,
+  auth text not null,
+  user_agent text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique(user_id, endpoint)
+);
+
 alter table season2_users add column if not exists player_id text;
 alter table season2_users add column if not exists display_name text;
 alter table season2_users add column if not exists is_admin boolean default false;
@@ -35,14 +48,23 @@ alter table season2_predictions add column if not exists home_player_id text;
 alter table season2_predictions add column if not exists away_player_id text;
 alter table season2_predictions add column if not exists locked boolean default true;
 
+alter table season2_push_subscriptions add column if not exists player_id text;
+alter table season2_push_subscriptions add column if not exists user_agent text;
+alter table season2_push_subscriptions add column if not exists updated_at timestamptz default now();
+
 alter table season2_users enable row level security;
 alter table season2_predictions enable row level security;
+alter table season2_push_subscriptions enable row level security;
 
 drop policy if exists "season2 users are service-role managed" on season2_users;
 drop policy if exists "season2 predictions are service-role managed" on season2_predictions;
+drop policy if exists "season2 push subscriptions are service-role managed" on season2_push_subscriptions;
 
 create policy "season2 users are service-role managed" on season2_users
 for all using (false);
 
 create policy "season2 predictions are service-role managed" on season2_predictions
+for all using (false);
+
+create policy "season2 push subscriptions are service-role managed" on season2_push_subscriptions
 for all using (false);

@@ -1,0 +1,25 @@
+{
+  "name": "Bro Premier League Cabinet",
+  "short_name": "BPL Cabinet",
+  "description": "Мобільний кабінет Bro Premier League Season 2.",
+  "start_url": "/cabinet",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-season2.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

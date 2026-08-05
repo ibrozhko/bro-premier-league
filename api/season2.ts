@@ -5,14 +5,17 @@ import {
   parseBody,
   requireSeason2Env,
   setSessionCookie,
+  supabaseDelete,
   supabaseGet,
   supabasePost,
   verifyPassword,
   type ApiRequest,
   type ApiResponse,
   type Season2DbPrediction,
+  type Season2DbPushSubscription,
   type Season2DbUser,
 } from "./_utils/season2Api.js";
+import * as webpush from "web-push";
 
 type AuthPayload = {
   action?: "login" | "logout";
@@ -41,6 +44,22 @@ type MatchAggregate = {
   awayPercent: number;
 };
 
+type PushSubscriptionPayload = {
+  subscription?: {
+    endpoint?: string;
+    keys?: {
+      p256dh?: string;
+      auth?: string;
+    };
+  };
+  userAgent?: string;
+};
+
+type TestPushPayload = {
+  title?: string;
+  body?: string;
+};
+
 export default async function handler(request: ApiRequest, response: ApiResponse) {
   try {
     requireSeason2Env();
@@ -59,6 +78,16 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
     if (resource === "prediction-stats") {
       await handlePredictionStats(request, response);
+      return;
+    }
+
+    if (resource === "push-subscription") {
+      await handlePushSubscription(request, response);
+      return;
+    }
+
+    if (resource === "test-push") {
+      await handleTestPush(request, response);
       return;
     }
 
@@ -214,6 +243,139 @@ async function handlePredictionStats(request: ApiRequest, response: ApiResponse)
   }));
 
   response.status(200).json({ aggregates });
+}
+
+async function handlePushSubscription(request: ApiRequest, response: ApiResponse) {
+  const user = await requireUser(request, response);
+  if (!user) return;
+
+  if (request.method === "GET") {
+    const rows = await supabaseGet<Array<Pick<Season2DbPushSubscription, "endpoint" | "updated_at">>>(
+      `/season2_push_subscriptions?select=endpoint,updated_at&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,
+    );
+    response.status(200).json({ enabled: rows.length > 0, updatedAt: rows[0]?.updated_at ?? null });
+    return;
+  }
+
+  if (request.method !== "POST") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const payload = parseBody<PushSubscriptionPayload>(request.body);
+  const subscription = payload?.subscription;
+  const endpoint = subscription?.endpoint ?? "";
+  const p256dh = subscription?.keys?.p256dh ?? "";
+  const auth = subscription?.keys?.auth ?? "";
+
+  if (!endpoint || !p256dh || !auth) {
+    response.status(400).json({ error: "Некоректна push-підписка." });
+    return;
+  }
+
+  await supabasePost(
+    "/season2_push_subscriptions?on_conflict=user_id,endpoint",
+    {
+      user_id: user.id,
+      player_id: user.player_id,
+      endpoint,
+      p256dh,
+      auth,
+      user_agent: payload?.userAgent?.slice(0, 300) ?? null,
+      updated_at: new Date().toISOString(),
+    },
+    "resolution=merge-duplicates,return=minimal",
+  );
+
+  response.status(200).json({ enabled: true });
+}
+
+async function handleTestPush(request: ApiRequest, response: ApiResponse) {
+  const user = await requireUser(request, response);
+  if (!user) return;
+
+  if (request.method !== "POST") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  configureWebPush();
+
+  const payload = parseBody<TestPushPayload>(request.body);
+  const rows = await supabaseGet<Season2DbPushSubscription[]>(
+    `/season2_push_subscriptions?select=*&user_id=eq.${encodeURIComponent(user.id)}`,
+  );
+
+  if (!rows.length) {
+    response.status(400).json({ error: "Спочатку увімкни push у кабінеті." });
+    return;
+  }
+
+  const notification = JSON.stringify({
+    title: payload?.title ?? "BPL Season 2",
+    body: payload?.body ?? "Push працює. Кабінет готовий до бойового сезону.",
+    url: "/cabinet",
+  });
+
+  const results = await Promise.allSettled(rows.map(row => webpush.sendNotification({
+    endpoint: row.endpoint,
+    keys: {
+      p256dh: row.p256dh,
+      auth: row.auth,
+    },
+  }, notification)));
+
+  const staleRows = results
+    .map((result, index) => ({ result, row: rows[index] }))
+    .filter(({ result }) => result.status === "rejected" && isStalePushError(result.reason));
+
+  await Promise.all(staleRows.map(({ row }) =>
+    supabaseDelete(`/season2_push_subscriptions?user_id=eq.${encodeURIComponent(user.id)}&endpoint=eq.${encodeURIComponent(row.endpoint)}`),
+  ));
+
+  response.status(200).json({
+    sent: results.filter(result => result.status === "fulfilled").length,
+    removed: staleRows.length,
+  });
+}
+
+async function requireUser(request: ApiRequest, response: ApiResponse) {
+  const userId = await getSessionUserId(request);
+  if (!userId) {
+    response.status(401).json({ error: "Потрібен вхід." });
+    return null;
+  }
+
+  const userRows = await supabaseGet<Season2DbUser[]>(
+    `/season2_users?select=*&id=eq.${encodeURIComponent(userId)}&limit=1`,
+  );
+  const user = userRows[0];
+  if (!user) {
+    response.status(401).json({ error: "Користувача не знайдено." });
+    return null;
+  }
+
+  return user;
+}
+
+function configureWebPush() {
+  const publicKey = process.env.VAPID_PUBLIC_KEY;
+  const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const subject = process.env.VAPID_SUBJECT ?? "mailto:bpl@broleague.online";
+
+  if (!publicKey || !privateKey) {
+    throw new Error("Missing environment variables: VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY");
+  }
+
+  webpush.setVapidDetails(subject, publicKey, privateKey);
+}
+
+function isStalePushError(error: unknown) {
+  const statusCode = typeof error === "object" && error && "statusCode" in error
+    ? Number((error as { statusCode?: number }).statusCode)
+    : 0;
+
+  return statusCode === 404 || statusCode === 410;
 }
 
 function getQueryValue(request: ApiRequest, key: string) {

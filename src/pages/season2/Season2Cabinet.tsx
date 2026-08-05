@@ -18,6 +18,12 @@ import {
   type Season2SavedPrediction,
   type Season2User,
 } from "@/lib/season2Predictions";
+import {
+  enableSeason2Push,
+  getSeason2PushStatus,
+  sendSeason2TestPush,
+  type Season2PushStatus,
+} from "@/lib/season2Push";
 
 type CabinetTab = "home" | "matches" | "predictions" | "table" | "profile";
 
@@ -436,6 +442,50 @@ function ProfileTab({
   user: Season2User;
   onLogout: () => void;
 }) {
+  const [pushStatus, setPushStatus] = useState<Season2PushStatus | null>(null);
+  const [pushMessage, setPushMessage] = useState("");
+  const [isPushLoading, setIsPushLoading] = useState(false);
+
+  useEffect(() => {
+    getSeason2PushStatus()
+      .then(setPushStatus)
+      .catch(error => setPushStatus({
+        supported: false,
+        permission: "unsupported",
+        enabled: false,
+        message: error instanceof Error ? error.message : "Push поки недоступний.",
+      }));
+  }, []);
+
+  const handleEnablePush = async () => {
+    setIsPushLoading(true);
+    setPushMessage("");
+
+    try {
+      const nextStatus = await enableSeason2Push();
+      setPushStatus(nextStatus);
+      setPushMessage("Push увімкнено. Тепер можна надсилати сповіщення на цей пристрій.");
+    } catch (error) {
+      setPushMessage(error instanceof Error ? error.message : "Не вдалося увімкнути push.");
+    } finally {
+      setIsPushLoading(false);
+    }
+  };
+
+  const handleTestPush = async () => {
+    setIsPushLoading(true);
+    setPushMessage("");
+
+    try {
+      await sendSeason2TestPush();
+      setPushMessage("Тестовий push відправлено.");
+    } catch (error) {
+      setPushMessage(error instanceof Error ? error.message : "Не вдалося відправити тестовий push.");
+    } finally {
+      setIsPushLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <section className="rounded-md border border-white/10 bg-white/[0.06] p-4 text-white">
@@ -458,8 +508,32 @@ function ProfileTab({
           Push
         </div>
         <p className="mt-2 text-sm leading-6 text-white/62">
-          Далі додамо пуші про твої матчі, результати і зміни у таблиці. Це буде головна фішка кабінету.
+          {pushStatus?.message ?? "Перевіряємо можливість push на цьому пристрої..."}
         </p>
+        {pushStatus?.permission === "denied" && (
+          <p className="mt-2 rounded-md border border-[#ff5a1f]/35 bg-[#ff5a1f]/10 p-3 text-xs font-bold text-[#ff5a1f]">
+            Push заблоковано у браузері. Дозвіл треба повернути в налаштуваннях сайту.
+          </p>
+        )}
+        <div className="mt-4 grid grid-cols-1 gap-2">
+          <button
+            type="button"
+            onClick={handleEnablePush}
+            disabled={!pushStatus?.supported || pushStatus.enabled || isPushLoading}
+            className="h-11 rounded-md bg-[#bbf903] px-4 text-sm font-extrabold text-[#111111] disabled:opacity-45"
+          >
+            {pushStatus?.enabled ? "Push увімкнено" : isPushLoading ? "Працюємо..." : "Увімкнути push"}
+          </button>
+          <button
+            type="button"
+            onClick={handleTestPush}
+            disabled={!pushStatus?.enabled || isPushLoading}
+            className="h-11 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 px-4 text-sm font-extrabold text-[#ff5a1f] disabled:opacity-45"
+          >
+            Надіслати тест
+          </button>
+        </div>
+        {pushMessage && <p className="mt-3 text-xs font-bold leading-5 text-white/64">{pushMessage}</p>}
       </section>
 
       <button
