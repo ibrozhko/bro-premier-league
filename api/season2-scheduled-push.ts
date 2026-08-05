@@ -8,9 +8,9 @@ import {
 import webpush from "web-push";
 
 const scheduledPushes = {
-  preseason1930: {
+  preseason2000: {
     title: "BPL Season 2",
-    body: "Тестуємо push по-дорослому. Якщо це бачиш — BPL Cabinet готовий до сезону.",
+    body: "Завтра вже пахне стартом. Перевір форму, руки і нерви.",
     url: "/cabinet",
   },
 } as const;
@@ -28,7 +28,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
   configureWebPush();
 
-  const notification = scheduledPushes.preseason1930;
+  const notification = scheduledPushes.preseason2000;
   const rows = await supabaseGet<Season2DbPushSubscription[]>(
     "/season2_push_subscriptions?select=*",
   );
