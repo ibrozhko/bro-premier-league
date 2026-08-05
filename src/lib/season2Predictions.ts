@@ -64,12 +64,12 @@ export function lockSeason2PredictionRound(playerId: string, roundId: string) {
 }
 
 export async function getCurrentSeason2User() {
-  const payload = await apiFetch<{ user: Season2User | null }>("/api/season2-auth");
+  const payload = await apiFetch<{ user: Season2User | null }>("/api/season2?resource=auth");
   return payload.user;
 }
 
 export async function loginSeason2User(username: string, password: string) {
-  const payload = await apiFetch<{ user: Season2User | null }>("/api/season2-auth", {
+  const payload = await apiFetch<{ user: Season2User | null }>("/api/season2?resource=auth", {
     method: "POST",
     body: JSON.stringify({ action: "login", username, password }),
   });
@@ -77,7 +77,7 @@ export async function loginSeason2User(username: string, password: string) {
 }
 
 export async function logoutSeason2User() {
-  await apiFetch("/api/season2-auth", {
+  await apiFetch("/api/season2?resource=auth", {
     method: "POST",
     body: JSON.stringify({ action: "logout" }),
   });
@@ -94,7 +94,7 @@ export async function saveSeason2RoundPredictions(input: {
     predictedAwayScore: number;
   }>;
 }) {
-  const payload = await apiFetch<{ user: Season2User | null }>("/api/season2-predictions", {
+  const payload = await apiFetch<{ user: Season2User | null }>("/api/season2?resource=predictions", {
     method: "POST",
     body: JSON.stringify(input),
   });
@@ -102,7 +102,7 @@ export async function saveSeason2RoundPredictions(input: {
 }
 
 export async function loadSeason2PredictionAggregates() {
-  const payload = await apiFetch<{ aggregates: Season2PredictionAggregateMap }>("/api/season2-prediction-stats");
+  const payload = await apiFetch<{ aggregates: Season2PredictionAggregateMap }>("/api/season2?resource=prediction-stats");
   return payload.aggregates;
 }
 
