@@ -14,7 +14,7 @@ const navLinks = [
 
 const season2Link = { path: "/", label: "Сезон 2" } as const;
 
-const isSeason2SiteMode = import.meta.env.VITE_BPL_SITE !== "worldcup";
+const isSeason2SiteMode = true;
 const worldCupPaths = ["/", "/world-cup-2026", "/fixtures", "/players", "/top-scorers", "/best-defense"];
 
 const channelLinks = [

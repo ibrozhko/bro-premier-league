@@ -17,6 +17,7 @@ import Season2Matches from "./pages/season2/Season2Matches";
 import Season2Players from "./pages/season2/Season2Players";
 import Season2TopScorers from "./pages/season2/Season2TopScorers";
 import Season2BestDefense from "./pages/season2/Season2BestDefense";
+import Season2Cabinet from "./pages/season2/Season2Cabinet";
 import Apply from "./pages/Apply";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
@@ -33,14 +34,14 @@ import PredictProfile from "./pages/predict/PredictProfile";
 import PredictAdmin from "./pages/predict/PredictAdmin";
 
 const queryClient = new QueryClient();
-const isSeason2SiteMode = import.meta.env.VITE_BPL_SITE !== "worldcup";
+const isSeason2SiteMode = true;
 
 function AppFrame() {
   const location = useLocation();
   const isPredict = location.pathname === "/predict" || location.pathname.startsWith("/predict/");
   const isSeason2 = location.pathname === "/season-2" || location.pathname.startsWith("/season-2/");
   const isSeason2Preview = location.pathname === "/season-2-preview";
-  const isSeason2RootPage = isSeason2SiteMode && ["/", "/matches", "/players", "/top-scorers", "/best-defense"].includes(location.pathname);
+  const isSeason2RootPage = isSeason2SiteMode && ["/", "/matches", "/players", "/top-scorers", "/best-defense", "/cabinet"].includes(location.pathname);
 
   return (
     <>
@@ -53,6 +54,7 @@ function AppFrame() {
             <Route path="/players" element={<Season2Players />} />
             <Route path="/top-scorers" element={<Season2TopScorers />} />
             <Route path="/best-defense" element={<Season2BestDefense />} />
+            <Route path="/cabinet" element={<Season2Cabinet />} />
           </>
         )}
         <Route path="/season-2" element={<Season2Home />} />
@@ -60,6 +62,7 @@ function AppFrame() {
         <Route path="/season-2/players" element={<Season2Players />} />
         <Route path="/season-2/top-scorers" element={<Season2TopScorers />} />
         <Route path="/season-2/best-defense" element={<Season2BestDefense />} />
+        <Route path="/season-2/cabinet" element={<Season2Cabinet />} />
         <Route path="/season-2-preview" element={<Season2Preview />} />
         <Route path="/world-cup-2026" element={<WorldCup2026 />} />
         <Route path="/world-cup-2026/fixtures" element={<WorldCupFixtures />} />

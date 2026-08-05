@@ -1,4 +1,5 @@
 import { ArrowRight, CalendarDays, Shield, Trophy, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logoSeason2 from "@/assets/logo-season2-orange.png";
 import {
@@ -13,18 +14,30 @@ import {
   season2Summary,
   type Season2Match,
 } from "@/data/season2Data";
+import {
+  getSeason2PredictionAggregate,
+  loadSeason2PredictionAggregates,
+  type Season2PredictionAggregateMap,
+} from "@/lib/season2Predictions";
 import Season2Shell from "./Season2Shell";
 
-const season2BasePath = import.meta.env.VITE_BPL_SITE === "worldcup" ? "/season-2" : "";
+const season2BasePath = "";
 const season2Path = (path = "") => `${season2BasePath}${path}` || "/";
 
 export default function Season2Home() {
+  const [predictionAggregates, setPredictionAggregates] = useState<Season2PredictionAggregateMap>({});
   const playedMatches = getSeason2PlayedMatches();
   const topAttack = getSeason2TopScorers()[0];
   const bestDefense = getSeason2BestDefense()[0];
   const standings = calculateSeason2Standings();
   const nextRound = getSeason2NextRound();
   const nextMatches = nextRound?.matches ?? [];
+
+  useEffect(() => {
+    loadSeason2PredictionAggregates()
+      .then(setPredictionAggregates)
+      .catch(() => setPredictionAggregates({}));
+  }, []);
 
   return (
     <Season2Shell>
@@ -94,7 +107,9 @@ export default function Season2Home() {
                 </div>
               )}
               <div className="divide-y divide-[#111111]/10">
-                {nextMatches.length ? nextMatches.map(match => <Season2MatchRow key={match.id} match={match} />) : (
+              {nextMatches.length ? nextMatches.map(match => (
+                <Season2MatchRow key={match.id} match={match} predictionAggregates={predictionAggregates} />
+              )) : (
                   <div className="p-5 text-sm text-[#111111]/60">Немає майбутніх матчів.</div>
                 )}
               </div>
@@ -115,7 +130,13 @@ export default function Season2Home() {
   );
 }
 
-export function Season2MatchRow({ match }: { match: Season2Match }) {
+export function Season2MatchRow({
+  match,
+  predictionAggregates,
+}: {
+  match: Season2Match;
+  predictionAggregates?: Season2PredictionAggregateMap;
+}) {
   const played = match.homeScore !== null && match.awayScore !== null;
 
   return (
@@ -135,7 +156,29 @@ export function Season2MatchRow({ match }: { match: Season2Match }) {
       <div className="hidden text-right sm:block">
         <Status played={played} />
       </div>
+      <CommunityPrediction match={match} predictionAggregates={predictionAggregates} />
     </article>
+  );
+}
+
+function CommunityPrediction({
+  match,
+  predictionAggregates,
+}: {
+  match: Season2Match;
+  predictionAggregates?: Season2PredictionAggregateMap;
+}) {
+  const aggregate = getSeason2PredictionAggregate(match, predictionAggregates);
+  if (!aggregate) return null;
+
+  return (
+    <div className="col-span-3 rounded-md border border-[#111111]/10 bg-[#111111]/[0.035] px-3 py-2 text-center text-xs font-bold text-[#111111]/58 sm:col-span-5 sm:text-sm">
+      <span className="text-[#ff5a1f]">{match.home.name} {aggregate.homePercent}%</span>
+      <span className="mx-2 text-[#111111]/32">·</span>
+      <span>нічия {aggregate.drawPercent}%</span>
+      <span className="mx-2 text-[#111111]/32">·</span>
+      <span className="text-[#ff5a1f]">{match.away.name} {aggregate.awayPercent}%</span>
+    </div>
   );
 }
 

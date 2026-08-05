@@ -5,15 +5,21 @@ import { Menu, Twitch, X, Youtube } from "lucide-react";
 import logoSeason2 from "@/assets/logo-season2-orange.png";
 import { season2Summary } from "@/data/season2Data";
 
-const season2BasePath = import.meta.env.VITE_BPL_SITE === "worldcup" ? "/season-2" : "";
+const season2BasePath = "";
 const season2Path = (path = "") => `${season2BasePath}${path}` || "/";
 
 const links = [
-  { path: "/world-cup-2026", label: "ЧС 2026", highlight: true },
+  { path: season2Path(), label: "Сезон 2", highlight: true },
   { path: season2Path("/matches"), label: "Матчі", highlight: false },
   { path: season2Path("/players"), label: "Гравці", highlight: false },
   { path: season2Path("/top-scorers"), label: "Бомбардири", highlight: false },
   { path: season2Path("/best-defense"), label: "Захист", highlight: false },
+  { path: "/world-cup-2026", label: "ЧС 2026", highlight: false },
+] as const;
+
+const mobileLinks = [
+  ...links,
+  { path: season2Path("/cabinet"), label: "Кабінет", highlight: false },
 ] as const;
 
 const channels = [
@@ -122,7 +128,7 @@ export default function Season2Shell({ children }: { children: ReactNode }) {
           <div className="border-t border-white/20 bg-[#111111] px-4 pb-4 lg:hidden">
             <div className="mx-auto max-w-5xl">
               <nav>
-                {links.map(link => {
+                {mobileLinks.map(link => {
                   const active = location.pathname === link.path;
 
                   return (
