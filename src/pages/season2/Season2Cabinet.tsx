@@ -39,6 +39,25 @@ export default function Season2Cabinet() {
   });
 
   useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+    const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const previousTheme = themeMeta?.getAttribute("content");
+
+    root.classList.add("bpl-cabinet-shell");
+    body.classList.add("bpl-cabinet-shell");
+    themeMeta?.setAttribute("content", "#111111");
+
+    return () => {
+      root.classList.remove("bpl-cabinet-shell");
+      body.classList.remove("bpl-cabinet-shell");
+      if (themeMeta && previousTheme) {
+        themeMeta.setAttribute("content", previousTheme);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     getCurrentSeason2User()
       .then(currentUser => {
         setUser(currentUser);

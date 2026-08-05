@@ -55,6 +55,17 @@
 }
 
 @layer base {
+  html.bpl-cabinet-shell,
+  html.bpl-cabinet-shell body,
+  html.bpl-cabinet-shell #root {
+    min-height: 100%;
+    background: #111111;
+  }
+
+  html.bpl-cabinet-shell {
+    color-scheme: dark;
+  }
+
   * {
     @apply border-border;
   }
