@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/season2-scheduled-push",
-      "schedule": "30 16 5 8 *"
+      "schedule": "0 17 5 8 *"
     }
   ],
   "redirects": [
