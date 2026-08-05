@@ -58,6 +58,7 @@ type PushSubscriptionPayload = {
 type TestPushPayload = {
   title?: string;
   body?: string;
+  url?: string;
 };
 
 export default async function handler(request: ApiRequest, response: ApiResponse) {
@@ -88,6 +89,11 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
     if (resource === "test-push") {
       await handleTestPush(request, response);
+      return;
+    }
+
+    if (resource === "push-broadcast") {
+      await handlePushBroadcast(request, response);
       return;
     }
 
@@ -311,11 +317,54 @@ async function handleTestPush(request: ApiRequest, response: ApiResponse) {
     return;
   }
 
-  const notification = JSON.stringify({
+  const notification = {
     title: payload?.title ?? "BPL Season 2",
     body: payload?.body ?? "Push працює. Кабінет готовий до бойового сезону.",
-    url: "/cabinet",
+    url: payload?.url ?? "/cabinet",
+  };
+
+  const result = await sendPushNotifications(rows, notification);
+
+  response.status(200).json(result);
+}
+
+async function handlePushBroadcast(request: ApiRequest, response: ApiResponse) {
+  if (request.method !== "POST") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  if (!isAuthorizedServiceRequest(request)) {
+    response.status(401).json({ error: "Unauthorized push broadcast." });
+    return;
+  }
+
+  configureWebPush();
+
+  const payload = parseBody<TestPushPayload>(request.body);
+  const rows = await supabaseGet<Season2DbPushSubscription[]>(
+    "/season2_push_subscriptions?select=*",
+  );
+
+  if (!rows.length) {
+    response.status(200).json({ sent: 0, removed: 0 });
+    return;
+  }
+
+  const result = await sendPushNotifications(rows, {
+    title: payload?.title ?? "BPL Season 2",
+    body: payload?.body ?? "Є свіже повідомлення від ліги.",
+    url: payload?.url ?? "/cabinet",
   });
+
+  response.status(200).json(result);
+}
+
+async function sendPushNotifications(
+  rows: Season2DbPushSubscription[],
+  notification: { title: string; body: string; url: string },
+) {
+  const notificationPayload = JSON.stringify(notification);
 
   const results = await Promise.allSettled(rows.map(row => webpush.sendNotification({
     endpoint: row.endpoint,
@@ -323,20 +372,20 @@ async function handleTestPush(request: ApiRequest, response: ApiResponse) {
       p256dh: row.p256dh,
       auth: row.auth,
     },
-  }, notification)));
+  }, notificationPayload)));
 
   const staleRows = results
     .map((result, index) => ({ result, row: rows[index] }))
     .filter(({ result }) => result.status === "rejected" && isStalePushError(result.reason));
 
   await Promise.all(staleRows.map(({ row }) =>
-    supabaseDelete(`/season2_push_subscriptions?user_id=eq.${encodeURIComponent(user.id)}&endpoint=eq.${encodeURIComponent(row.endpoint)}`),
+    supabaseDelete(`/season2_push_subscriptions?user_id=eq.${encodeURIComponent(row.user_id)}&endpoint=eq.${encodeURIComponent(row.endpoint)}`),
   ));
 
-  response.status(200).json({
+  return {
     sent: results.filter(result => result.status === "fulfilled").length,
     removed: staleRows.length,
-  });
+  };
 }
 
 async function requireUser(request: ApiRequest, response: ApiResponse) {
@@ -376,6 +425,23 @@ function isStalePushError(error: unknown) {
     : 0;
 
   return statusCode === 404 || statusCode === 410;
+}
+
+function isAuthorizedServiceRequest(request: ApiRequest) {
+  const expectedToken = process.env.SEASON2_PUSH_SECRET
+    ?? process.env.CRON_SECRET
+    ?? process.env.SEASON2_SESSION_SECRET
+    ?? process.env.PREDICT_SESSION_SECRET
+    ?? "";
+  if (!expectedToken) return false;
+
+  return getBearerToken(request) === expectedToken;
+}
+
+function getBearerToken(request: ApiRequest) {
+  const header = request.headers?.authorization ?? request.headers?.Authorization;
+  const value = Array.isArray(header) ? header[0] : header;
+  return value?.startsWith("Bearer ") ? value.slice("Bearer ".length).trim() : "";
 }
 
 function getQueryValue(request: ApiRequest, key: string) {
