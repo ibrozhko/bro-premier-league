@@ -763,7 +763,8 @@ function WeekendOpponentCard({
   };
 
   return (
-    <article className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+    <article className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
+      <div className="p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
@@ -784,7 +785,7 @@ function WeekendOpponentCard({
 
       <div className="mt-4 grid grid-cols-[1fr_auto] items-start gap-3">
         <div className="min-w-0">
-          <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Наступний суперник</div>
+          <div className="text-[0.64rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Наступний суперник</div>
           <h3 className="mt-1 truncate text-[1.55rem] font-extrabold leading-tight text-white">{opponent.name}</h3>
           <p className="truncate text-[0.95rem] text-white/56">{opponent.club}</p>
         </div>
@@ -800,9 +801,14 @@ function WeekendOpponentCard({
         <OpponentStat label="ЗГ" value={opponentStanding?.goalsFor ?? 0} />
         <OpponentStat label="ПГ" value={opponentStanding?.goalsAgainst ?? 0} />
       </div>
+      </div>
 
       {!isSeason2Played(match) && (
-        <div className="mt-3 space-y-2 rounded-md border border-[#bbf903]/25 bg-[#bbf903]/[0.06] p-3">
+        <div className="space-y-2 border-t border-white/10 bg-[#111111] p-3">
+          <div className="flex items-center gap-2 text-[0.64rem] font-extrabold uppercase tracking-wide text-white/40">
+            <Clock3 className="h-3.5 w-3.5 text-[#ff5a1f]" />
+            Узгодження часу
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -866,7 +872,7 @@ function WeekendOpponentCard({
 
 function OpponentStat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-[#111111] px-2 py-2">
+    <div className="rounded-md bg-white/[0.06] px-2 py-2">
       <div className="text-[0.55rem] font-extrabold uppercase tracking-wide text-white/35">{label}</div>
       <div className="mt-1 truncate text-sm font-extrabold text-white">{value}</div>
     </div>
