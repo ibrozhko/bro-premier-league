@@ -828,18 +828,18 @@ function WeekendOpponentCard({
             </button>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto] gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <input
               type="time"
               value={time}
               onChange={event => setTime(event.target.value)}
-              className="h-10 rounded-md border border-white/12 bg-[#111111] px-3 text-sm font-extrabold text-white outline-none focus:border-[#bbf903]"
+              className="h-10 min-w-0 rounded-md border border-white/20 bg-[#111111] px-3 text-center text-sm font-extrabold text-white outline-none focus:border-[#bbf903]"
             />
             <button
               type="button"
               disabled={isSaving || !time}
               onClick={() => saveAction({ match, action: "propose-time", time })}
-              className="h-10 rounded-md bg-[#ff5a1f] px-3 text-[0.72rem] font-extrabold text-white disabled:opacity-50"
+              className="h-10 rounded-md bg-[#ff5a1f] px-2 text-[0.72rem] font-extrabold text-white disabled:bg-[#ff5a1f]/25 disabled:text-white/45"
             >
               Запропонувати
             </button>
