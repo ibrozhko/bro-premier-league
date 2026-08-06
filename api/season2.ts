@@ -7,13 +7,16 @@ import {
   setSessionCookie,
   supabaseDelete,
   supabaseGet,
+  supabasePatch,
   supabasePost,
   verifyPassword,
   type ApiRequest,
   type ApiResponse,
+  type Season2DbMatchScheduling,
   type Season2DbPrediction,
   type Season2DbPushSubscription,
   type Season2DbUser,
+  type Season2MatchDayStatus,
 } from "./_utils/season2Api.js";
 import webpush from "web-push";
 
@@ -58,6 +61,18 @@ type PushSubscriptionPayload = {
   userAgent?: string;
 };
 
+type MatchSchedulingPayload = {
+  matchId?: string;
+  round?: number;
+  homePlayerId?: string;
+  awayPlayerId?: string;
+  action?: "day-status" | "propose-time" | "accept-time";
+  dayStatus?: Season2MatchDayStatus;
+  time?: string;
+  matchLabel?: string;
+  dayLabel?: string;
+};
+
 type TestPushPayload = {
   title?: string;
   body?: string;
@@ -85,6 +100,11 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       return;
     }
 
+    if (resource === "match-scheduling") {
+      await handleMatchScheduling(request, response);
+      return;
+    }
+
     if (resource === "push-subscription") {
       await handlePushSubscription(request, response);
       return;
@@ -104,6 +124,183 @@ export default async function handler(request: ApiRequest, response: ApiResponse
   } catch (error) {
     response.status(500).json({ error: error instanceof Error ? error.message : "Season 2 API error." });
   }
+}
+
+async function handleMatchScheduling(request: ApiRequest, response: ApiResponse) {
+  if (request.method === "GET") {
+    try {
+      const rows = await supabaseGet<Season2DbMatchScheduling[]>(
+        "/season2_match_scheduling?select=*",
+      );
+      response.status(200).json({ schedules: rows });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (message.includes("season2_match_scheduling")) {
+        response.status(200).json({ schedules: [] });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  const user = await requireUser(request, response);
+  if (!user) return;
+
+  if (request.method !== "POST") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const payload = parseBody<MatchSchedulingPayload>(request.body);
+  const matchId = payload?.matchId?.trim() ?? "";
+  const homePlayerId = payload?.homePlayerId?.trim() ?? "";
+  const awayPlayerId = payload?.awayPlayerId?.trim() ?? "";
+  const round = Number(payload?.round);
+
+  if (!matchId || !homePlayerId || !awayPlayerId || !Number.isInteger(round)) {
+    response.status(400).json({ error: "Некоректний матч для домовленості." });
+    return;
+  }
+
+  const side = user.player_id === homePlayerId ? "home" : user.player_id === awayPlayerId ? "away" : "";
+  if (!side) {
+    response.status(403).json({ error: "Домовлятись можуть тільки учасники цього матчу." });
+    return;
+  }
+
+  const existingRows = await supabaseGet<Season2DbMatchScheduling[]>(
+    `/season2_match_scheduling?select=*&match_id=eq.${encodeURIComponent(matchId)}&limit=1`,
+  );
+  const existing = existingRows[0] ?? makeInitialSchedule(matchId, round, homePlayerId, awayPlayerId);
+  const previousAgreedTime = existing.agreed_time;
+  const next = applySchedulingAction(existing, side, payload);
+
+  const savedRows = existingRows[0]
+    ? await supabasePatch<Season2DbMatchScheduling[]>(
+      `/season2_match_scheduling?match_id=eq.${encodeURIComponent(matchId)}`,
+      { ...next, updated_by_player_id: user.player_id, updated_at: new Date().toISOString() },
+    )
+    : await supabasePost<Season2DbMatchScheduling[]>(
+      "/season2_match_scheduling",
+      { ...next, updated_by_player_id: user.player_id },
+    );
+
+  const saved = savedRows[0] ?? next;
+  let push: Awaited<ReturnType<typeof sendPushNotifications>> | null = null;
+
+  if (saved.status === "scheduled" && saved.agreed_time && saved.agreed_time !== previousAgreedTime) {
+    push = await notifyScheduledMatch(saved, payload);
+  }
+
+  response.status(200).json({ schedule: saved, push });
+}
+
+function makeInitialSchedule(
+  matchId: string,
+  round: number,
+  homePlayerId: string,
+  awayPlayerId: string,
+): Season2DbMatchScheduling {
+  const now = new Date().toISOString();
+
+  return {
+    match_id: matchId,
+    round,
+    home_player_id: homePlayerId,
+    away_player_id: awayPlayerId,
+    home_day_status: "pending",
+    away_day_status: "pending",
+    home_proposed_time: null,
+    away_proposed_time: null,
+    agreed_time: null,
+    status: "pending",
+    updated_by_player_id: null,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+function applySchedulingAction(
+  schedule: Season2DbMatchScheduling,
+  side: "home" | "away",
+  payload: MatchSchedulingPayload | null,
+): Season2DbMatchScheduling {
+  const next = { ...schedule };
+  const ownDayKey = `${side}_day_status` as const;
+  const ownTimeKey = `${side}_proposed_time` as const;
+  const opponentTimeKey = `${side === "home" ? "away" : "home"}_proposed_time` as const;
+
+  if (payload?.action === "day-status") {
+    if (payload.dayStatus !== "available" && payload.dayStatus !== "reschedule") {
+      throw new Error("Обери: можу грати або треба перенос.");
+    }
+    next[ownDayKey] = payload.dayStatus;
+    if (payload.dayStatus === "reschedule") {
+      next.agreed_time = null;
+    }
+  } else if (payload?.action === "propose-time") {
+    const time = normalizeSchedulingTime(payload.time);
+    next[ownDayKey] = "available";
+    next[ownTimeKey] = time;
+    if (next[opponentTimeKey] === time) {
+      next.agreed_time = time;
+    }
+  } else if (payload?.action === "accept-time") {
+    const time = normalizeSchedulingTime(payload.time);
+    if (next[opponentTimeKey] !== time) {
+      throw new Error("Цей час ще не запропонований суперником.");
+    }
+    next[ownDayKey] = "available";
+    next[ownTimeKey] = time;
+    next.agreed_time = time;
+  } else {
+    throw new Error("Некоректна дія для домовленості.");
+  }
+
+  next.status = deriveScheduleStatus(next);
+  return next;
+}
+
+function normalizeSchedulingTime(value: string | undefined) {
+  const time = value?.trim() ?? "";
+  if (!/^\d{2}:\d{2}$/.test(time)) {
+    throw new Error("Вкажи час у форматі 21:30.");
+  }
+
+  const [hours, minutes] = time.split(":").map(Number);
+  if (hours > 23 || minutes > 59) {
+    throw new Error("Некоректний час матчу.");
+  }
+
+  return time;
+}
+
+function deriveScheduleStatus(schedule: Season2DbMatchScheduling) {
+  if (schedule.home_day_status === "reschedule" || schedule.away_day_status === "reschedule") return "postponed";
+  if (schedule.agreed_time) return "scheduled";
+  if (schedule.home_proposed_time || schedule.away_proposed_time) return "negotiating";
+  if (schedule.home_day_status === "available" && schedule.away_day_status === "available") return "day_confirmed";
+  return "pending";
+}
+
+async function notifyScheduledMatch(schedule: Season2DbMatchScheduling, payload: MatchSchedulingPayload | null) {
+  configureWebPush();
+
+  const rows = await supabaseGet<Season2DbPushSubscription[]>(
+    "/season2_push_subscriptions?select=*",
+  );
+
+  if (!rows.length) return { sent: 0, removed: 0 };
+
+  const matchLabel = payload?.matchLabel?.trim() || "Матч Season 2";
+  const dayLabel = payload?.dayLabel?.trim() || "у турі";
+
+  return sendPushNotifications(rows, {
+    title: "BPL Season 2",
+    body: `${matchLabel}: погоджено ${dayLabel} о ${schedule.agreed_time}.`,
+    url: "/",
+  });
 }
 
 async function handleAuth(request: ApiRequest, response: ApiResponse) {

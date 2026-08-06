@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, House, ListChecks, LogOut, Table2, Trophy, UserRound } from "lucide-react";
+import { Bell, CalendarDays, Clock3, House, ListChecks, LogOut, Table2, Trophy, UserRound } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   calculateSeason2Standings,
@@ -24,6 +24,12 @@ import {
   sendSeason2TestPush,
   type Season2PushStatus,
 } from "@/lib/season2Push";
+import {
+  getScheduleBadge,
+  loadSeason2MatchSchedules,
+  saveSeason2MatchSchedule,
+  type Season2MatchSchedule,
+} from "@/lib/season2Scheduling";
 
 type CabinetTab = "home" | "matches" | "predictions" | "table" | "profile";
 
@@ -33,6 +39,7 @@ export default function Season2Cabinet() {
   const [activeTab, setActiveTab] = useState<CabinetTab>("home");
   const [authStatus, setAuthStatus] = useState<"loading" | "ready">("loading");
   const [user, setUser] = useState<Season2User | null>(null);
+  const [schedules, setSchedules] = useState<Record<string, Season2MatchSchedule>>({});
   const [selectedPlayerId, setSelectedPlayerId] = useState(() => {
     if (typeof window === "undefined") return season2Players[0]?.id ?? "";
     return window.localStorage.getItem(storageKey) ?? season2Players[0]?.id ?? "";
@@ -56,6 +63,14 @@ export default function Season2Cabinet() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    loadSeason2MatchSchedules()
+      .then(setSchedules)
+      .catch(() => setSchedules({}));
+  }, [user]);
 
   useEffect(() => {
     getCurrentSeason2User()
@@ -111,7 +126,14 @@ export default function Season2Cabinet() {
           {authStatus === "ready" && !user && <LoginPanel onLogin={handleLogin} />}
           {authStatus === "ready" && user && (
             <>
-              {activeTab === "home" && <HomeTab player={selectedPlayer} data={playerData} />}
+              {activeTab === "home" && (
+                <HomeTab
+                  player={selectedPlayer}
+                  data={playerData}
+                  schedules={schedules}
+                  onScheduleUpdate={schedule => setSchedules(current => ({ ...current, [schedule.matchId]: schedule }))}
+                />
+              )}
               {activeTab === "matches" && <MatchesTab data={playerData} />}
               {activeTab === "predictions" && <PredictionsTab player={selectedPlayer} user={user} onUserUpdate={setUser} />}
               {activeTab === "table" && <TableTab data={playerData} />}
@@ -146,8 +168,18 @@ export default function Season2Cabinet() {
   );
 }
 
-function HomeTab({ player, data }: { player: Season2Player; data: PlayerCabinetData }) {
-  const primaryMatch = data.upcomingMatches[0] ?? data.recentMatches[0] ?? null;
+function HomeTab({
+  player,
+  data,
+  schedules,
+  onScheduleUpdate,
+}: {
+  player: Season2Player;
+  data: PlayerCabinetData;
+  schedules: Record<string, Season2MatchSchedule>;
+  onScheduleUpdate: (schedule: Season2MatchSchedule) => void;
+}) {
+  const primaryMatch = data.weekendMatches[0] ?? data.upcomingMatches[0] ?? data.recentMatches[0] ?? null;
 
   return (
     <div className="space-y-5">
@@ -165,10 +197,23 @@ function HomeTab({ player, data }: { player: Season2Player; data: PlayerCabinetD
       </section>
 
       <MobileSection
-        title={primaryMatch && !isSeason2Played(primaryMatch) ? "Твій матч" : primaryMatch ? "Останній матч" : "Очікуємо календар"}
+        title={data.weekendMatches.length ? "Твій вікенд" : primaryMatch && !isSeason2Played(primaryMatch) ? "Твій матч" : primaryMatch ? "Останній матч" : "Очікуємо календар"}
         icon={CalendarDays}
       >
-        {primaryMatch ? <MobileMatchCard match={primaryMatch} playerId={player.id} /> : (
+        {data.weekendMatches.length ? (
+          <div className="space-y-3">
+            {data.weekendMatches.map(match => (
+              <WeekendOpponentCard
+                key={match.id}
+                match={match}
+                playerId={player.id}
+                standings={data.standings}
+                schedule={schedules[match.id]}
+                onScheduleUpdate={onScheduleUpdate}
+              />
+            ))}
+          </div>
+        ) : primaryMatch ? <MobileMatchCard match={primaryMatch} playerId={player.id} /> : (
           <EmptyState text="Матчі ще не знайдені." />
         )}
       </MobileSection>
@@ -570,11 +615,15 @@ function getPlayerCabinetData(player: Season2Player) {
   const rank = standings.findIndex(row => row.player.id === player.id) + 1;
   const allMatches = season2Rounds.flatMap(round => round.matches).filter(match => hasPlayer(match, player.id));
   const neighborRows = getNeighborRows(standings, player.id);
+  const upcomingMatches = allMatches.filter(match => !isSeason2Played(match));
+  const weekendIndex = upcomingMatches[0] ? Math.floor((upcomingMatches[0].round - 1) / 2) : -1;
 
   return {
+    standings,
     standing,
     rank: rank || 1,
-    upcomingMatches: allMatches.filter(match => !isSeason2Played(match)).slice(0, 5),
+    weekendMatches: upcomingMatches.filter(match => Math.floor((match.round - 1) / 2) === weekendIndex).slice(0, 2),
+    upcomingMatches: upcomingMatches.slice(0, 5),
     recentMatches: allMatches.filter(isSeason2Played).reverse().slice(0, 5),
     neighborRows,
   };
@@ -670,6 +719,157 @@ function PredictionInput({
       className="h-11 w-11 rounded-md border border-white/12 bg-[#111111] text-center font-heading text-xl leading-none text-[#bbf903] outline-none focus:border-[#bbf903] disabled:opacity-55"
       placeholder="-"
     />
+  );
+}
+
+function WeekendOpponentCard({
+  match,
+  playerId,
+  standings,
+  schedule,
+  onScheduleUpdate,
+}: {
+  match: Season2Match;
+  playerId: string;
+  standings: Season2Standing[];
+  schedule?: Season2MatchSchedule;
+  onScheduleUpdate: (schedule: Season2MatchSchedule) => void;
+}) {
+  const opponent = match.home.id === playerId ? match.away : match.home;
+  const opponentStanding = standings.find(row => row.player.id === opponent.id);
+  const opponentRank = standings.findIndex(row => row.player.id === opponent.id) + 1;
+  const [time, setTime] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const playerSide = match.home.id === playerId ? "home" : "away";
+  const opponentProposedTime = playerSide === "home" ? schedule?.awayProposedTime : schedule?.homeProposedTime;
+  const ownProposedTime = playerSide === "home" ? schedule?.homeProposedTime : schedule?.awayProposedTime;
+  const badge = getScheduleBadge(schedule);
+
+  const saveAction = async (input: Parameters<typeof saveSeason2MatchSchedule>[0]) => {
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const nextSchedule = await saveSeason2MatchSchedule(input);
+      onScheduleUpdate(nextSchedule);
+      setTime("");
+      setMessage(nextSchedule.status === "scheduled" ? "Час погоджено. Push пішов усім." : "Збережено.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Не вдалося зберегти домовленість.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <article className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
+            Тур {match.round} · {getSeason2LegLabel(match.leg)}
+          </div>
+          <div className="mt-1 text-xs text-white/45">{match.dayLabel}</div>
+        </div>
+        <span className={`rounded-md px-2 py-1 text-[0.65rem] font-extrabold uppercase ${
+          schedule?.status === "scheduled"
+            ? "bg-[#bbf903] text-[#111111]"
+            : schedule?.status === "postponed"
+              ? "bg-[#ff5a1f] text-white"
+              : "bg-white/10 text-white/70"
+        }`}>
+          {badge ?? "Без часу"}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-[1fr_auto] items-start gap-3">
+        <div className="min-w-0">
+          <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Наступний суперник</div>
+          <h3 className="mt-1 truncate text-[1.55rem] font-extrabold leading-tight text-white">{opponent.name}</h3>
+          <p className="truncate text-[0.95rem] text-white/56">{opponent.club}</p>
+        </div>
+        <div className="rounded-md bg-[#bbf903] px-3 py-2 text-center text-[#111111]">
+          <div className="text-[0.56rem] font-extrabold uppercase tracking-wide opacity-60">Місце</div>
+          <div className="font-heading text-[1.55rem] leading-none">#{opponentRank || "-"}</div>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+        <OpponentStat label="О" value={opponentStanding?.points ?? 0} />
+        <OpponentStat label="Форма" value={getFormValues(opponentStanding?.form ?? []).join(" ") || "-"} />
+        <OpponentStat label="ЗГ" value={opponentStanding?.goalsFor ?? 0} />
+        <OpponentStat label="ПГ" value={opponentStanding?.goalsAgainst ?? 0} />
+      </div>
+
+      {!isSeason2Played(match) && (
+        <div className="mt-3 space-y-2 rounded-md border border-[#bbf903]/25 bg-[#bbf903]/[0.06] p-3">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => saveAction({ match, action: "day-status", dayStatus: "available" })}
+              className="h-10 rounded-md bg-[#bbf903] text-[0.72rem] font-extrabold text-[#111111] disabled:opacity-50"
+            >
+              День ок
+            </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => saveAction({ match, action: "day-status", dayStatus: "reschedule" })}
+              className="h-10 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 text-[0.72rem] font-extrabold text-[#ff5a1f] disabled:opacity-50"
+            >
+              Перенести
+            </button>
+          </div>
+
+          <div className="grid grid-cols-[1fr_auto] gap-2">
+            <input
+              type="time"
+              value={time}
+              onChange={event => setTime(event.target.value)}
+              className="h-10 rounded-md border border-white/12 bg-[#111111] px-3 text-sm font-extrabold text-white outline-none focus:border-[#bbf903]"
+            />
+            <button
+              type="button"
+              disabled={isSaving || !time}
+              onClick={() => saveAction({ match, action: "propose-time", time })}
+              className="h-10 rounded-md bg-[#ff5a1f] px-3 text-[0.72rem] font-extrabold text-white disabled:opacity-50"
+            >
+              Запропонувати
+            </button>
+          </div>
+
+          {(opponentProposedTime || ownProposedTime) && (
+            <div className="text-xs font-bold leading-5 text-white/58">
+              {opponentProposedTime && opponentProposedTime !== schedule?.agreedTime ? `Суперник пропонує ${opponentProposedTime}. ` : ""}
+              {ownProposedTime && ownProposedTime !== schedule?.agreedTime ? `Твоя пропозиція ${ownProposedTime}.` : ""}
+            </div>
+          )}
+
+          {opponentProposedTime && opponentProposedTime !== schedule?.agreedTime && (
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => saveAction({ match, action: "accept-time", time: opponentProposedTime })}
+              className="h-10 w-full rounded-md border border-[#bbf903] bg-[#bbf903]/10 text-[0.72rem] font-extrabold text-[#bbf903] disabled:opacity-50"
+            >
+              Погодити {opponentProposedTime}
+            </button>
+          )}
+
+          {message && <div className="text-xs font-bold leading-5 text-white/62">{message}</div>}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function OpponentStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-md border border-white/10 bg-[#111111] px-2 py-2">
+      <div className="text-[0.55rem] font-extrabold uppercase tracking-wide text-white/35">{label}</div>
+      <div className="mt-1 truncate text-sm font-extrabold text-white">{value}</div>
+    </div>
   );
 }
 

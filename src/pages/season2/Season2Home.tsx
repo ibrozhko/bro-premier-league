@@ -19,6 +19,11 @@ import {
   loadSeason2PredictionAggregates,
   type Season2PredictionAggregateMap,
 } from "@/lib/season2Predictions";
+import {
+  getScheduleBadge,
+  loadSeason2MatchSchedules,
+  type Season2MatchSchedule,
+} from "@/lib/season2Scheduling";
 import Season2Shell from "./Season2Shell";
 
 const season2BasePath = "";
@@ -26,6 +31,7 @@ const season2Path = (path = "") => `${season2BasePath}${path}` || "/";
 
 export default function Season2Home() {
   const [predictionAggregates, setPredictionAggregates] = useState<Season2PredictionAggregateMap>({});
+  const [matchSchedules, setMatchSchedules] = useState<Record<string, Season2MatchSchedule>>({});
   const playedMatches = getSeason2PlayedMatches();
   const topAttack = getSeason2TopScorers()[0];
   const bestDefense = getSeason2BestDefense()[0];
@@ -37,6 +43,9 @@ export default function Season2Home() {
     loadSeason2PredictionAggregates()
       .then(setPredictionAggregates)
       .catch(() => setPredictionAggregates({}));
+    loadSeason2MatchSchedules()
+      .then(setMatchSchedules)
+      .catch(() => setMatchSchedules({}));
   }, []);
 
   return (
@@ -108,7 +117,12 @@ export default function Season2Home() {
               )}
               <div className="divide-y divide-[#111111]/10">
               {nextMatches.length ? nextMatches.map(match => (
-                <Season2MatchRow key={match.id} match={match} predictionAggregates={predictionAggregates} />
+                <Season2MatchRow
+                  key={match.id}
+                  match={match}
+                  predictionAggregates={predictionAggregates}
+                  schedule={matchSchedules[match.id]}
+                />
               )) : (
                   <div className="p-5 text-sm text-[#111111]/60">Немає майбутніх матчів.</div>
                 )}
@@ -133,9 +147,11 @@ export default function Season2Home() {
 export function Season2MatchRow({
   match,
   predictionAggregates,
+  schedule,
 }: {
   match: Season2Match;
   predictionAggregates?: Season2PredictionAggregateMap;
+  schedule?: Season2MatchSchedule;
 }) {
   const played = match.homeScore !== null && match.awayScore !== null;
 
@@ -146,7 +162,7 @@ export function Season2MatchRow({
           <div className="text-[0.65rem] font-bold uppercase tracking-wide text-[#111111]/45">Матч</div>
           <div className="mt-0.5 font-heading text-xl leading-none text-[#ff5a1f] sm:text-2xl">{match.id.split("-").at(-1)}</div>
         </div>
-        <Status played={played} className="sm:hidden" />
+        <Status played={played} schedule={schedule} className="sm:hidden" />
       </div>
       <Team value={match.home.name} meta={match.home.club} align="right" />
       <div className="min-w-12 rounded-md bg-[#ff5a1f]/12 px-3 py-2 text-center font-heading text-lg leading-none text-[#ff5a1f] sm:text-xl">
@@ -154,7 +170,7 @@ export function Season2MatchRow({
       </div>
       <Team value={match.away.name} meta={match.away.club} />
       <div className="hidden text-right sm:block">
-        <Status played={played} />
+        <Status played={played} schedule={schedule} />
       </div>
       <CommunityPrediction match={match} predictionAggregates={predictionAggregates} />
     </article>
@@ -331,10 +347,19 @@ function Team({ value, meta, align = "left" }: { value: string; meta: string; al
   );
 }
 
-function Status({ played, className = "" }: { played: boolean; className?: string }) {
+function Status({ played, schedule, className = "" }: { played: boolean; schedule?: Season2MatchSchedule; className?: string }) {
+  const badge = getScheduleBadge(schedule);
+  const isPostponed = schedule?.status === "postponed";
+
   return (
-    <span className={`inline-flex rounded-md px-2 py-1 text-[0.65rem] font-bold uppercase ${played ? "bg-[#111111] text-white" : "bg-[#bbf903] text-[#111111]"} ${className}`}>
-      {played ? "Зіграно" : "Скоро"}
+    <span className={`inline-flex rounded-md px-2 py-1 text-[0.65rem] font-bold uppercase ${
+      played
+        ? "bg-[#111111] text-white"
+        : isPostponed
+          ? "bg-[#ff5a1f] text-white"
+          : "bg-[#bbf903] text-[#111111]"
+    } ${className}`}>
+      {played ? "Зіграно" : badge ?? "Скоро"}
     </span>
   );
 }

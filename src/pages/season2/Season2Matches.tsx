@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { getSeason2LegLabel, getSeason2NextRound, season2Players, season2Rounds, type Season2Match } from "@/data/season2Data";
+import { loadSeason2MatchSchedules, type Season2MatchSchedule } from "@/lib/season2Scheduling";
 import Season2Shell, { Season2PageHeader } from "./Season2Shell";
 import { RoundBye, Season2MatchRow } from "./Season2Home";
 
@@ -13,6 +14,13 @@ export default function Season2Matches() {
   const [legFilter, setLegFilter] = useState<1 | 2 | "all">("all");
   const [roundFilter, setRoundFilter] = useState<number | "all">(nextRound?.round ?? "all");
   const [statusFilter, setStatusFilter] = useState<"all" | "played" | "upcoming">("all");
+  const [matchSchedules, setMatchSchedules] = useState<Record<string, Season2MatchSchedule>>({});
+
+  useEffect(() => {
+    loadSeason2MatchSchedules()
+      .then(setMatchSchedules)
+      .catch(() => setMatchSchedules({}));
+  }, []);
 
   const filteredRounds = useMemo(() => {
     return season2Rounds
@@ -92,7 +100,9 @@ export default function Season2Matches() {
                   <span className="text-sm font-semibold text-[#f7f7f2]/70">{round.dayLabel} · {round.matches.length} матчів</span>
                 </div>
                 <div className="divide-y divide-[#111111]/10">
-                  {round.matches.map(match => <Season2MatchRow key={match.id} match={match as Season2Match} />)}
+                  {round.matches.map(match => (
+                    <Season2MatchRow key={match.id} match={match as Season2Match} schedule={matchSchedules[match.id]} />
+                  ))}
                 </div>
               </section>
             ))}

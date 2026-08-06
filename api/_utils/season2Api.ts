@@ -51,6 +51,25 @@ export type Season2DbPushSubscription = {
   updated_at: string;
 };
 
+export type Season2MatchScheduleStatus = "pending" | "day_confirmed" | "negotiating" | "scheduled" | "postponed";
+export type Season2MatchDayStatus = "pending" | "available" | "reschedule";
+
+export type Season2DbMatchScheduling = {
+  match_id: string;
+  round: number;
+  home_player_id: string;
+  away_player_id: string;
+  home_day_status: Season2MatchDayStatus;
+  away_day_status: Season2MatchDayStatus;
+  home_proposed_time: string | null;
+  away_proposed_time: string | null;
+  agreed_time: string | null;
+  status: Season2MatchScheduleStatus;
+  updated_by_player_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type SessionPayload = {
   userId: string;
   expiresAt: number;
@@ -92,6 +111,17 @@ export async function supabasePost<T>(path: string, body: unknown, prefer = "ret
     body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error(`Supabase POST ${path} failed: ${response.status} ${await safeErrorText(response)}`);
+  if (prefer.includes("return=minimal")) return undefined as T;
+  return response.json() as Promise<T>;
+}
+
+export async function supabasePatch<T>(path: string, body: unknown, prefer = "return=representation"): Promise<T> {
+  const response = await fetch(`${supabaseRestUrl()}${path}`, {
+    method: "PATCH",
+    headers: { ...supabaseHeaders(), "Content-Type": "application/json", Prefer: prefer },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`Supabase PATCH ${path} failed: ${response.status} ${await safeErrorText(response)}`);
   if (prefer.includes("return=minimal")) return undefined as T;
   return response.json() as Promise<T>;
 }
