@@ -188,12 +188,15 @@ async function handleMatchScheduling(request: ApiRequest, response: ApiResponse)
 
   const saved = savedRows[0] ?? next;
   let push: Awaited<ReturnType<typeof sendPushNotifications>> | null = null;
+  let opponentPush: Awaited<ReturnType<typeof sendPushNotifications>> | null = null;
 
   if (saved.status === "scheduled" && saved.agreed_time && saved.agreed_time !== previousAgreedTime) {
     push = await notifyScheduledMatch(saved, payload);
+  } else {
+    opponentPush = await notifyMatchOpponent(saved, user, payload);
   }
 
-  response.status(200).json({ schedule: saved, push });
+  response.status(200).json({ schedule: saved, push, opponentPush });
 }
 
 function makeInitialSchedule(
@@ -301,6 +304,51 @@ async function notifyScheduledMatch(schedule: Season2DbMatchScheduling, payload:
     body: `${matchLabel}: погоджено ${dayLabel} о ${schedule.agreed_time}.`,
     url: "/",
   });
+}
+
+async function notifyMatchOpponent(
+  schedule: Season2DbMatchScheduling,
+  user: Season2DbUser,
+  payload: MatchSchedulingPayload | null,
+) {
+  const opponentPlayerId = user.player_id === schedule.home_player_id
+    ? schedule.away_player_id
+    : schedule.home_player_id;
+  const rows = await supabaseGet<Season2DbPushSubscription[]>(
+    `/season2_push_subscriptions?select=*&player_id=eq.${encodeURIComponent(opponentPlayerId)}`,
+  );
+
+  if (!rows.length) return { sent: 0, removed: 0 };
+
+  const body = getOpponentNotificationBody(user, payload);
+  if (!body) return { sent: 0, removed: 0 };
+
+  configureWebPush();
+
+  return sendPushNotifications(rows, {
+    title: "BPL Season 2",
+    body,
+    url: "/cabinet",
+  });
+}
+
+function getOpponentNotificationBody(user: Season2DbUser, payload: MatchSchedulingPayload | null) {
+  const actor = user.display_name?.trim() || user.username;
+  const dayLabel = payload?.dayLabel?.trim() || "у турі";
+
+  if (payload?.action === "day-status" && payload.dayStatus === "available") {
+    return `${actor} підтвердив день матчу. Можна домовлятись про час.`;
+  }
+
+  if (payload?.action === "day-status" && payload.dayStatus === "reschedule") {
+    return `${actor} просить перенести матч ${dayLabel}.`;
+  }
+
+  if (payload?.action === "propose-time" && payload.time) {
+    return `${actor} пропонує зіграти ${dayLabel} о ${payload.time}.`;
+  }
+
+  return "";
 }
 
 async function handleAuth(request: ApiRequest, response: ApiResponse) {
