@@ -61,6 +61,7 @@ export const season2Players: Season2Player[] = [
 
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
 export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {
+  "S2-01-06": { homeScore: 2, awayScore: 2 },
 };
 
 function hashSeed(seed: string) {
@@ -238,7 +239,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "03.08.2026";
+export const season2LastUpdated = "09.08.2026";
 
 export const season2Summary = {
   players: season2Players.length,
