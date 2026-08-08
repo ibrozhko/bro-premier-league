@@ -50,6 +50,16 @@ type MatchAggregate = {
   awayPercent: number;
 };
 
+type PredictionLeaderboardRow = {
+  playerId: string;
+  displayName: string;
+  username: string;
+  points: number;
+  predictions: number;
+  exact: number;
+  correctResult: number;
+};
+
 type PushSubscriptionPayload = {
   subscription?: {
     endpoint?: string;
@@ -97,6 +107,11 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
     if (resource === "prediction-stats") {
       await handlePredictionStats(request, response);
+      return;
+    }
+
+    if (resource === "prediction-leaderboard") {
+      await handlePredictionLeaderboard(request, response);
       return;
     }
 
@@ -175,6 +190,16 @@ async function handleMatchScheduling(request: ApiRequest, response: ApiResponse)
   const existing = existingRows[0] ?? makeInitialSchedule(matchId, round, homePlayerId, awayPlayerId);
   const previousAgreedTime = existing.agreed_time;
   const next = applySchedulingAction(existing, side, payload);
+  const slotConflict = next.status === "scheduled" && next.agreed_time
+    ? await getSchedulingTimeConflict(next)
+    : null;
+
+  if (slotConflict) {
+    response.status(409).json({
+      error: `${next.agreed_time} вже зайнято іншим матчем цього ігрового дня. Обери інший час.`,
+    });
+    return;
+  }
 
   const savedRows = existingRows[0]
     ? await supabasePatch<Season2DbMatchScheduling[]>(
@@ -263,6 +288,19 @@ function applySchedulingAction(
 
   next.status = deriveScheduleStatus(next);
   return next;
+}
+
+async function getSchedulingTimeConflict(schedule: Season2DbMatchScheduling) {
+  if (!schedule.agreed_time) return null;
+
+  const rows = await supabaseGet<Array<Pick<Season2DbMatchScheduling, "match_id" | "agreed_time" | "status">>>(
+    `/season2_match_scheduling?select=match_id,agreed_time,status&round=eq.${encodeURIComponent(String(schedule.round))}&status=eq.scheduled`,
+  );
+
+  return rows.find(row =>
+    row.match_id !== schedule.match_id &&
+    row.agreed_time === schedule.agreed_time,
+  ) ?? null;
 }
 
 function normalizeSchedulingTime(value: string | undefined) {
@@ -432,13 +470,15 @@ async function handlePredictions(request: ApiRequest, response: ApiResponse) {
   const existing = await supabaseGet<Array<Pick<Season2DbPrediction, "match_id">>>(
     `/season2_predictions?select=match_id&user_id=eq.${encodeURIComponent(user.id)}&match_id=in.(${matchIds.map(encodeURIComponent).join(",")})`,
   );
+  const existingMatchIds = new Set(existing.map(prediction => prediction.match_id));
+  const newPredictions = payload.predictions.filter(prediction => !existingMatchIds.has(prediction.matchId));
 
-  if (existing.length > 0) {
-    response.status(409).json({ error: "Прогнози цього туру вже зафіксовано. Змінити їх не можна." });
+  if (!newPredictions.length) {
+    response.status(409).json({ error: "Усі прогнози цього туру вже зафіксовано. Змінити їх не можна." });
     return;
   }
 
-  const rows = payload.predictions.map(prediction => {
+  const rows = newPredictions.map(prediction => {
     if (prediction.round !== payload.round) throw new Error("У прогнозах змішані різні тури.");
     if (prediction.homePlayerId === user.player_id || prediction.awayPlayerId === user.player_id) {
       throw new Error("На свій матч прогноз ставити не можна.");
@@ -500,6 +540,43 @@ async function handlePredictionStats(request: ApiRequest, response: ApiResponse)
   }));
 
   response.status(200).json({ aggregates });
+}
+
+async function handlePredictionLeaderboard(request: ApiRequest, response: ApiResponse) {
+  if (request.method !== "GET") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const [users, predictions] = await Promise.all([
+    supabaseGet<Array<Pick<Season2DbUser, "id" | "player_id" | "display_name" | "username">>>(
+      "/season2_users?select=id,player_id,display_name,username",
+    ),
+    supabaseGet<Array<Pick<Season2DbPrediction, "user_id" | "points">>>(
+      "/season2_predictions?select=user_id,points",
+    ),
+  ]);
+
+  const rows = users.map(user => {
+    const userPredictions = predictions.filter(prediction => prediction.user_id === user.id);
+
+    return {
+      playerId: user.player_id,
+      displayName: user.display_name ?? user.username,
+      username: user.username,
+      points: userPredictions.reduce((sum, prediction) => sum + (prediction.points ?? 0), 0),
+      predictions: userPredictions.length,
+      exact: userPredictions.filter(prediction => prediction.points === 10).length,
+      correctResult: userPredictions.filter(prediction => prediction.points === 5).length,
+    } satisfies PredictionLeaderboardRow;
+  }).sort((first, second) =>
+    second.points - first.points ||
+    second.exact - first.exact ||
+    second.correctResult - first.correctResult ||
+    first.displayName.localeCompare(second.displayName, "uk"),
+  );
+
+  response.status(200).json({ rows });
 }
 
 async function handlePushSubscription(request: ApiRequest, response: ApiResponse) {

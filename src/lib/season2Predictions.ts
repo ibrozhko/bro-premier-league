@@ -3,6 +3,7 @@ import { season2Players, type Season2Match } from "@/data/season2Data";
 export type Season2SavedPrediction = {
   homeScore: string;
   awayScore: string;
+  points?: number;
   locked?: boolean;
   updatedAt?: string;
 };
@@ -21,6 +22,16 @@ export type Season2PredictionAggregate = {
 };
 
 export type Season2PredictionAggregateMap = Record<string, Season2PredictionAggregate>;
+
+export type Season2PredictionLeaderboardRow = {
+  playerId: string;
+  displayName: string;
+  username: string;
+  points: number;
+  predictions: number;
+  exact: number;
+  correctResult: number;
+};
 
 export type Season2User = {
   id: string;
@@ -107,6 +118,11 @@ export async function saveSeason2RoundPredictions(input: {
 export async function loadSeason2PredictionAggregates() {
   const payload = await apiFetch<{ aggregates: Season2PredictionAggregateMap }>("/api/season2?resource=prediction-stats");
   return payload.aggregates;
+}
+
+export async function loadSeason2PredictionLeaderboard() {
+  const payload = await apiFetch<{ rows: Season2PredictionLeaderboardRow[] }>("/api/season2?resource=prediction-leaderboard");
+  return payload.rows;
 }
 
 export function getSeason2PredictionAggregate(match: Season2Match, aggregates?: Season2PredictionAggregateMap): Season2PredictionAggregate | null {

@@ -20,6 +20,7 @@ create table if not exists season2_predictions (
   away_player_id text not null,
   predicted_home_score int not null,
   predicted_away_score int not null,
+  points int not null default 0,
   locked boolean default true,
   created_at timestamptz default now(),
   unique(user_id, match_id)
@@ -62,6 +63,7 @@ alter table season2_predictions add column if not exists player_id text;
 alter table season2_predictions add column if not exists round int;
 alter table season2_predictions add column if not exists home_player_id text;
 alter table season2_predictions add column if not exists away_player_id text;
+alter table season2_predictions add column if not exists points int not null default 0;
 alter table season2_predictions add column if not exists locked boolean default true;
 
 alter table season2_push_subscriptions add column if not exists player_id text;

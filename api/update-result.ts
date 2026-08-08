@@ -1,4 +1,5 @@
 import { isAdminRequest, type AdminRequest } from "./_utils/adminAuth.js";
+import { supabaseGet, supabasePatch, type Season2DbPrediction } from "./_utils/season2Api.js";
 
 type ApiRequest = {
   method?: string;
@@ -136,7 +137,9 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         `Update Season 2 ${payload.matchId}: ${scoreText(payload.homeScore)}-${scoreText(payload.awayScore)}`,
       );
 
-      response.status(200).json({ message: "Результат Season 2 оновлено" });
+      await recalculateSeason2PredictionPoints(payload.matchId, payload.homeScore, payload.awayScore);
+
+      response.status(200).json({ message: "Результат Season 2 оновлено, прогнози перераховано" });
       return;
     }
 
@@ -516,6 +519,48 @@ function updateSeason2ResultSource(source: string, payload: UpdatePayload) {
   }
 
   return nextSource.replace(updatedPattern, `$1${formatToday()}$2`);
+}
+
+async function recalculateSeason2PredictionPoints(matchId: string, homeScore: number | null | undefined, awayScore: number | null | undefined) {
+  const rows = await supabaseGet<Array<Pick<Season2DbPrediction, "id" | "predicted_home_score" | "predicted_away_score">>>(
+    `/season2_predictions?select=id,predicted_home_score,predicted_away_score&match_id=eq.${encodeURIComponent(matchId)}`,
+  );
+
+  await Promise.all(rows.map(row =>
+    supabasePatch(
+      `/season2_predictions?id=eq.${row.id}`,
+      {
+        points: calculateSeason2PredictionPoints(
+          row.predicted_home_score,
+          row.predicted_away_score,
+          homeScore ?? null,
+          awayScore ?? null,
+        ),
+      },
+      "return=minimal",
+    ),
+  ));
+}
+
+function calculateSeason2PredictionPoints(
+  predictedHomeScore: number,
+  predictedAwayScore: number,
+  homeScore: number | null,
+  awayScore: number | null,
+) {
+  if (homeScore === null || awayScore === null) return 0;
+  if (predictedHomeScore === homeScore && predictedAwayScore === awayScore) return 10;
+
+  const predictedResult = getResultSide(predictedHomeScore, predictedAwayScore);
+  const actualResult = getResultSide(homeScore, awayScore);
+
+  return predictedResult === actualResult ? 5 : 0;
+}
+
+function getResultSide(homeScore: number, awayScore: number) {
+  if (homeScore > awayScore) return "home";
+  if (homeScore < awayScore) return "away";
+  return "draw";
 }
 
 function getSeason2ResultOverrides(source: string) {

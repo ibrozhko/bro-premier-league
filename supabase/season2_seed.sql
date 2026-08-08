@@ -17,7 +17,8 @@ values
   ('zheka', 'katrik_89', 'Жека', 'scrypt$JMgwhQ60-a4wmF9tP-47xw$uDcjgBpfPjmsAluYIiYI4NbQSEBaXVru6MHSQCNj53OCEsEWR6RPZhteY4IqLkA0bQ1pcFeAEDNNAUXFuCib_g', false),
   ('dmytro', 'LusuyKrab', 'Дмитро', 'scrypt$FXTZfHlbpIqtNab9ANfdVw$SjoTNqL4diMrfBJkcbp_uHwAHKwO-8muYBo92DbFGc-s8fAqAcKpyHWzLOJ5IpfSwFKZshpeechONkYO6TNCwA', false),
   ('dimas', 'Viking240222', 'Дімас', 'scrypt$xf7nbx7abwr72zw3Jd4AHg$xAmsx2F74PN3lvoIKbGieJwy_yPJSWBMRGj1vgIkY78NTEmBFtOu6XQppfPoMdZ219nas_wtmXlDQV4PTtAWBg', false),
-  ('artem', 'fen1kssss', 'Артем', 'scrypt$YNtkLq33ByB0cUVncW-3Fw$pDFJB7azPvAS1nhlFomwcOufpYIe9iWsduH_JlzsKOwOVJVijcbr5VGuYY4a0nQ_6Kp4PICdpW_LDXFUkTEwVg', false)
+  ('artem', 'fen1kssss', 'Артем', 'scrypt$YNtkLq33ByB0cUVncW-3Fw$pDFJB7azPvAS1nhlFomwcOufpYIe9iWsduH_JlzsKOwOVJVijcbr5VGuYY4a0nQ_6Kp4PICdpW_LDXFUkTEwVg', false),
+  ('vitalii', 'turbovitalik', 'Віталій', 'scrypt$tYk0ozNp05BnIRrpUVmTTA$SAmnX13ujOxebAOogPrrycVp0KwqOHSdMRTpqDDqmwqcSS0c-5Smy_8qh-XK8edWqr3eA_lb_tPAd9CmaSNVVQ', false)
 on conflict (player_id) do update set
   username = excluded.username,
   display_name = excluded.display_name,

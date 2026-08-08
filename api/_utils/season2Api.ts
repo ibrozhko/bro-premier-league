@@ -35,6 +35,7 @@ export type Season2DbPrediction = {
   away_player_id: string;
   predicted_home_score: number;
   predicted_away_score: number;
+  points?: number | null;
   locked: boolean;
   created_at: string;
 };
@@ -208,6 +209,7 @@ export function toClientUser(user: Season2DbUser, predictions: Season2DbPredicti
         round: prediction.round,
         homeScore: String(prediction.predicted_home_score),
         awayScore: String(prediction.predicted_away_score),
+        points: prediction.points ?? 0,
         locked: prediction.locked,
         updatedAt: prediction.created_at,
       },

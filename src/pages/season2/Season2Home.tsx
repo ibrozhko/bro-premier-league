@@ -190,7 +190,6 @@ function CommunityPrediction({
 
   return (
     <div className="col-span-3 rounded-md border border-[#111111]/10 bg-[#111111]/[0.035] px-3 py-2 text-center text-xs font-bold text-[#111111]/58 sm:col-span-5 sm:text-sm">
-      <span className="mr-2 text-[0.66rem] uppercase tracking-wide text-[#111111]/42 sm:text-xs">Лінія спільноти</span>
       <span className="text-[#ff5a1f]">{match.home.name} {odds.home}</span>
       <span className="mx-2 text-[#111111]/32">·</span>
       <span>X {odds.draw}</span>
@@ -208,17 +207,35 @@ function calculateCommunityOdds(aggregate: Season2PredictionAggregateMap[string]
   const baseDraw = 0.72;
   const baseAway = 1;
   const smoothedTotal = homeVotes + drawVotes + awayVotes + baseHome + baseDraw + baseAway;
+  const homeOdds = getOdds((homeVotes + baseHome) / smoothedTotal);
+  const awayOdds = getOdds((awayVotes + baseAway) / smoothedTotal);
+  const rawDrawOdds = getOdds((drawVotes + baseDraw) / smoothedTotal);
+  const favoriteOdds = Math.min(homeOdds, awayOdds);
+  const underdogOdds = Math.max(homeOdds, awayOdds);
+  const drawOdds = getDrawOdds(rawDrawOdds, favoriteOdds, underdogOdds);
 
   return {
-    home: formatOdds((homeVotes + baseHome) / smoothedTotal),
-    draw: formatOdds((drawVotes + baseDraw) / smoothedTotal),
-    away: formatOdds((awayVotes + baseAway) / smoothedTotal),
+    home: formatOdds(homeOdds),
+    draw: formatOdds(drawOdds),
+    away: formatOdds(awayOdds),
   };
 }
 
-function formatOdds(probability: number) {
+function getOdds(probability: number) {
   const bookmakerMargin = 0.92;
-  const odds = Math.min(9.99, Math.max(1.15, bookmakerMargin / probability));
+  return Math.min(9.99, Math.max(1.15, bookmakerMargin / probability));
+}
+
+function getDrawOdds(rawDrawOdds: number, favoriteOdds: number, underdogOdds: number) {
+  const teamGap = underdogOdds - favoriteOdds;
+  if (teamGap > 0.35) {
+    return Math.min(Math.max(rawDrawOdds, favoriteOdds + 0.15), underdogOdds - 0.15);
+  }
+
+  return Math.min(9.99, Math.max(rawDrawOdds, underdogOdds + 0.15));
+}
+
+function formatOdds(odds: number) {
   return odds.toFixed(2);
 }
 

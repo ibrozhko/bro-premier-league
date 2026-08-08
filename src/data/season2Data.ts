@@ -57,10 +57,15 @@ export const season2Players: Season2Player[] = [
   { id: "dmytro", name: "Дмитро", nick: "LusuyKrab", platform: "PS5", club: "ПСЖ 🇫🇷" },
   { id: "dimas", name: "Дімас", nick: "Viking240222", platform: "PC", club: "Порто 🇵🇹" },
   { id: "artem", name: "Артем", nick: "fen1kssss", platform: "PC", club: "Лаціо 🇮🇹" },
+  { id: "vitalii", name: "Віталій", nick: "turbovitalik", platform: "PS5", club: "Обирає" },
 ];
+
+const season2CalendarPlayers = season2Players.filter(player => player.id !== "vitalii");
+const season2FloatingPlayer = season2Players.find(player => player.id === "vitalii") ?? null;
 
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
 export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {
+  "S2-01-06": { homeScore: 2, awayScore: 2 },
 };
 
 function hashSeed(seed: string) {
@@ -154,6 +159,20 @@ function makeRoundMatches(players: SchedulePlayer[], roundIndex: number) {
 
 type ScheduleRound = ReturnType<typeof makeRoundMatches>;
 
+function addFloatingPlayerMatch(pairings: Array<[Season2Player, Season2Player]>, bye: Season2Player | null, leg: 1 | 2) {
+  if (!bye || !season2FloatingPlayer) {
+    return { pairings, bye };
+  }
+
+  return {
+    pairings: [
+      ...pairings,
+      leg === 2 ? [season2FloatingPlayer, bye] as [Season2Player, Season2Player] : [bye, season2FloatingPlayer] as [Season2Player, Season2Player],
+    ],
+    bye: null,
+  };
+}
+
 function shuffleRoundPairings(
   rounds: ScheduleRound[],
   seed: string,
@@ -177,7 +196,7 @@ function shuffleRoundPairings(
 }
 
 export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
-  const shuffledPlayers: SchedulePlayer[] = seededShuffle(season2Players, seed);
+  const shuffledPlayers: SchedulePlayer[] = seededShuffle(season2CalendarPlayers, seed);
   if (shuffledPlayers.length % 2 === 1) {
     shuffledPlayers.push(null);
   }
@@ -199,14 +218,15 @@ export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
     const round = roundIndex + 1;
     const date = getRoundDate(round);
     const leg = round <= firstLegRounds.length ? 1 : 2;
+    const roundWithFloatingPlayer = addFloatingPlayerMatch(pairings, bye, leg);
 
     return {
       round,
       date: toIsoDate(date),
       dayLabel: formatDate(date),
       leg,
-      bye,
-      matches: pairings.map(([home, away], matchIndex) => ({
+      bye: roundWithFloatingPlayer.bye,
+      matches: roundWithFloatingPlayer.pairings.map(([home, away], matchIndex) => ({
         id: `S2-${String(round).padStart(2, "0")}-${String(matchIndex + 1).padStart(2, "0")}`,
         round,
         date: toIsoDate(date),
@@ -238,7 +258,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "03.08.2026";
+export const season2LastUpdated = "09.08.2026";
 
 export const season2Summary = {
   players: season2Players.length,
@@ -264,6 +284,7 @@ const season2InitialTableOrder = [
   "dmytro",
   "dimas",
   "artem",
+  "vitalii",
 ];
 
 function getInitialTableRank(playerId: string) {

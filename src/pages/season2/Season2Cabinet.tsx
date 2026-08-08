@@ -13,8 +13,10 @@ import {
 import {
   getCurrentSeason2User,
   loginSeason2User,
+  loadSeason2PredictionLeaderboard,
   logoutSeason2User,
   saveSeason2RoundPredictions,
+  type Season2PredictionLeaderboardRow,
   type Season2SavedPrediction,
   type Season2User,
 } from "@/lib/season2Predictions";
@@ -196,6 +198,24 @@ function HomeTab({
         </div>
       </section>
 
+      <section className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
+        <div className="grid grid-cols-4">
+          <HeroMetric label="І" value={data.standing.played} />
+          <HeroMetric label="РГ" value={data.standing.goalDifference > 0 ? `+${data.standing.goalDifference}` : data.standing.goalDifference} />
+          <HeroMetric label="ЗГ" value={data.standing.goalsFor} />
+          <HeroMetric label="ПГ" value={data.standing.goalsAgainst} />
+        </div>
+      </section>
+
+      <section className="rounded-md border border-white/10 bg-[#1e1e1e] p-4">
+        <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Форма</div>
+        <div className="mt-4 flex gap-2">
+          {getFormValues(data.standing.form).map((value, index) => (
+            <span key={`${value}-${index}`} className={formClass(value)}>{value}</span>
+          ))}
+        </div>
+      </section>
+
       <MobileSection
         title={data.weekendMatches.length ? "Твій вікенд" : primaryMatch && !isSeason2Played(primaryMatch) ? "Твій матч" : primaryMatch ? "Останній матч" : "Очікуємо календар"}
         icon={CalendarDays}
@@ -217,24 +237,6 @@ function HomeTab({
           <EmptyState text="Матчі ще не знайдені." />
         )}
       </MobileSection>
-
-      <section className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
-        <div className="grid grid-cols-4">
-          <HeroMetric label="І" value={data.standing.played} />
-          <HeroMetric label="РГ" value={data.standing.goalDifference > 0 ? `+${data.standing.goalDifference}` : data.standing.goalDifference} />
-          <HeroMetric label="ЗГ" value={data.standing.goalsFor} />
-          <HeroMetric label="ПГ" value={data.standing.goalsAgainst} />
-        </div>
-      </section>
-
-      <section className="rounded-md border border-white/10 bg-[#1e1e1e] p-4">
-        <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Форма</div>
-        <div className="mt-4 flex gap-2">
-          {getFormValues(data.standing.form).map((value, index) => (
-            <span key={`${value}-${index}`} className={formClass(value)}>{value}</span>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
@@ -344,6 +346,7 @@ function PredictionsTab({
   const [statusMessage, setStatusMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [predictions, setPredictions] = useState<Record<string, Season2SavedPrediction>>(() => user.predictions);
+  const [leaderboard, setLeaderboard] = useState<Season2PredictionLeaderboardRow[]>([]);
 
   useEffect(() => {
     setPredictions(user.predictions);
@@ -351,8 +354,14 @@ function PredictionsTab({
     setStatusMessage("");
   }, [user.predictions]);
 
+  useEffect(() => {
+    loadSeason2PredictionLeaderboard()
+      .then(setLeaderboard)
+      .catch(() => setLeaderboard([]));
+  }, [user.predictions]);
+
   const updatePrediction = (matchId: string, side: keyof Season2SavedPrediction, value: string) => {
-    if (isLocked) return;
+    if (predictions[matchId]?.locked) return;
 
     const normalized = value.replace(/[^\d]/g, "").slice(0, 2);
     setPredictions(current => ({
@@ -374,14 +383,22 @@ function PredictionsTab({
   }
 
   const availableMatches = round.matches.filter(match => !hasPlayer(match, player.id));
+  const pendingMatches = availableMatches.filter(match => !predictions[match.id]?.locked);
   const filledCount = availableMatches.filter(match =>
     predictions[match.id]?.homeScore !== undefined &&
     predictions[match.id]?.homeScore !== "" &&
     predictions[match.id]?.awayScore !== undefined &&
     predictions[match.id]?.awayScore !== "",
   ).length;
-  const isComplete = filledCount === availableMatches.length;
-  const isLocked = availableMatches.some(match => predictions[match.id]?.locked);
+  const pendingFilledCount = pendingMatches.filter(match =>
+    predictions[match.id]?.homeScore !== undefined &&
+    predictions[match.id]?.homeScore !== "" &&
+    predictions[match.id]?.awayScore !== undefined &&
+    predictions[match.id]?.awayScore !== "",
+  ).length;
+  const isComplete = pendingMatches.length > 0 && pendingFilledCount === pendingMatches.length;
+  const isLocked = pendingMatches.length === 0 && availableMatches.length > 0;
+  const totalPredictionPoints = Object.values(user.predictions).reduce((sum, prediction) => sum + (prediction.points ?? 0), 0);
 
   const savePredictions = async () => {
     if (isLocked || isSaving) return;
@@ -396,7 +413,7 @@ function PredictionsTab({
     try {
       const updatedUser = await saveSeason2RoundPredictions({
         round: round.round,
-        predictions: availableMatches.map(match => ({
+        predictions: pendingMatches.map(match => ({
           matchId: match.id,
           round: match.round,
           homePlayerId: match.home.id,
@@ -409,6 +426,9 @@ function PredictionsTab({
       if (updatedUser) {
         onUserUpdate(updatedUser);
         setPredictions(updatedUser.predictions);
+        loadSeason2PredictionLeaderboard()
+          .then(setLeaderboard)
+          .catch(() => setLeaderboard([]));
       }
       setSavedAt(new Date().toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" }));
     } catch (error) {
@@ -430,6 +450,13 @@ function PredictionsTab({
           <span className="text-xs font-bold uppercase tracking-wide text-white/42">Заповнено</span>
           <span className="font-heading text-xl leading-none text-[#ff5a1f]">{filledCount}/{availableMatches.length}</span>
         </div>
+        <div className="mt-2 flex items-center justify-between rounded-md border border-[#ff5a1f]/25 bg-[#ff5a1f]/10 px-3 py-2">
+          <span className="text-xs font-bold uppercase tracking-wide text-white/42">Очки прогнозів</span>
+          <span className="font-heading text-xl leading-none text-[#bbf903]">{totalPredictionPoints}</span>
+        </div>
+        <p className="mt-3 text-xs font-bold leading-5 text-white/48">
+          Точний рахунок — 10, правильний результат — 5, мимо — 0.
+        </p>
       </section>
 
       <MobileSection title="Матчі туру" icon={CalendarDays}>
@@ -440,7 +467,7 @@ function PredictionsTab({
               match={match}
               value={predictions[match.id] ?? { homeScore: "", awayScore: "" }}
               onChange={(side, value) => updatePrediction(match.id, side, value)}
-              locked={isLocked}
+              locked={Boolean(predictions[match.id]?.locked)}
             />
           )) : <EmptyState text="У цьому турі немає матчів для твого прогнозу." />}
         </div>
@@ -459,7 +486,51 @@ function PredictionsTab({
         {savedAt && <div className="mt-3 text-center text-xs font-bold text-[#bbf903]">Збережено о {savedAt}. Змінити вже не можна.</div>}
         {statusMessage && <div className="mt-3 rounded-md border border-[#ff5a1f]/35 bg-[#ff5a1f]/10 p-3 text-xs font-bold text-[#ff5a1f]">{statusMessage}</div>}
       </MobileSection>
+
+      <PredictionLeaderboard rows={leaderboard} currentPlayerId={player.id} />
     </div>
+  );
+}
+
+function PredictionLeaderboard({ rows, currentPlayerId }: { rows: Season2PredictionLeaderboardRow[]; currentPlayerId: string }) {
+  return (
+    <MobileSection title="Таблиця прогнозів" icon={Trophy}>
+      <div className="mb-3 grid grid-cols-[34px_minmax(0,1fr)_52px_42px_42px] gap-2 px-2 text-[0.62rem] font-extrabold uppercase tracking-wide text-white/36">
+        <span>#</span>
+        <span>Гравець</span>
+        <span className="text-right">Очки</span>
+        <span className="text-right">Точні</span>
+        <span className="text-right">Рез.</span>
+      </div>
+      <div className="space-y-2">
+        {rows.length ? rows.map((row, index) => {
+          const player = season2Players.find(item => item.id === row.playerId);
+          const isCurrent = row.playerId === currentPlayerId;
+
+          return (
+            <div
+              key={row.playerId}
+              className={`grid grid-cols-[34px_minmax(0,1fr)_52px_42px_42px] items-center gap-2 rounded-md border px-2 py-3 ${
+                isCurrent
+                  ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
+                  : "border-white/10 bg-white/[0.045] text-white"
+              }`}
+            >
+              <div className="font-heading text-lg leading-none">#{index + 1}</div>
+              <div className="min-w-0">
+                <div className="truncate text-[0.92rem] font-extrabold leading-tight">{player?.name ?? row.displayName}</div>
+                <div className={isCurrent ? "truncate text-[0.66rem] font-bold text-[#111111]/55" : "truncate text-[0.66rem] font-bold text-white/38"}>
+                  {row.predictions} прогнозів
+                </div>
+              </div>
+              <div className="text-right font-heading text-lg leading-none">{row.points}</div>
+              <div className={`text-right text-sm font-extrabold ${isCurrent ? "text-[#111111]" : "text-[#bbf903]"}`}>{row.exact}</div>
+              <div className={`text-right text-sm font-extrabold ${isCurrent ? "text-[#111111]" : "text-[#ff5a1f]"}`}>{row.correctResult}</div>
+            </div>
+          );
+        }) : <EmptyState text="Таблиця зʼявиться після перших прогнозів." />}
+      </div>
+    </MobileSection>
   );
 }
 
@@ -664,7 +735,14 @@ function PredictionCard({
         <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
           Матч {match.id.split("-").at(-1)}
         </div>
-        <div className="text-xs text-white/42">{match.dayLabel}</div>
+        <div className="flex items-center gap-2">
+          {locked && (
+            <span className="rounded-md border border-[#bbf903]/25 bg-[#bbf903]/10 px-2 py-1 text-[0.66rem] font-extrabold text-[#bbf903]">
+              {value.points ?? 0} оч.
+            </span>
+          )}
+          <div className="text-xs text-white/42">{match.dayLabel}</div>
+        </div>
       </div>
       <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <PredictionTeam player={match.home} />
@@ -788,6 +866,7 @@ function WeekendOpponentCard({
           <div className="text-[0.64rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Наступний суперник</div>
           <h3 className="mt-1 truncate text-[1.55rem] font-extrabold leading-tight text-white">{opponent.name}</h3>
           <p className="truncate text-[0.95rem] text-white/56">{opponent.club}</p>
+          <p className="mt-1 truncate text-[0.72rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">FC 26 · {opponent.nick}</p>
         </div>
         <div className="rounded-md bg-[#bbf903] px-3 py-2 text-center text-[#111111]">
           <div className="text-[0.56rem] font-extrabold uppercase tracking-wide opacity-60">Місце</div>
