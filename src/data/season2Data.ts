@@ -57,7 +57,7 @@ export const season2Players: Season2Player[] = [
   { id: "dmytro", name: "Дмитро", nick: "LusuyKrab", platform: "PS5", club: "ПСЖ 🇫🇷" },
   { id: "dimas", name: "Дімас", nick: "Viking240222", platform: "PC", club: "Порто 🇵🇹" },
   { id: "artem", name: "Артем", nick: "fen1kssss", platform: "PC", club: "Лаціо 🇮🇹" },
-  { id: "vitalii", name: "Віталій", nick: "turbovitalik", platform: "PS5", club: "Обирає" },
+  { id: "vitalii", name: "Віталій", nick: "turbovitalik", platform: "PS5", club: "Атлетіко Більбао 🇪🇸" },
 ];
 
 const season2CalendarPlayers = season2Players.filter(player => player.id !== "vitalii");
@@ -65,7 +65,11 @@ const season2FloatingPlayer = season2Players.find(player => player.id === "vital
 
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
 export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {
+  "S2-01-04": { homeScore: 4, awayScore: 5 },
+  "S2-01-05": { homeScore: 5, awayScore: 0 },
   "S2-01-06": { homeScore: 2, awayScore: 2 },
+  "S2-02-05": { homeScore: 3, awayScore: 5 },
+  "S2-02-07": { homeScore: 5, awayScore: 4 },
 };
 
 function hashSeed(seed: string) {
