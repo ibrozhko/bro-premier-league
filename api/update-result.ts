@@ -622,6 +622,9 @@ function assertCurrentSeason2Source(source: string) {
     "season2ResultOverrides",
     "BPL-SEASON-2-FINAL-DRAW",
     "Лаціо",
+    "turbovitalik",
+    "season2CalendarPlayers",
+    "addFloatingPlayerMatch",
     "createSeason2Schedule",
   ];
   const missingMarker = requiredMarkers.find(marker => !source.includes(marker));

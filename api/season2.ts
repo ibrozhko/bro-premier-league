@@ -479,7 +479,6 @@ async function handlePredictions(request: ApiRequest, response: ApiResponse) {
   }
 
   const rows = newPredictions.map(prediction => {
-    if (prediction.round !== payload.round) throw new Error("У прогнозах змішані різні тури.");
     if (prediction.homePlayerId === user.player_id || prediction.awayPlayerId === user.player_id) {
       throw new Error("На свій матч прогноз ставити не можна.");
     }

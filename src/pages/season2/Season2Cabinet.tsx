@@ -8,6 +8,7 @@ import {
   season2Rounds,
   type Season2Match,
   type Season2Player,
+  type Season2Round,
   type Season2Standing,
 } from "@/data/season2Data";
 import {
@@ -341,7 +342,7 @@ function PredictionsTab({
   user: Season2User;
   onUserUpdate: (user: Season2User) => void;
 }) {
-  const round = getSeason2PredictionRound();
+  const predictionRounds = getSeason2PredictionWeekend();
   const [savedAt, setSavedAt] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -374,7 +375,7 @@ function PredictionsTab({
     }));
   };
 
-  if (!round) {
+  if (!predictionRounds.length) {
     return (
       <MobileSection title="Прогнози" icon={Trophy}>
         <EmptyState text="Зараз немає відкритого туру для прогнозів." />
@@ -382,7 +383,9 @@ function PredictionsTab({
     );
   }
 
-  const availableMatches = round.matches.filter(match => !hasPlayer(match, player.id));
+  const availableMatches = predictionRounds
+    .flatMap(round => round.matches)
+    .filter(match => !isSeason2Played(match) && !hasPlayer(match, player.id));
   const pendingMatches = availableMatches.filter(match => !predictions[match.id]?.locked);
   const filledCount = availableMatches.filter(match =>
     predictions[match.id]?.homeScore !== undefined &&
@@ -412,7 +415,7 @@ function PredictionsTab({
 
     try {
       const updatedUser = await saveSeason2RoundPredictions({
-        round: round.round,
+        round: predictionRounds[0].round,
         predictions: pendingMatches.map(match => ({
           matchId: match.id,
           round: match.round,
@@ -442,9 +445,11 @@ function PredictionsTab({
     <div className="space-y-4">
       <section className="rounded-md border border-[#bbf903]/35 bg-[#bbf903]/10 p-4">
         <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#bbf903]">Season 2 Predict</div>
-        <h2 className="mt-1 font-heading text-[1.75rem] leading-none text-white">Тур {round.round}</h2>
+        <h2 className="mt-1 font-heading text-[1.75rem] leading-none text-white">
+          {getPredictionWeekendTitle(predictionRounds)}
+        </h2>
         <p className="mt-2 text-sm leading-6 text-white/58">
-          Став рахунок тільки на матчі інших. Свій матч у прогнозах не показуємо.
+          Став рахунок на два тури вихідних. Свої матчі у прогнозах не показуємо.
         </p>
         <div className="mt-3 flex items-center justify-between rounded-md border border-white/10 bg-white/[0.06] px-3 py-2">
           <span className="text-xs font-bold uppercase tracking-wide text-white/42">Заповнено</span>
@@ -459,17 +464,30 @@ function PredictionsTab({
         </p>
       </section>
 
-      <MobileSection title="Матчі туру" icon={CalendarDays}>
+      <MobileSection title="Матчі вікенду" icon={CalendarDays}>
         <div className="space-y-3">
-          {availableMatches.length ? availableMatches.map(match => (
-            <PredictionCard
-              key={match.id}
-              match={match}
-              value={predictions[match.id] ?? { homeScore: "", awayScore: "" }}
-              onChange={(side, value) => updatePrediction(match.id, side, value)}
-              locked={Boolean(predictions[match.id]?.locked)}
-            />
-          )) : <EmptyState text="У цьому турі немає матчів для твого прогнозу." />}
+          {availableMatches.length ? predictionRounds.map(round => {
+            const roundMatches = availableMatches.filter(match => match.round === round.round);
+            if (!roundMatches.length) return null;
+
+            return (
+              <div key={round.round} className="space-y-3">
+                <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/[0.04] px-3 py-2">
+                  <span className="font-heading text-lg leading-none text-white">Тур {round.round}</span>
+                  <span className="text-xs font-bold uppercase tracking-wide text-white/42">{round.dayLabel}</span>
+                </div>
+                {roundMatches.map(match => (
+                  <PredictionCard
+                    key={match.id}
+                    match={match}
+                    value={predictions[match.id] ?? { homeScore: "", awayScore: "" }}
+                    onChange={(side, value) => updatePrediction(match.id, side, value)}
+                    locked={Boolean(predictions[match.id]?.locked)}
+                  />
+                ))}
+              </div>
+            );
+          }) : <EmptyState text="У цьому вікенді немає матчів для твого прогнозу." />}
         </div>
         <button
           type="button"
@@ -714,8 +732,20 @@ function hasPlayer(match: Season2Match, playerId: string) {
   return match.home.id === playerId || match.away.id === playerId;
 }
 
-function getSeason2PredictionRound() {
-  return season2Rounds.find(round => round.matches.some(match => !isSeason2Played(match))) ?? null;
+function getSeason2PredictionWeekend() {
+  const firstOpenRound = season2Rounds.find(round => round.matches.some(match => !isSeason2Played(match)));
+  if (!firstOpenRound) return [];
+
+  const weekendIndex = Math.floor((firstOpenRound.round - 1) / 2);
+  return season2Rounds.filter(round =>
+    Math.floor((round.round - 1) / 2) === weekendIndex &&
+    round.matches.some(match => !isSeason2Played(match)),
+  );
+}
+
+function getPredictionWeekendTitle(rounds: Season2Round[]) {
+  if (rounds.length === 1) return `Тур ${rounds[0].round}`;
+  return `Тури ${rounds.map(round => round.round).join(" та ")}`;
 }
 
 function PredictionCard({
