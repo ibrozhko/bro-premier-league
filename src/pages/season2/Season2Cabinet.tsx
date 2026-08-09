@@ -560,7 +560,7 @@ function TableTab({ data }: { data: PlayerCabinetData }) {
           {data.tableRows.map(row => (
             <div
               key={row.player.id}
-              className={`grid grid-cols-[34px_minmax(0,1fr)_40px_40px_44px] items-center gap-2 rounded-md border px-3 py-3 ${
+              className={`grid grid-cols-[30px_minmax(0,1fr)_30px_30px_30px_34px_36px] items-center gap-1.5 rounded-md border px-2 py-3 ${
                 row.player.id === data.standing.player.id
                   ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
                   : "border-white/10 bg-white/[0.06] text-white"
@@ -574,15 +574,23 @@ function TableTab({ data }: { data: PlayerCabinetData }) {
                 </div>
               </div>
               <div className="text-center">
-                <div className="font-heading text-lg leading-none">{row.played}</div>
+                <div className="font-heading text-base leading-none">{row.played}</div>
                 <div className="mt-1 text-[0.55rem] font-extrabold uppercase opacity-45">І</div>
               </div>
               <div className="text-center">
-                <div className="font-heading text-lg leading-none">{row.goalDifference}</div>
+                <div className="font-heading text-base leading-none">{row.goalsFor}</div>
+                <div className="mt-1 text-[0.55rem] font-extrabold uppercase opacity-45">ЗГ</div>
+              </div>
+              <div className="text-center">
+                <div className="font-heading text-base leading-none">{row.goalsAgainst}</div>
+                <div className="mt-1 text-[0.55rem] font-extrabold uppercase opacity-45">ПГ</div>
+              </div>
+              <div className="text-center">
+                <div className="font-heading text-base leading-none">{row.goalDifference}</div>
                 <div className="mt-1 text-[0.55rem] font-extrabold uppercase opacity-45">РГ</div>
               </div>
               <div className="text-right">
-                <div className="font-heading text-xl leading-none">{row.points}</div>
+                <div className="font-heading text-lg leading-none">{row.points}</div>
                 <div className="mt-1 text-[0.55rem] font-extrabold uppercase opacity-45">О</div>
               </div>
             </div>
