@@ -3,6 +3,7 @@ import {
   getSeason2UserBundle,
   getSessionUserId,
   parseBody,
+  calculateSeason2PredictionPoints,
   requireSeason2Env,
   setSessionCookie,
   supabaseDelete,
@@ -557,22 +558,26 @@ async function handlePredictionLeaderboard(request: ApiRequest, response: ApiRes
     supabaseGet<Array<Pick<Season2DbUser, "id" | "player_id" | "display_name" | "username">>>(
       "/season2_users?select=id,player_id,display_name,username",
     ),
-    supabaseGet<Array<Pick<Season2DbPrediction, "user_id" | "points">>>(
-      "/season2_predictions?select=user_id,points",
+    supabaseGet<Array<Pick<
+      Season2DbPrediction,
+      "user_id" | "match_id" | "predicted_home_score" | "predicted_away_score" | "points"
+    >>>(
+      "/season2_predictions?select=user_id,match_id,predicted_home_score,predicted_away_score,points",
     ),
   ]);
 
   const rows = users.map(user => {
     const userPredictions = predictions.filter(prediction => prediction.user_id === user.id);
+    const scoredPredictions = userPredictions.map(calculateSeason2PredictionPoints);
 
     return {
       playerId: user.player_id,
       displayName: user.display_name ?? user.username,
       username: user.username,
-      points: userPredictions.reduce((sum, prediction) => sum + (prediction.points ?? 0), 0),
+      points: scoredPredictions.reduce((sum, points) => sum + points, 0),
       predictions: userPredictions.length,
-      exact: userPredictions.filter(prediction => prediction.points === 10).length,
-      correctResult: userPredictions.filter(prediction => prediction.points === 5).length,
+      exact: scoredPredictions.filter(points => points === 10).length,
+      correctResult: scoredPredictions.filter(points => points === 5).length,
     } satisfies PredictionLeaderboardRow;
   }).sort((first, second) =>
     second.points - first.points ||

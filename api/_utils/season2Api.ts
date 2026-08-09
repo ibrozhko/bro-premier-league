@@ -1,4 +1,5 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { isSeason2Played, season2Rounds } from "../../src/data/season2Data.js";
 
 type HeaderValue = string | string[] | undefined;
 
@@ -209,12 +210,42 @@ export function toClientUser(user: Season2DbUser, predictions: Season2DbPredicti
         round: prediction.round,
         homeScore: String(prediction.predicted_home_score),
         awayScore: String(prediction.predicted_away_score),
-        points: prediction.points ?? 0,
+        points: calculateSeason2PredictionPoints(prediction),
         locked: prediction.locked,
         updatedAt: prediction.created_at,
       },
     ])),
   };
+}
+
+export function calculateSeason2PredictionPoints(prediction: Pick<
+  Season2DbPrediction,
+  "match_id" | "predicted_home_score" | "predicted_away_score" | "points"
+>) {
+  const match = season2Rounds
+    .flatMap(round => round.matches)
+    .find(item => item.id === prediction.match_id);
+
+  if (!match) return prediction.points ?? 0;
+  if (!isSeason2Played(match)) return 0;
+
+  if (
+    prediction.predicted_home_score === match.homeScore &&
+    prediction.predicted_away_score === match.awayScore
+  ) {
+    return 10;
+  }
+
+  const predictedResult = getResultSide(prediction.predicted_home_score, prediction.predicted_away_score);
+  const actualResult = getResultSide(match.homeScore!, match.awayScore!);
+
+  return predictedResult === actualResult ? 5 : 0;
+}
+
+function getResultSide(homeScore: number, awayScore: number) {
+  if (homeScore > awayScore) return "home";
+  if (homeScore < awayScore) return "away";
+  return "draw";
 }
 
 function supabaseRestUrl() {
