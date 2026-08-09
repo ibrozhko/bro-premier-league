@@ -555,25 +555,36 @@ function PredictionLeaderboard({ rows, currentPlayerId }: { rows: Season2Predict
 function TableTab({ data }: { data: PlayerCabinetData }) {
   return (
     <div className="space-y-4">
-      <MobileSection title="Я в таблиці" icon={Table2}>
+      <MobileSection title="Турнірна таблиця" icon={Table2}>
         <div className="space-y-2">
-          {data.neighborRows.map(row => (
+          {data.tableRows.map(row => (
             <div
               key={row.player.id}
-              className={`grid grid-cols-[36px_1fr_auto] items-center gap-3 rounded-md border p-3 ${
+              className={`grid grid-cols-[34px_minmax(0,1fr)_40px_40px_44px] items-center gap-2 rounded-md border px-3 py-3 ${
                 row.player.id === data.standing.player.id
                   ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
                   : "border-white/10 bg-white/[0.06] text-white"
               }`}
             >
-              <div className="font-heading text-xl leading-none">#{row.rank}</div>
+              <div className="font-heading text-lg leading-none">#{row.rank}</div>
               <div className="min-w-0">
                 <div className="truncate text-[0.95rem] font-extrabold leading-tight">{row.player.name}</div>
                 <div className={row.player.id === data.standing.player.id ? "truncate text-xs text-[#111111]/58" : "truncate text-xs text-white/48"}>
                   {row.player.club}
                 </div>
               </div>
-              <div className="font-heading text-xl leading-none">{row.points}</div>
+              <div className="text-center">
+                <div className="font-heading text-lg leading-none">{row.played}</div>
+                <div className="mt-1 text-[0.55rem] font-extrabold uppercase opacity-45">І</div>
+              </div>
+              <div className="text-center">
+                <div className="font-heading text-lg leading-none">{row.goalDifference}</div>
+                <div className="mt-1 text-[0.55rem] font-extrabold uppercase opacity-45">РГ</div>
+              </div>
+              <div className="text-right">
+                <div className="font-heading text-xl leading-none">{row.points}</div>
+                <div className="mt-1 text-[0.55rem] font-extrabold uppercase opacity-45">О</div>
+              </div>
             </div>
           ))}
         </div>
@@ -703,7 +714,7 @@ function getPlayerCabinetData(player: Season2Player) {
   const standing = standings.find(row => row.player.id === player.id) ?? standings[0];
   const rank = standings.findIndex(row => row.player.id === player.id) + 1;
   const allMatches = season2Rounds.flatMap(round => round.matches).filter(match => hasPlayer(match, player.id));
-  const neighborRows = getNeighborRows(standings, player.id);
+  const tableRows = getRankedRows(standings);
   const upcomingMatches = allMatches.filter(match => !isSeason2Played(match));
   const weekendIndex = upcomingMatches[0] ? Math.floor((upcomingMatches[0].round - 1) / 2) : -1;
 
@@ -714,17 +725,14 @@ function getPlayerCabinetData(player: Season2Player) {
     weekendMatches: upcomingMatches.filter(match => Math.floor((match.round - 1) / 2) === weekendIndex).slice(0, 2),
     upcomingMatches: upcomingMatches.slice(0, 5),
     recentMatches: allMatches.filter(isSeason2Played).reverse().slice(0, 5),
-    neighborRows,
+    tableRows,
   };
 }
 
-function getNeighborRows(standings: Season2Standing[], playerId: string) {
-  const playerIndex = Math.max(0, standings.findIndex(row => row.player.id === playerId));
-  const start = Math.max(0, Math.min(playerIndex - 2, standings.length - 5));
-
-  return standings.slice(start, start + 5).map((row, index) => ({
+function getRankedRows(standings: Season2Standing[]) {
+  return standings.map((row, index) => ({
     ...row,
-    rank: start + index + 1,
+    rank: index + 1,
   }));
 }
 

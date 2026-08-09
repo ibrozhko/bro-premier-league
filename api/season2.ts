@@ -18,6 +18,7 @@ import {
   type Season2DbUser,
   type Season2MatchDayStatus,
 } from "./_utils/season2Api.js";
+import { isSeason2Played, season2Rounds } from "../src/data/season2Data.js";
 import webpush from "web-push";
 
 type AuthPayload = {
@@ -112,6 +113,11 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
     if (resource === "prediction-leaderboard") {
       await handlePredictionLeaderboard(request, response);
+      return;
+    }
+
+    if (resource === "recalculate-predictions") {
+      await handleRecalculatePredictions(request, response);
       return;
     }
 
@@ -576,6 +582,74 @@ async function handlePredictionLeaderboard(request: ApiRequest, response: ApiRes
   );
 
   response.status(200).json({ rows });
+}
+
+async function handleRecalculatePredictions(request: ApiRequest, response: ApiResponse) {
+  if (request.method !== "POST") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  if (!isAuthorizedServiceRequest(request)) {
+    response.status(401).json({ error: "Unauthorized prediction recalculation." });
+    return;
+  }
+
+  const playedScores = new Map(
+    season2Rounds
+      .flatMap(round => round.matches)
+      .filter(isSeason2Played)
+      .map(match => [match.id, { homeScore: match.homeScore!, awayScore: match.awayScore! }]),
+  );
+
+  const rows = await supabaseGet<Array<Pick<
+    Season2DbPrediction,
+    "id" | "match_id" | "predicted_home_score" | "predicted_away_score"
+  >>>(
+    "/season2_predictions?select=id,match_id,predicted_home_score,predicted_away_score",
+  );
+
+  let updated = 0;
+  await Promise.all(rows.map(row => {
+    const score = playedScores.get(row.match_id);
+    if (!score) return Promise.resolve();
+
+    updated += 1;
+    return supabasePatch(
+      `/season2_predictions?id=eq.${row.id}`,
+      {
+        points: calculatePredictionPoints(
+          row.predicted_home_score,
+          row.predicted_away_score,
+          score.homeScore,
+          score.awayScore,
+        ),
+      },
+      "return=minimal",
+    );
+  }));
+
+  response.status(200).json({ matches: playedScores.size, predictions: rows.length, updated });
+}
+
+function calculatePredictionPoints(
+  predictedHomeScore: number,
+  predictedAwayScore: number,
+  homeScore: number,
+  awayScore: number,
+) {
+  if (predictedHomeScore === homeScore && predictedAwayScore === awayScore) return 10;
+
+  const predictedResult = getResultSide(predictedHomeScore, predictedAwayScore);
+  const actualResult = getResultSide(homeScore, awayScore);
+
+  return predictedResult === actualResult ? 5 : 0;
+}
+
+function getResultSide(homeScore: number, awayScore: number) {
+  if (homeScore > awayScore) return "home";
+  if (homeScore < awayScore) return "away";
+  return "draw";
 }
 
 async function handlePushSubscription(request: ApiRequest, response: ApiResponse) {
