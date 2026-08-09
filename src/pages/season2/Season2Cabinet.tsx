@@ -724,13 +724,14 @@ function getPlayerCabinetData(player: Season2Player) {
   const allMatches = season2Rounds.flatMap(round => round.matches).filter(match => hasPlayer(match, player.id));
   const tableRows = getRankedRows(standings);
   const upcomingMatches = allMatches.filter(match => !isSeason2Played(match));
-  const weekendIndex = upcomingMatches[0] ? Math.floor((upcomingMatches[0].round - 1) / 2) : -1;
+  const weekendIndex = getSeason2CabinetWeekendIndex();
+  const weekendMatches = allMatches.filter(match => Math.floor((match.round - 1) / 2) === weekendIndex);
 
   return {
     standings,
     standing,
     rank: rank || 1,
-    weekendMatches: upcomingMatches.filter(match => Math.floor((match.round - 1) / 2) === weekendIndex).slice(0, 2),
+    weekendMatches: weekendMatches.length ? weekendMatches.slice(0, 2) : upcomingMatches.slice(0, 2),
     upcomingMatches: upcomingMatches.slice(0, 5),
     recentMatches: allMatches.filter(isSeason2Played).reverse().slice(0, 5),
     tableRows,
@@ -749,14 +750,43 @@ function hasPlayer(match: Season2Match, playerId: string) {
 }
 
 function getSeason2PredictionWeekend() {
-  const firstOpenRound = season2Rounds.find(round => round.matches.some(match => !isSeason2Played(match)));
-  if (!firstOpenRound) return [];
-
-  const weekendIndex = Math.floor((firstOpenRound.round - 1) / 2);
-  return season2Rounds.filter(round =>
-    Math.floor((round.round - 1) / 2) === weekendIndex &&
+  const weekendIndex = getSeason2CabinetWeekendIndex();
+  const calendarRounds = getSeason2WeekendRounds(weekendIndex).filter(round =>
     round.matches.some(match => !isSeason2Played(match)),
   );
+  if (calendarRounds.length) return calendarRounds;
+
+  const firstOpenRound = season2Rounds.find(round => round.matches.some(match => !isSeason2Played(match)));
+  return firstOpenRound ? getSeason2WeekendRounds(Math.floor((firstOpenRound.round - 1) / 2)) : [];
+}
+
+function getSeason2WeekendRounds(weekendIndex: number) {
+  return season2Rounds.filter(round => Math.floor((round.round - 1) / 2) === weekendIndex);
+}
+
+function getSeason2CabinetWeekendIndex(now = new Date()) {
+  const currentDate = getKyivDateOnly(now);
+  const weekendIndex = season2Rounds.findIndex((round, index) =>
+    index % 2 === 0 &&
+    getKyivDateOnly(new Date(`${season2Rounds[index + 1]?.date ?? round.date}T23:59:59+03:00`)) >= currentDate,
+  );
+
+  if (weekendIndex === -1) {
+    return Math.max(0, Math.floor((season2Rounds.at(-1)?.round ?? 1) - 1) / 2);
+  }
+
+  return Math.floor(season2Rounds[weekendIndex].round - 1) / 2;
+}
+
+function getKyivDateOnly(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Kyiv",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  return formatter.format(date);
 }
 
 function getPredictionWeekendTitle(rounds: Season2Round[]) {
