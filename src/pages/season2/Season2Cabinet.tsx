@@ -998,11 +998,7 @@ function OpponentStat({ label, value }: { label: string; value: number | string 
 
 function MobileMatchCard({ match, playerId, featured = false }: { match: Season2Match; playerId: string; featured?: boolean }) {
   const played = isSeason2Played(match);
-  const isHome = match.home.id === playerId;
-  const opponent = isHome ? match.away : match.home;
-  const selected = isHome ? match.home : match.away;
-  const selectedScore = isHome ? match.homeScore : match.awayScore;
-  const opponentScore = isHome ? match.awayScore : match.homeScore;
+  const venueLabel = match.home.id === playerId ? "вдома" : "виїзд";
 
   return (
     <article className={featured ? "mt-4" : "mt-3 rounded-md border border-white/10 bg-white/[0.04] p-3"}>
@@ -1011,7 +1007,7 @@ function MobileMatchCard({ match, playerId, featured = false }: { match: Season2
           <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
             Тур {match.round} · {getSeason2LegLabel(match.leg)}
           </div>
-          <div className="mt-1 text-xs text-white/45">{match.dayLabel} · {isHome ? "вдома" : "виїзд"}</div>
+          <div className="mt-1 text-xs text-white/45">{match.dayLabel} · {venueLabel}</div>
         </div>
         <span className={`rounded-md px-2 py-1 text-[0.65rem] font-extrabold uppercase ${played ? "bg-white/12 text-white" : "bg-[#bbf903] text-[#111111]"}`}>
           {played ? "Зіграно" : "Скоро"}
@@ -1019,11 +1015,11 @@ function MobileMatchCard({ match, playerId, featured = false }: { match: Season2
       </div>
 
       <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <TeamBlock player={selected} align="left" />
+        <TeamBlock player={match.home} align="left" />
         <div className="rounded-md bg-[#ff5a1f]/16 px-3 py-2 text-center font-heading text-xl leading-none text-[#ff5a1f]">
-          {played ? `${selectedScore}:${opponentScore}` : "VS"}
+          {played ? `${match.homeScore}:${match.awayScore}` : "VS"}
         </div>
-        <TeamBlock player={opponent} align="right" />
+        <TeamBlock player={match.away} align="right" />
       </div>
     </article>
   );
