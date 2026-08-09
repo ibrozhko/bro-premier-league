@@ -65,6 +65,8 @@ const season2FloatingPlayer = season2Players.find(player => player.id === "vital
 
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
 export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {
+  "S2-01-01": { homeScore: 5, awayScore: 1 },
+  "S2-01-03": { homeScore: 4, awayScore: 6 },
   "S2-01-04": { homeScore: 4, awayScore: 5 },
   "S2-01-05": { homeScore: 5, awayScore: 0 },
   "S2-01-06": { homeScore: 2, awayScore: 2 },
