@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, Shield, Trophy, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, Shield, Trophy, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logoSeason2 from "@/assets/logo-season2-orange.png";
@@ -6,12 +6,13 @@ import {
   calculateSeason2Standings,
   getSeason2BestDefense,
   getSeason2LegLabel,
-  getSeason2NextRound,
   getSeason2PlayedMatches,
   getSeason2TopScorers,
+  isSeason2Played,
   season2LastUpdated,
   season2Rounds,
   season2Summary,
+  type Season2Round,
   type Season2Match,
 } from "@/data/season2Data";
 import {
@@ -32,12 +33,14 @@ const season2Path = (path = "") => `${season2BasePath}${path}` || "/";
 export default function Season2Home() {
   const [predictionAggregates, setPredictionAggregates] = useState<Season2PredictionAggregateMap>({});
   const [matchSchedules, setMatchSchedules] = useState<Record<string, Season2MatchSchedule>>({});
+  const [openUpcomingRound, setOpenUpcomingRound] = useState<number | null>(() => getSeason2HomeUpcomingRounds()[0]?.round ?? null);
+  const [openResultRound, setOpenResultRound] = useState<number | null>(() => getSeason2HomeResultRounds()[0]?.round ?? null);
   const playedMatches = getSeason2PlayedMatches();
   const topAttack = getSeason2TopScorers()[0];
   const bestDefense = getSeason2BestDefense()[0];
   const standings = calculateSeason2Standings();
-  const nextRound = getSeason2NextRound();
-  const nextMatches = nextRound?.matches ?? [];
+  const upcomingRounds = getSeason2HomeUpcomingRounds();
+  const resultRounds = getSeason2HomeResultRounds();
 
   useEffect(() => {
     loadSeason2PredictionAggregates()
@@ -94,39 +97,33 @@ export default function Season2Home() {
               <SectionHeader
                 eyebrow="Match center"
                 title="Матч-центр"
-                text={nextRound ? `Найближчий тур Season 2: ${nextRound.dayLabel}. Тут видно пари туру, статус матчів і хто відпочиває.` : "Усі матчі сезону зіграні."}
+                text="Два тури найближчого вікенду і результати минулих турів в одному місці. Відкривай потрібний тур і швидко дивись пари."
               />
               <Link to={season2Path("/matches")} className="inline-flex h-10 items-center rounded-md bg-[#ff5a1f] px-4 text-sm font-bold text-white sm:h-11">
                 Всі матчі <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </div>
-              <div className="mt-6 overflow-hidden rounded-md border border-[#111111]/12 bg-white">
-                <div className="flex items-center justify-between gap-3 bg-[#111111] px-4 py-3 text-[#f7f7f2]">
-                  <h3 className="font-heading text-2xl leading-none sm:text-3xl">
-                  {nextRound ? `Наступні матчі · тур ${nextRound.round} · ${nextRound.dayLabel}` : "Наступні матчі"}
-                </h3>
-                <CalendarDays className="h-5 w-5 text-[#bbf903]" />
-              </div>
-              {nextRound && (
-                <div className="flex flex-wrap items-center gap-2 border-b border-[#111111]/10 bg-[#ff5a1f]/8 px-4 py-2">
-                  <span className="inline-flex rounded-full border border-[#ff5a1f]/25 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#ff5a1f]">
-                    {getSeason2LegLabel(nextRound.leg)}
-                  </span>
-                  <RoundBye bye={nextRound.bye} />
-                </div>
-              )}
-              <div className="divide-y divide-[#111111]/10">
-              {nextMatches.length ? nextMatches.map(match => (
-                <Season2MatchRow
-                  key={match.id}
-                  match={match}
-                  predictionAggregates={predictionAggregates}
-                  schedule={matchSchedules[match.id]}
-                />
-              )) : (
-                  <div className="p-5 text-sm text-[#111111]/60">Немає майбутніх матчів.</div>
-                )}
-              </div>
+
+            <div className="mt-6 space-y-5">
+              <MatchCenterRoundGroup
+                title="Наступний вікенд"
+                emptyText="Немає майбутніх матчів."
+                rounds={upcomingRounds}
+                openRound={openUpcomingRound}
+                onToggle={round => setOpenUpcomingRound(openUpcomingRound === round ? null : round)}
+                predictionAggregates={predictionAggregates}
+                matchSchedules={matchSchedules}
+              />
+              <MatchCenterRoundGroup
+                title="Результати минулих турів"
+                emptyText="Поки немає зіграних матчів."
+                rounds={resultRounds}
+                openRound={openResultRound}
+                onToggle={round => setOpenResultRound(openResultRound === round ? null : round)}
+                predictionAggregates={predictionAggregates}
+                matchSchedules={matchSchedules}
+                resultsOnly
+              />
             </div>
           </div>
         </section>
@@ -142,6 +139,142 @@ export default function Season2Home() {
       </main>
     </Season2Shell>
   );
+}
+
+function MatchCenterRoundGroup({
+  title,
+  emptyText,
+  rounds,
+  openRound,
+  onToggle,
+  predictionAggregates,
+  matchSchedules,
+  resultsOnly = false,
+}: {
+  title: string;
+  emptyText: string;
+  rounds: Season2Round[];
+  openRound: number | null;
+  onToggle: (round: number) => void;
+  predictionAggregates?: Season2PredictionAggregateMap;
+  matchSchedules: Record<string, Season2MatchSchedule>;
+  resultsOnly?: boolean;
+}) {
+  return (
+    <div className="overflow-hidden rounded-md border border-[#111111]/12 bg-white">
+      <div className="flex items-center justify-between gap-3 bg-[#111111] px-4 py-3 text-[#f7f7f2]">
+        <h3 className="font-heading text-2xl leading-none sm:text-3xl">{title}</h3>
+        <CalendarDays className="h-5 w-5 text-[#bbf903]" />
+      </div>
+      {rounds.length ? (
+        <div className="divide-y divide-[#111111]/10">
+          {rounds.map(round => {
+            const isOpen = openRound === round.round;
+            const matches = resultsOnly ? round.matches.filter(isSeason2Played) : round.matches;
+
+            return (
+              <div key={round.round}>
+                <button
+                  type="button"
+                  onClick={() => onToggle(round.round)}
+                  className="flex w-full items-center justify-between gap-3 bg-[#ff5a1f]/8 px-4 py-3 text-left transition hover:bg-[#ff5a1f]/12"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-heading text-2xl leading-none text-[#ff5a1f] sm:text-3xl">
+                        Тур {round.round}
+                      </span>
+                      <span className="rounded-full border border-[#111111]/10 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#111111]/55">
+                        {getSeason2LegLabel(round.leg)}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-[#111111]/55">{round.dayLabel}</div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="hidden rounded-full bg-white px-3 py-1 text-xs font-bold text-[#111111]/55 sm:inline-flex">
+                      {matches.length} матчів
+                    </span>
+                    <ChevronDown className={`h-5 w-5 text-[#ff5a1f] transition ${isOpen ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {isOpen && (
+                  <>
+                    <div className="flex flex-wrap items-center gap-2 border-t border-[#111111]/10 bg-white px-4 py-2">
+                      <span className="inline-flex rounded-full border border-[#ff5a1f]/25 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#ff5a1f]">
+                        {getSeason2LegLabel(round.leg)}
+                      </span>
+                      <RoundBye bye={round.bye} />
+                    </div>
+                    <div className="divide-y divide-[#111111]/10">
+                      {matches.length ? matches.map(match => (
+                        <Season2MatchRow
+                          key={match.id}
+                          match={match}
+                          predictionAggregates={predictionAggregates}
+                          schedule={matchSchedules[match.id]}
+                        />
+                      )) : (
+                        <div className="p-5 text-sm text-[#111111]/60">
+                          {resultsOnly ? "У цьому турі ще немає результатів." : "У цьому турі немає матчів."}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="p-5 text-sm text-[#111111]/60">{emptyText}</div>
+      )}
+    </div>
+  );
+}
+
+function getSeason2HomeUpcomingRounds(now = new Date()) {
+  const weekendIndex = getSeason2HomeWeekendIndex(now);
+  const calendarRounds = getSeason2WeekendRounds(weekendIndex);
+
+  if (calendarRounds.length) return calendarRounds;
+
+  const firstOpenRound = season2Rounds.find(round => round.matches.some(match => !isSeason2Played(match)));
+  return firstOpenRound ? getSeason2WeekendRounds(Math.floor((firstOpenRound.round - 1) / 2)) : [];
+}
+
+function getSeason2HomeResultRounds() {
+  return season2Rounds
+    .filter(round => round.matches.some(isSeason2Played))
+    .reverse();
+}
+
+function getSeason2WeekendRounds(weekendIndex: number) {
+  return season2Rounds.filter(round => Math.floor((round.round - 1) / 2) === weekendIndex);
+}
+
+function getSeason2HomeWeekendIndex(now = new Date()) {
+  const currentDate = getKyivDateOnly(now);
+  const firstRoundOfWeekendIndex = season2Rounds.findIndex((round, index) =>
+    index % 2 === 0 &&
+    getKyivDateOnly(new Date(`${season2Rounds[index + 1]?.date ?? round.date}T23:59:59+03:00`)) >= currentDate,
+  );
+
+  if (firstRoundOfWeekendIndex === -1) {
+    return Math.max(0, Math.floor(((season2Rounds.at(-1)?.round ?? 1) - 1) / 2));
+  }
+
+  return Math.floor((season2Rounds[firstRoundOfWeekendIndex].round - 1) / 2);
+}
+
+function getKyivDateOnly(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Kyiv",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  return formatter.format(date);
 }
 
 export function Season2MatchRow({
