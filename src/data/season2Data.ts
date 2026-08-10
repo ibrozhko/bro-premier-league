@@ -57,7 +57,7 @@ export const season2Players: Season2Player[] = [
   { id: "dmytro", name: "Дмитро", nick: "LusuyKrab", platform: "PS5", club: "ПСЖ 🇫🇷" },
   { id: "dimas", name: "Дімас", nick: "Viking240222", platform: "PC", club: "Порто 🇵🇹" },
   { id: "artem", name: "Артем", nick: "fen1kssss", platform: "PC", club: "Лаціо 🇮🇹" },
-  { id: "vitalii", name: "Віталій", nick: "turbovitalik", platform: "PS5", club: "Атлетіко Більбао 🇪🇸" },
+  { id: "vitalii", name: "Віталій", nick: "turbovitalik", platform: "PS5", club: "Атлетік Більбао 🇪🇸" },
 ];
 
 const season2CalendarPlayers = season2Players.filter(player => player.id !== "vitalii");

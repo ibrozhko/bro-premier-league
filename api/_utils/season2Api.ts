@@ -65,6 +65,9 @@ export type Season2DbMatchScheduling = {
   away_day_status: Season2MatchDayStatus;
   home_proposed_time: string | null;
   away_proposed_time: string | null;
+  home_proposed_date: string | null;
+  away_proposed_date: string | null;
+  agreed_date: string | null;
   agreed_time: string | null;
   status: Season2MatchScheduleStatus;
   updated_by_player_id: string | null;

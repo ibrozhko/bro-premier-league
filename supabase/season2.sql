@@ -48,6 +48,9 @@ create table if not exists season2_match_scheduling (
   away_day_status text not null default 'pending',
   home_proposed_time text,
   away_proposed_time text,
+  home_proposed_date text,
+  away_proposed_date text,
+  agreed_date text,
   agreed_time text,
   status text not null default 'pending',
   updated_by_player_id text,
@@ -77,6 +80,9 @@ alter table season2_match_scheduling add column if not exists home_day_status te
 alter table season2_match_scheduling add column if not exists away_day_status text not null default 'pending';
 alter table season2_match_scheduling add column if not exists home_proposed_time text;
 alter table season2_match_scheduling add column if not exists away_proposed_time text;
+alter table season2_match_scheduling add column if not exists home_proposed_date text;
+alter table season2_match_scheduling add column if not exists away_proposed_date text;
+alter table season2_match_scheduling add column if not exists agreed_date text;
 alter table season2_match_scheduling add column if not exists agreed_time text;
 alter table season2_match_scheduling add column if not exists status text not null default 'pending';
 alter table season2_match_scheduling add column if not exists updated_by_player_id text;

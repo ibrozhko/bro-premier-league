@@ -230,6 +230,7 @@ function HomeTab({
                 playerId={player.id}
                 standings={data.standings}
                 schedule={schedules[match.id]}
+                schedules={schedules}
                 onScheduleUpdate={onScheduleUpdate}
               />
             ))}
@@ -881,23 +882,31 @@ function WeekendOpponentCard({
   playerId,
   standings,
   schedule,
+  schedules,
   onScheduleUpdate,
 }: {
   match: Season2Match;
   playerId: string;
   standings: Season2Standing[];
   schedule?: Season2MatchSchedule;
+  schedules: Record<string, Season2MatchSchedule>;
   onScheduleUpdate: (schedule: Season2MatchSchedule) => void;
 }) {
   const opponent = match.home.id === playerId ? match.away : match.home;
   const opponentStanding = standings.find(row => row.player.id === opponent.id);
   const opponentRank = standings.findIndex(row => row.player.id === opponent.id) + 1;
   const [time, setTime] = useState("");
+  const [rescheduleDate, setRescheduleDate] = useState(() => getDefaultRescheduleDate(match.date));
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const playerSide = match.home.id === playerId ? "home" : "away";
   const opponentProposedTime = playerSide === "home" ? schedule?.awayProposedTime : schedule?.homeProposedTime;
   const ownProposedTime = playerSide === "home" ? schedule?.homeProposedTime : schedule?.awayProposedTime;
+  const opponentProposedDate = playerSide === "home" ? schedule?.awayProposedDate : schedule?.homeProposedDate;
+  const ownProposedDate = playerSide === "home" ? schedule?.homeProposedDate : schedule?.awayProposedDate;
+  const effectiveDate = schedule?.agreedDate ?? match.date;
+  const bookedTimes = getBookedTimesForDate(schedules, match.id, effectiveDate);
+  const rescheduleDateOptions = getRescheduleDateOptions(match.date);
   const badge = getScheduleBadge(schedule);
 
   const saveAction = async (input: Parameters<typeof saveSeason2MatchSchedule>[0]) => {
@@ -908,6 +917,7 @@ function WeekendOpponentCard({
       const nextSchedule = await saveSeason2MatchSchedule(input);
       onScheduleUpdate(nextSchedule);
       setTime("");
+      if (nextSchedule.agreedDate) setRescheduleDate(nextSchedule.agreedDate);
       setMessage(nextSchedule.status === "scheduled" ? "Час погоджено. Push пішов усім." : "Збережено.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Не вдалося зберегти домовленість.");
@@ -925,6 +935,9 @@ function WeekendOpponentCard({
             Тур {match.round} · {getSeason2LegLabel(match.leg)}
           </div>
           <div className="mt-1 text-xs text-white/45">{match.dayLabel}</div>
+          {schedule?.agreedDate && (
+            <div className="mt-1 text-xs font-bold text-[#bbf903]">Новий день: {formatCabinetDate(schedule.agreedDate)}</div>
+          )}
         </div>
         <span className={`rounded-md px-2 py-1 text-[0.65rem] font-extrabold uppercase ${
           schedule?.status === "scheduled"
@@ -976,20 +989,80 @@ function WeekendOpponentCard({
             <button
               type="button"
               disabled={isSaving}
-              onClick={() => saveAction({ match, action: "day-status", dayStatus: "reschedule" })}
+              onClick={() => saveAction({ match, action: "propose-date", date: rescheduleDate })}
               className="h-10 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 text-[0.72rem] font-extrabold text-[#ff5a1f] disabled:opacity-50"
             >
               Перенести
             </button>
           </div>
 
+          <div className="grid grid-cols-3 gap-2">
+            {rescheduleDateOptions.map(option => (
+              <button
+                type="button"
+                key={option.date}
+                disabled={isSaving}
+                onClick={() => setRescheduleDate(option.date)}
+                className={`h-9 rounded-md border px-1 text-[0.58rem] font-extrabold uppercase leading-tight disabled:opacity-50 ${
+                  rescheduleDate === option.date
+                    ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
+                    : "border-white/10 bg-white/[0.05] text-white/60"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             <input
-              type="time"
+              type="date"
+              value={rescheduleDate}
+              min={getMinRescheduleDate(match.date)}
+              onChange={event => setRescheduleDate(event.target.value)}
+              className="h-10 min-w-0 rounded-md border border-white/20 bg-[#111111] px-3 text-center text-xs font-extrabold text-white outline-none focus:border-[#bbf903]"
+            />
+            <button
+              type="button"
+              disabled={isSaving || !rescheduleDate}
+              onClick={() => saveAction({ match, action: "propose-date", date: rescheduleDate })}
+              className="h-10 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 px-2 text-[0.72rem] font-extrabold text-[#ff5a1f] disabled:opacity-50"
+            >
+              Запропонувати день
+            </button>
+          </div>
+
+          {(opponentProposedDate || ownProposedDate) && (
+            <div className="text-xs font-bold leading-5 text-white/58">
+              {opponentProposedDate && opponentProposedDate !== schedule?.agreedDate ? `Суперник пропонує ${formatCabinetDate(opponentProposedDate)}. ` : ""}
+              {ownProposedDate && ownProposedDate !== schedule?.agreedDate ? `Твій варіант ${formatCabinetDate(ownProposedDate)}.` : ""}
+            </div>
+          )}
+
+          {opponentProposedDate && opponentProposedDate !== schedule?.agreedDate && (
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => saveAction({ match, action: "accept-date", date: opponentProposedDate })}
+              className="h-10 w-full rounded-md border border-[#bbf903] bg-[#bbf903]/10 text-[0.72rem] font-extrabold text-[#bbf903] disabled:opacity-50"
+            >
+              Погодити день {formatCabinetDate(opponentProposedDate)}
+            </button>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            <select
               value={time}
               onChange={event => setTime(event.target.value)}
               className="h-10 min-w-0 rounded-md border border-white/20 bg-[#111111] px-3 text-center text-sm font-extrabold text-white outline-none focus:border-[#bbf903]"
-            />
+            >
+              <option value="">Обери час</option>
+              {season2TimeSlots.map(slot => (
+                <option key={slot} value={slot} disabled={bookedTimes.has(slot)}>
+                  {slot}{bookedTimes.has(slot) ? " · зайнято" : ""}
+                </option>
+              ))}
+            </select>
             <button
               type="button"
               disabled={isSaving || !time}
@@ -1032,6 +1105,77 @@ function OpponentStat({ label, value }: { label: string; value: number | string 
       <div className="mt-1 truncate text-sm font-extrabold text-white">{value}</div>
     </div>
   );
+}
+
+const season2TimeSlots = Array.from({ length: 24 }, (_, index) => {
+  const totalMinutes = 12 * 60 + index * 30;
+  const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+  const minutes = String(totalMinutes % 60).padStart(2, "0");
+  return `${hours}:${minutes}`;
+});
+
+function getBookedTimesForDate(
+  schedules: Record<string, Season2MatchSchedule>,
+  currentMatchId: string,
+  date: string,
+) {
+  const matchesById = new Map(season2Rounds.flatMap(round => round.matches).map(item => [item.id, item]));
+  const bookedTimes = new Set<string>();
+
+  Object.values(schedules).forEach(item => {
+    if (item.matchId === currentMatchId || item.status !== "scheduled" || !item.agreedTime) return;
+    const staticMatchDate = matchesById.get(item.matchId)?.date ?? "";
+    const effectiveDate = item.agreedDate ?? staticMatchDate;
+    if (effectiveDate === date) bookedTimes.add(item.agreedTime);
+  });
+
+  return bookedTimes;
+}
+
+function getDefaultRescheduleDate(date: string) {
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  parsed.setUTCDate(parsed.getUTCDate() + 1);
+  return parsed.toISOString().slice(0, 10);
+}
+
+function getMinRescheduleDate(date: string) {
+  return getDefaultRescheduleDate(date);
+}
+
+function getRescheduleDateOptions(date: string) {
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) return [];
+
+  const candidates = [
+    { date: addUtcDays(parsed, 1), label: "Наступний день" },
+    { date: getNextUtcWeekday(parsed, 6), label: "Субота" },
+    { date: getNextUtcWeekday(parsed, 0), label: "Неділя" },
+  ];
+
+  const seen = new Set<string>();
+  return candidates.filter(candidate => {
+    if (candidate.date <= date || seen.has(candidate.date)) return false;
+    seen.add(candidate.date);
+    return true;
+  });
+}
+
+function addUtcDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next.toISOString().slice(0, 10);
+}
+
+function getNextUtcWeekday(date: Date, weekday: number) {
+  const current = date.getUTCDay();
+  const offset = ((weekday - current + 7) % 7) || 7;
+  return addUtcDays(date, offset);
+}
+
+function formatCabinetDate(date: string) {
+  const [, month, day] = date.split("-");
+  return day && month ? `${day}.${month}` : date;
 }
 
 function MobileMatchCard({ match, playerId, featured = false }: { match: Season2Match; playerId: string; featured?: boolean }) {

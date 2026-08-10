@@ -78,9 +78,10 @@ type MatchSchedulingPayload = {
   round?: number;
   homePlayerId?: string;
   awayPlayerId?: string;
-  action?: "day-status" | "propose-time" | "accept-time";
+  action?: "day-status" | "propose-time" | "accept-time" | "propose-date" | "accept-date";
   dayStatus?: Season2MatchDayStatus;
   time?: string;
+  date?: string;
   matchLabel?: string;
   dayLabel?: string;
 };
@@ -248,6 +249,9 @@ function makeInitialSchedule(
     away_day_status: "pending",
     home_proposed_time: null,
     away_proposed_time: null,
+    home_proposed_date: null,
+    away_proposed_date: null,
+    agreed_date: null,
     agreed_time: null,
     status: "pending",
     updated_by_player_id: null,
@@ -265,17 +269,43 @@ function applySchedulingAction(
   const ownDayKey = `${side}_day_status` as const;
   const ownTimeKey = `${side}_proposed_time` as const;
   const opponentTimeKey = `${side === "home" ? "away" : "home"}_proposed_time` as const;
+  const ownDateKey = `${side}_proposed_date` as const;
+  const opponentDateKey = `${side === "home" ? "away" : "home"}_proposed_date` as const;
 
   if (payload?.action === "day-status") {
     if (payload.dayStatus !== "available" && payload.dayStatus !== "reschedule") {
       throw new Error("Обери: можу грати або треба перенос.");
     }
     next[ownDayKey] = payload.dayStatus;
+    if (payload.dayStatus === "available") {
+      next[ownDateKey] = null;
+      if (next.home_day_status === "available" && next.away_day_status === "available") {
+        next.agreed_date = null;
+      }
+    }
     if (payload.dayStatus === "reschedule") {
       next.agreed_time = null;
     }
+  } else if (payload?.action === "propose-date") {
+    const date = normalizeSchedulingDate(payload.date);
+    next[ownDayKey] = "reschedule";
+    next[ownDateKey] = date;
+    next.agreed_time = null;
+    next.agreed_date = next[opponentDateKey] === date ? date : null;
+  } else if (payload?.action === "accept-date") {
+    const date = normalizeSchedulingDate(payload.date);
+    if (next[opponentDateKey] !== date) {
+      throw new Error("Цей день ще не запропонований суперником.");
+    }
+    next[ownDayKey] = "reschedule";
+    next[ownDateKey] = date;
+    next.agreed_date = date;
+    next.agreed_time = null;
   } else if (payload?.action === "propose-time") {
     const time = normalizeSchedulingTime(payload.time);
+    if ((next.home_day_status === "reschedule" || next.away_day_status === "reschedule") && !next.agreed_date) {
+      throw new Error("Спочатку погодьте новий день матчу.");
+    }
     next[ownDayKey] = "available";
     next[ownTimeKey] = time;
     if (next[opponentTimeKey] === time) {
@@ -300,13 +330,15 @@ function applySchedulingAction(
 async function getSchedulingTimeConflict(schedule: Season2DbMatchScheduling) {
   if (!schedule.agreed_time) return null;
 
-  const rows = await supabaseGet<Array<Pick<Season2DbMatchScheduling, "match_id" | "agreed_time" | "status">>>(
-    `/season2_match_scheduling?select=match_id,agreed_time,status&round=eq.${encodeURIComponent(String(schedule.round))}&status=eq.scheduled`,
+  const scheduledDate = getScheduleEffectiveDate(schedule);
+  const rows = await supabaseGet<Array<Pick<Season2DbMatchScheduling, "match_id" | "round" | "agreed_time" | "agreed_date" | "status">>>(
+    `/season2_match_scheduling?select=match_id,round,agreed_time,agreed_date,status&status=eq.scheduled`,
   );
 
   return rows.find(row =>
     row.match_id !== schedule.match_id &&
-    row.agreed_time === schedule.agreed_time,
+    row.agreed_time === schedule.agreed_time &&
+    getScheduleEffectiveDate(row) === scheduledDate,
   ) ?? null;
 }
 
@@ -320,16 +352,43 @@ function normalizeSchedulingTime(value: string | undefined) {
   if (hours > 23 || minutes > 59) {
     throw new Error("Некоректний час матчу.");
   }
+  if (minutes !== 0 && minutes !== 30) {
+    throw new Error("Обирай слот з кроком 30 хвилин.");
+  }
 
   return time;
 }
 
+function normalizeSchedulingDate(value: string | undefined) {
+  const date = value?.trim() ?? "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new Error("Обери новий день матчу.");
+  }
+
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+    throw new Error("Некоректний день матчу.");
+  }
+
+  return date;
+}
+
 function deriveScheduleStatus(schedule: Season2DbMatchScheduling) {
-  if (schedule.home_day_status === "reschedule" || schedule.away_day_status === "reschedule") return "postponed";
   if (schedule.agreed_time) return "scheduled";
+  if ((schedule.home_day_status === "reschedule" || schedule.away_day_status === "reschedule") && !schedule.agreed_date) return "postponed";
   if (schedule.home_proposed_time || schedule.away_proposed_time) return "negotiating";
+  if (schedule.agreed_date) return "day_confirmed";
   if (schedule.home_day_status === "available" && schedule.away_day_status === "available") return "day_confirmed";
   return "pending";
+}
+
+function getScheduleEffectiveDate(schedule: Pick<Season2DbMatchScheduling, "match_id" | "round" | "agreed_date">) {
+  if (schedule.agreed_date) return schedule.agreed_date;
+  const match = season2Rounds
+    .flatMap(round => round.matches)
+    .find(item => item.id === schedule.match_id);
+
+  return match?.date ?? "";
 }
 
 async function notifyScheduledMatch(schedule: Season2DbMatchScheduling, payload: MatchSchedulingPayload | null) {
@@ -342,7 +401,7 @@ async function notifyScheduledMatch(schedule: Season2DbMatchScheduling, payload:
   if (!rows.length) return { sent: 0, removed: 0 };
 
   const matchLabel = payload?.matchLabel?.trim() || "Матч Season 2";
-  const dayLabel = payload?.dayLabel?.trim() || "у турі";
+  const dayLabel = schedule.agreed_date ? formatSchedulingDate(schedule.agreed_date) : payload?.dayLabel?.trim() || "у турі";
 
   return sendPushNotifications(rows, {
     title: "BPL Season 2",
@@ -389,11 +448,25 @@ function getOpponentNotificationBody(user: Season2DbUser, payload: MatchScheduli
     return `${actor} просить перенести матч ${dayLabel}.`;
   }
 
+  if (payload?.action === "propose-date" && payload.date) {
+    return `${actor} пропонує перенести матч на ${formatSchedulingDate(payload.date)}.`;
+  }
+
+  if (payload?.action === "accept-date" && payload.date) {
+    return `${actor} погодив новий день матчу: ${formatSchedulingDate(payload.date)}. Домовтесь про час.`;
+  }
+
   if (payload?.action === "propose-time" && payload.time) {
     return `${actor} пропонує зіграти ${dayLabel} о ${payload.time}.`;
   }
 
   return "";
+}
+
+function formatSchedulingDate(date: string) {
+  const [year, month, day] = date.split("-");
+  if (!year || !month || !day) return date;
+  return `${day}.${month}.${year}`;
 }
 
 async function handleAuth(request: ApiRequest, response: ApiResponse) {

@@ -13,6 +13,9 @@ export type Season2MatchSchedule = {
   awayDayStatus: Season2ScheduleDayStatus;
   homeProposedTime: string | null;
   awayProposedTime: string | null;
+  homeProposedDate: string | null;
+  awayProposedDate: string | null;
+  agreedDate: string | null;
   agreedTime: string | null;
   status: Season2ScheduleStatus;
   updatedByPlayerId: string | null;
@@ -28,6 +31,9 @@ type DbMatchSchedule = {
   away_day_status: Season2ScheduleDayStatus;
   home_proposed_time: string | null;
   away_proposed_time: string | null;
+  home_proposed_date?: string | null;
+  away_proposed_date?: string | null;
+  agreed_date?: string | null;
   agreed_time: string | null;
   status: Season2ScheduleStatus;
   updated_by_player_id: string | null;
@@ -36,9 +42,10 @@ type DbMatchSchedule = {
 
 type SaveSchedulePayload = {
   match: Season2Match;
-  action: "day-status" | "propose-time" | "accept-time";
+  action: "day-status" | "propose-time" | "accept-time" | "propose-date" | "accept-date";
   dayStatus?: Season2ScheduleDayStatus;
   time?: string;
+  date?: string;
 };
 
 export async function loadSeason2MatchSchedules() {
@@ -61,6 +68,7 @@ export async function saveSeason2MatchSchedule(payload: SaveSchedulePayload) {
       action: payload.action,
       dayStatus: payload.dayStatus,
       time: payload.time,
+      date: payload.date,
       matchLabel: `${payload.match.home.name} - ${payload.match.away.name}`,
       dayLabel: payload.match.dayLabel,
     }),
@@ -71,8 +79,9 @@ export async function saveSeason2MatchSchedule(payload: SaveSchedulePayload) {
 
 export function getScheduleBadge(schedule: Season2MatchSchedule | undefined) {
   if (!schedule) return null;
-  if (schedule.status === "scheduled" && schedule.agreedTime) return `О ${schedule.agreedTime}`;
+  if (schedule.status === "scheduled" && schedule.agreedTime) return schedule.agreedDate ? `${formatShortDate(schedule.agreedDate)} о ${schedule.agreedTime}` : `О ${schedule.agreedTime}`;
   if (schedule.status === "postponed") return "Перенесено";
+  if (schedule.status === "day_confirmed" && schedule.agreedDate) return `${formatShortDate(schedule.agreedDate)} · день ок`;
   if (schedule.status === "negotiating") return "Домовляються";
   if (schedule.status === "day_confirmed") return "День ок";
   return null;
@@ -88,9 +97,17 @@ function toClientSchedule(row: DbMatchSchedule): Season2MatchSchedule {
     awayDayStatus: row.away_day_status,
     homeProposedTime: row.home_proposed_time,
     awayProposedTime: row.away_proposed_time,
+    homeProposedDate: row.home_proposed_date ?? null,
+    awayProposedDate: row.away_proposed_date ?? null,
+    agreedDate: row.agreed_date ?? null,
     agreedTime: row.agreed_time,
     status: row.status,
     updatedByPlayerId: row.updated_by_player_id,
     updatedAt: row.updated_at,
   };
+}
+
+function formatShortDate(date: string) {
+  const [, month, day] = date.split("-");
+  return day && month ? `${day}.${month}` : date;
 }
