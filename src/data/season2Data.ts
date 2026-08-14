@@ -64,10 +64,26 @@ const withdrawnSeason2Players: Season2Player[] = [
 ];
 
 const season2WithdrawnPlayerIds = new Set(withdrawnSeason2Players.map(player => player.id));
+const season2CalendarPlayerById = new Map(
+  [...season2Players, ...withdrawnSeason2Players].map(player => [player.id, player]),
+);
 const season2CalendarPlayers = [
-  ...season2Players.filter(player => player.id !== "vitalii"),
-  ...withdrawnSeason2Players,
-];
+  "igor",
+  "sania",
+  "zhenia",
+  "posol",
+  "kiril",
+  "mykola",
+  "vlad",
+  "pitch",
+  "misha",
+  "oleksii",
+  "andrii",
+  "zheka",
+  "dmytro",
+  "dimas",
+  "artem",
+].map(playerId => season2CalendarPlayerById.get(playerId)!);
 const season2FloatingPlayer = season2Players.find(player => player.id === "vitalii") ?? null;
 
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
