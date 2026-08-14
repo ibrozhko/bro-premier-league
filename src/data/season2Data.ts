@@ -53,14 +53,21 @@ export const season2Players: Season2Player[] = [
   { id: "misha", name: "Майкл", nick: "early_actor62", platform: "PS5", club: "Ліверпуль 🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
   { id: "oleksii", name: "Олексій", nick: "Mer4iik", platform: "PS5", club: "Комо 🇮🇹", achievements: ["3 місце сезону 1"] },
   { id: "andrii", name: "Андрій", nick: "Juced99", platform: "PC", club: "Ракув 🇵🇱", achievements: ["Переможець сезону 1", "Фіналіст World Cup"] },
-  { id: "zheka", name: "Жека", nick: "katrik_89", platform: "PS5", club: "Манчестер Сіті 🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
   { id: "dmytro", name: "Дмитро", nick: "LusuyKrab", platform: "PS5", club: "ПСЖ 🇫🇷" },
   { id: "dimas", name: "Дімас", nick: "Viking240222", platform: "PC", club: "Порто 🇵🇹" },
   { id: "artem", name: "Артем", nick: "fen1kssss", platform: "PC", club: "Лаціо 🇮🇹" },
   { id: "vitalii", name: "Віталій", nick: "turbovitalik", platform: "PS5", club: "Атлетік Більбао 🇪🇸" },
 ];
 
-const season2CalendarPlayers = season2Players.filter(player => player.id !== "vitalii");
+const withdrawnSeason2Players: Season2Player[] = [
+  { id: "zheka", name: "Жека", nick: "katrik_89", platform: "PS5", club: "Манчестер Сіті 🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+];
+
+const season2WithdrawnPlayerIds = new Set(withdrawnSeason2Players.map(player => player.id));
+const season2CalendarPlayers = [
+  ...season2Players.filter(player => player.id !== "vitalii"),
+  ...withdrawnSeason2Players,
+];
 const season2FloatingPlayer = season2Players.find(player => player.id === "vitalii") ?? null;
 
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
@@ -229,14 +236,19 @@ export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
     const date = getRoundDate(round);
     const leg = round <= firstLegRounds.length ? 1 : 2;
     const roundWithFloatingPlayer = addFloatingPlayerMatch(pairings, bye, leg);
+    let roundBye = roundWithFloatingPlayer.bye;
+    const matches = roundWithFloatingPlayer.pairings.flatMap(([home, away], matchIndex) => {
+      if (season2WithdrawnPlayerIds.has(home.id)) {
+        roundBye = away;
+        return [];
+      }
 
-    return {
-      round,
-      date: toIsoDate(date),
-      dayLabel: formatDate(date),
-      leg,
-      bye: roundWithFloatingPlayer.bye,
-      matches: roundWithFloatingPlayer.pairings.map(([home, away], matchIndex) => ({
+      if (season2WithdrawnPlayerIds.has(away.id)) {
+        roundBye = home;
+        return [];
+      }
+
+      return [{
         id: `S2-${String(round).padStart(2, "0")}-${String(matchIndex + 1).padStart(2, "0")}`,
         round,
         date: toIsoDate(date),
@@ -246,7 +258,16 @@ export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
         away,
         homeScore: null,
         awayScore: null,
-      })),
+      }];
+    });
+
+    return {
+      round,
+      date: toIsoDate(date),
+      dayLabel: formatDate(date),
+      leg,
+      bye: roundBye,
+      matches,
     };
   });
 }
@@ -268,7 +289,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "12.08.2026";
+export const season2LastUpdated = "14.08.2026";
 
 export const season2Summary = {
   players: season2Players.length,
@@ -290,7 +311,6 @@ const season2InitialTableOrder = [
   "misha",
   "oleksii",
   "zhenia",
-  "zheka",
   "dmytro",
   "dimas",
   "artem",

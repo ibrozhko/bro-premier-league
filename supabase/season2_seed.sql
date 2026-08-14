@@ -14,7 +14,6 @@ values
   ('misha', 'early_actor62', 'Майкл', 'scrypt$EDwpcqFM8S6cT91uR5IVEg$LIzk_9du6tEYRTroc7x5JOPiy0OTnnMJRhuoaZ_QL76tByTNhLjLiDVd7GTURWuucy52-W5DRTXsVyk3-gdBNQ', false),
   ('oleksii', 'Mer4iik', 'Олексій', 'scrypt$BgNHRwVuQRCJES4lW-OrEA$yUfH8KrsLKlA7KmqjMMPCImJeHZ_nlMMJaoD6xKz6tLQHVx-6D_qYBs0kAXykifFse0Si98WrnX9aAYtGaRj4g', false),
   ('andrii', 'Juced99', 'Андрій', 'scrypt$PVrAhkmzq0YKt1F4lD7Tng$6YfDWF5MdCoWrJaLpl8vyRJlGXGuUN-evY3rdMNnegbKUgNIssDVI8IddFPehJtvKms-Lxu0VOWxGJY2oU3CSw', false),
-  ('zheka', 'katrik_89', 'Жека', 'scrypt$JMgwhQ60-a4wmF9tP-47xw$uDcjgBpfPjmsAluYIiYI4NbQSEBaXVru6MHSQCNj53OCEsEWR6RPZhteY4IqLkA0bQ1pcFeAEDNNAUXFuCib_g', false),
   ('dmytro', 'LusuyKrab', 'Дмитро', 'scrypt$FXTZfHlbpIqtNab9ANfdVw$SjoTNqL4diMrfBJkcbp_uHwAHKwO-8muYBo92DbFGc-s8fAqAcKpyHWzLOJ5IpfSwFKZshpeechONkYO6TNCwA', false),
   ('dimas', 'Viking240222', 'Дімас', 'scrypt$xf7nbx7abwr72zw3Jd4AHg$xAmsx2F74PN3lvoIKbGieJwy_yPJSWBMRGj1vgIkY78NTEmBFtOu6XQppfPoMdZ219nas_wtmXlDQV4PTtAWBg', false),
   ('artem', 'fen1kssss', 'Артем', 'scrypt$YNtkLq33ByB0cUVncW-3Fw$pDFJB7azPvAS1nhlFomwcOufpYIe9iWsduH_JlzsKOwOVJVijcbr5VGuYY4a0nQ_6Kp4PICdpW_LDXFUkTEwVg', false),
@@ -24,3 +23,5 @@ on conflict (player_id) do update set
   display_name = excluded.display_name,
   password_hash = excluded.password_hash,
   is_admin = excluded.is_admin;
+
+delete from season2_users where player_id = 'zheka';
