@@ -99,6 +99,7 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-02-06": { homeScore: 7, awayScore: 2 },
   "S2-02-07": { homeScore: 5, awayScore: 4 },
   "S2-02-08": { homeScore: 8, awayScore: 1 },
+  "S2-04-01": { homeScore: 1, awayScore: 3 },
 };
 
 function hashSeed(seed: string) {
