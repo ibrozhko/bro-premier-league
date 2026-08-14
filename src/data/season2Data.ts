@@ -237,7 +237,7 @@ export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
     const leg = round <= firstLegRounds.length ? 1 : 2;
     const roundWithFloatingPlayer = addFloatingPlayerMatch(pairings, bye, leg);
     let roundBye = roundWithFloatingPlayer.bye;
-    const matches = roundWithFloatingPlayer.pairings.flatMap(([home, away], matchIndex) => {
+    const matches: Season2Match[] = roundWithFloatingPlayer.pairings.flatMap(([home, away], matchIndex) => {
       if (season2WithdrawnPlayerIds.has(home.id)) {
         roundBye = away;
         return [];
