@@ -989,7 +989,7 @@ function WeekendOpponentCard({
             <button
               type="button"
               disabled={isSaving}
-              onClick={() => saveAction({ match, action: "propose-date", date: rescheduleDate })}
+              onClick={() => setMessage("Обери новий день нижче і натисни «Запропонувати день».")}
               className="h-10 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 text-[0.72rem] font-extrabold text-[#ff5a1f] disabled:opacity-50"
             >
               Перенести

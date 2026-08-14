@@ -279,9 +279,8 @@ function applySchedulingAction(
     next[ownDayKey] = payload.dayStatus;
     if (payload.dayStatus === "available") {
       next[ownDateKey] = null;
-      if (next.home_day_status === "available" && next.away_day_status === "available") {
-        next.agreed_date = null;
-      }
+      next.agreed_date = null;
+      next.agreed_time = null;
     }
     if (payload.dayStatus === "reschedule") {
       next.agreed_time = null;
