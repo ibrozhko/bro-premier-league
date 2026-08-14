@@ -66,13 +66,16 @@ const season2FloatingPlayer = season2Players.find(player => player.id === "vital
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
 export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {
   "S2-01-01": { homeScore: 5, awayScore: 1 },
+  "S2-01-02": { homeScore: 5, awayScore: 2 },
   "S2-01-03": { homeScore: 4, awayScore: 6 },
   "S2-01-04": { homeScore: 4, awayScore: 5 },
   "S2-01-05": { homeScore: 5, awayScore: 0 },
   "S2-01-06": { homeScore: 2, awayScore: 2 },
+  "S2-02-02": { homeScore: 3, awayScore: 1 },
   "S2-02-05": { homeScore: 3, awayScore: 5 },
   "S2-02-06": { homeScore: 7, awayScore: 2 },
   "S2-02-07": { homeScore: 5, awayScore: 4 },
+  "S2-02-08": { homeScore: 8, awayScore: 1 },
 };
 
 function hashSeed(seed: string) {
@@ -265,7 +268,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "09.08.2026";
+export const season2LastUpdated = "12.08.2026";
 
 export const season2Summary = {
   players: season2Players.length,
