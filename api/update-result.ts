@@ -623,13 +623,24 @@ function assertCurrentSeason2Source(source: string) {
     "BPL-SEASON-2-FINAL-DRAW",
     "Лаціо",
     "turbovitalik",
+    "withdrawnSeason2Players",
+    "season2WithdrawnPlayerIds",
+    "season2CalendarPlayerById",
     "season2CalendarPlayers",
     "addFloatingPlayerMatch",
     "createSeason2Schedule",
+    "\"zheka\"",
   ];
   const missingMarker = requiredMarkers.find(marker => !source.includes(marker));
+  const zhekaIsActive = /export const season2Players: Season2Player\[] = \[(?:(?!\n\];)[\s\S])*\{ id: "zheka"/.test(source);
+  const zhekaNotInTechnicalSlot = !/const season2CalendarPlayers = \[[\s\S]*?"andrii",\s*"zheka",\s*"dmytro"/.test(source);
 
-  if (missingMarker || source.includes("fen1kssss\", platform: \"PC\", club: \"Фенербахче")) {
+  if (
+    missingMarker ||
+    zhekaIsActive ||
+    zhekaNotInTechnicalSlot ||
+    source.includes("fen1kssss\", platform: \"PC\", club: \"Фенербахче")
+  ) {
     throw new Error(
       "GitHub-версія Season 2 застаріла. Спочатку синхронізуй main з актуальним сайтом, інакше адмінка може відкотити календар.",
     );
