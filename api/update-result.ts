@@ -1,5 +1,13 @@
 import { isAdminRequest, type AdminRequest } from "./_utils/adminAuth.js";
-import { supabaseGet, supabasePatch, type Season2DbPrediction } from "./_utils/season2Api.js";
+import {
+  supabaseDelete,
+  supabaseGet,
+  supabasePatch,
+  type Season2DbPrediction,
+  type Season2DbPushSubscription,
+} from "./_utils/season2Api.js";
+import { season2Rounds } from "../src/data/season2Data.js";
+import webpush from "web-push";
 
 type ApiRequest = {
   method?: string;
@@ -137,9 +145,16 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         `Update Season 2 ${payload.matchId}: ${scoreText(payload.homeScore)}-${scoreText(payload.awayScore)}`,
       );
 
-      await recalculateSeason2PredictionPoints(payload.matchId, payload.homeScore, payload.awayScore);
+      const predictions = await recalculateSeason2PredictionPoints(payload.matchId, payload.homeScore, payload.awayScore);
+      const push = payload.homeScore === null || payload.awayScore === null
+        ? { sent: 0, removed: 0, skipped: "result-cleared" }
+        : await notifySeason2PredictionPoints(payload.matchId, predictions);
 
-      response.status(200).json({ message: "Результат Season 2 оновлено, прогнози перераховано" });
+      response.status(200).json({
+        message: "Результат Season 2 оновлено, прогнози перераховано",
+        predictions,
+        push,
+      });
       return;
     }
 
@@ -522,24 +537,148 @@ function updateSeason2ResultSource(source: string, payload: UpdatePayload) {
 }
 
 async function recalculateSeason2PredictionPoints(matchId: string, homeScore: number | null | undefined, awayScore: number | null | undefined) {
-  const rows = await supabaseGet<Array<Pick<Season2DbPrediction, "id" | "predicted_home_score" | "predicted_away_score">>>(
-    `/season2_predictions?select=id,predicted_home_score,predicted_away_score&match_id=eq.${encodeURIComponent(matchId)}`,
+  const rows = await supabaseGet<Array<Pick<
+    Season2DbPrediction,
+    "id" | "user_id" | "player_id" | "predicted_home_score" | "predicted_away_score"
+  >>>(
+    `/season2_predictions?select=id,user_id,player_id,predicted_home_score,predicted_away_score&match_id=eq.${encodeURIComponent(matchId)}`,
   );
 
-  await Promise.all(rows.map(row =>
+  const scoredRows = rows.map(row => ({
+    ...row,
+    points: calculateSeason2PredictionPoints(
+      row.predicted_home_score,
+      row.predicted_away_score,
+      homeScore ?? null,
+      awayScore ?? null,
+    ),
+  }));
+
+  await Promise.all(scoredRows.map(row =>
     supabasePatch(
       `/season2_predictions?id=eq.${row.id}`,
-      {
-        points: calculateSeason2PredictionPoints(
-          row.predicted_home_score,
-          row.predicted_away_score,
-          homeScore ?? null,
-          awayScore ?? null,
-        ),
-      },
+      { points: row.points },
       "return=minimal",
     ),
   ));
+
+  return {
+    updated: scoredRows.length,
+    rows: scoredRows.map(row => ({
+      id: row.id,
+      userId: row.user_id,
+      playerId: row.player_id,
+      points: row.points,
+    })),
+  };
+}
+
+async function notifySeason2PredictionPoints(
+  matchId: string,
+  predictions: Awaited<ReturnType<typeof recalculateSeason2PredictionPoints>>,
+) {
+  if (!predictions.rows.length) return { sent: 0, removed: 0, skipped: "no-predictions" };
+  if (!configureWebPush()) return { sent: 0, removed: 0, skipped: "missing-vapid" };
+
+  try {
+    const userIds = [...new Set(predictions.rows.map(row => row.userId))];
+    const subscriptions = await supabaseGet<Season2DbPushSubscription[]>(
+      `/season2_push_subscriptions?select=*&user_id=in.(${userIds.map(encodeURIComponent).join(",")})`,
+    );
+
+    if (!subscriptions.length) return { sent: 0, removed: 0, skipped: "no-subscriptions" };
+
+    const subscriptionsByUserId = new Map<string, Season2DbPushSubscription[]>();
+    subscriptions.forEach(subscription => {
+      subscriptionsByUserId.set(subscription.user_id, [
+        ...(subscriptionsByUserId.get(subscription.user_id) ?? []),
+        subscription,
+      ]);
+    });
+
+    const matchLabel = getSeason2MatchLabel(matchId);
+    const results = await Promise.all(predictions.rows.map(row => {
+      const rows = subscriptionsByUserId.get(row.userId) ?? [];
+      if (!rows.length) return Promise.resolve({ sent: 0, removed: 0 });
+
+      return sendSeason2PushNotifications(rows, {
+        title: "BPL Season 2",
+        body: `Твій прогноз на ${matchLabel} приніс ${row.points} ${formatPointsWord(row.points)}.`,
+        url: "/cabinet",
+      });
+    }));
+
+    return results.reduce((total, result) => ({
+      sent: total.sent + result.sent,
+      removed: total.removed + result.removed,
+    }), { sent: 0, removed: 0 });
+  } catch (error) {
+    return {
+      sent: 0,
+      removed: 0,
+      error: error instanceof Error ? error.message : "Push notification failed.",
+    };
+  }
+}
+
+async function sendSeason2PushNotifications(
+  rows: Season2DbPushSubscription[],
+  notification: { title: string; body: string; url: string },
+) {
+  const notificationPayload = JSON.stringify(notification);
+  const results = await Promise.allSettled(rows.map(row => webpush.sendNotification({
+    endpoint: row.endpoint,
+    keys: {
+      p256dh: row.p256dh,
+      auth: row.auth,
+    },
+  }, notificationPayload)));
+
+  const staleRows = results
+    .map((result, index) => ({ result, row: rows[index] }))
+    .filter(({ result }) => result.status === "rejected" && isStalePushError(result.reason));
+
+  await Promise.all(staleRows.map(({ row }) =>
+    supabaseDelete(`/season2_push_subscriptions?user_id=eq.${encodeURIComponent(row.user_id)}&endpoint=eq.${encodeURIComponent(row.endpoint)}`),
+  ));
+
+  return {
+    sent: results.filter(result => result.status === "fulfilled").length,
+    removed: staleRows.length,
+  };
+}
+
+function configureWebPush() {
+  const publicKey = process.env.VAPID_PUBLIC_KEY;
+  const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const subject = process.env.VAPID_SUBJECT ?? "mailto:bpl@broleague.online";
+
+  if (!publicKey || !privateKey) return false;
+
+  webpush.setVapidDetails(subject, publicKey, privateKey);
+  return true;
+}
+
+function isStalePushError(error: unknown) {
+  const statusCode = typeof error === "object" && error && "statusCode" in error
+    ? Number((error as { statusCode?: number }).statusCode)
+    : 0;
+
+  return statusCode === 404 || statusCode === 410;
+}
+
+function getSeason2MatchLabel(matchId: string) {
+  const match = season2Rounds
+    .flatMap(round => round.matches)
+    .find(item => item.id === matchId);
+
+  return match ? `${match.home.name} - ${match.away.name}` : "матч";
+}
+
+function formatPointsWord(points: number) {
+  if (points === 1) return "очко";
+  if (points >= 2 && points <= 4) return "очки";
+  return "очок";
 }
 
 function calculateSeason2PredictionPoints(
