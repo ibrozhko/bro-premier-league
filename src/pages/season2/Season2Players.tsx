@@ -131,15 +131,15 @@ function FormPills({ form }: { form: Season2Standing["form"] }) {
     <div className="flex gap-1">
       {values.map((value, index) => {
         const className = value === "W"
-          ? "bg-[#bbf903] text-[#111111]"
+          ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
           : value === "D"
-            ? "bg-[#111111]/12 text-[#111111]"
+            ? "border-[#343434] bg-[#343434] text-white"
             : value === "L"
-              ? "bg-[#ff5a1f] text-white"
-              : "bg-[#111111]/8 text-[#111111]/28";
+              ? "border-[#ff5a1f] bg-[#ff5a1f] text-white"
+              : "border-[#111111]/14 bg-transparent text-[#111111]/30";
 
         return (
-          <span key={`${value ?? "empty"}-${index}`} className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.58rem] font-extrabold sm:h-6 sm:w-6 sm:text-[0.65rem] ${className}`}>
+          <span key={`${value ?? "empty"}-${index}`} className={`inline-flex h-5 w-5 items-center justify-center rounded-full border text-[0.58rem] font-extrabold sm:h-6 sm:w-6 sm:text-[0.65rem] ${className}`}>
             {value ?? "-"}
           </span>
         );

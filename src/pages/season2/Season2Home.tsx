@@ -427,15 +427,15 @@ function FormPills({ form }: { form: Array<"W" | "D" | "L"> }) {
     <div className="flex justify-center gap-1">
       {values.map((value, index) => {
         const className = value === "W"
-          ? "bg-[#bbf903] text-[#111111]"
+          ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
           : value === "D"
-            ? "bg-[#111111]/12 text-[#111111]"
+            ? "border-[#343434] bg-[#343434] text-white"
             : value === "L"
-              ? "bg-[#ff5a1f] text-white"
-              : "bg-[#111111]/8 text-[#111111]/28";
+              ? "border-[#ff5a1f] bg-[#ff5a1f] text-white"
+              : "border-[#111111]/14 bg-transparent text-[#111111]/30";
 
         return (
-          <span key={`${value ?? "empty"}-${index}`} className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[0.65rem] font-extrabold ${className}`}>
+          <span key={`${value ?? "empty"}-${index}`} className={`inline-flex h-6 w-6 items-center justify-center rounded-full border text-[0.65rem] font-extrabold ${className}`}>
             {value ?? "-"}
           </span>
         );
@@ -499,17 +499,19 @@ function Team({ value, meta, align = "left" }: { value: string; meta: string; al
 
 function Status({ played, schedule, className = "" }: { played: boolean; schedule?: Season2MatchSchedule; className?: string }) {
   const badge = getScheduleBadge(schedule);
-  const isPostponed = schedule?.status === "postponed";
 
   return (
-    <span className={`inline-flex rounded-md px-2 py-1 text-[0.65rem] font-bold uppercase ${
-      played
-        ? "bg-[#111111] text-white"
-        : isPostponed
-          ? "bg-[#ff5a1f] text-white"
-          : "bg-[#bbf903] text-[#111111]"
-    } ${className}`}>
+    <span className={`inline-flex rounded-md border px-2 py-1 text-[0.65rem] font-bold uppercase ${getSeason2StatusClass(played, schedule)} ${className}`}>
       {played ? "Зіграно" : badge ?? "Скоро"}
     </span>
   );
+}
+
+function getSeason2StatusClass(played: boolean, schedule?: Season2MatchSchedule) {
+  if (played) return "border-[#343434] bg-[#343434] text-white";
+  if (schedule?.status === "scheduled") return "border-[#ff5a1f] bg-[#ff5a1f] text-white";
+  if (schedule?.status === "negotiating") return "border-[#ff5a1f]/28 bg-[#ff5a1f]/12 text-[#ff5a1f]";
+  if (schedule?.status === "day_confirmed") return "border-[#bbf903] bg-[#bbf903] text-[#111111]";
+  if (schedule?.status === "postponed") return "border-[#ff5a1f] bg-[#111111] text-[#ff5a1f]";
+  return "border-[#bbf903] bg-[#bbf903] text-[#111111]";
 }

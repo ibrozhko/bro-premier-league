@@ -939,13 +939,7 @@ function WeekendOpponentCard({
             <div className="mt-1 text-xs font-bold text-[#bbf903]">Новий день: {formatCabinetDate(schedule.agreedDate)}</div>
           )}
         </div>
-        <span className={`rounded-md px-2 py-1 text-[0.65rem] font-extrabold uppercase ${
-          schedule?.status === "scheduled"
-            ? "bg-[#bbf903] text-[#111111]"
-            : schedule?.status === "postponed"
-              ? "bg-[#ff5a1f] text-white"
-              : "bg-white/10 text-white/70"
-        }`}>
+        <span className={`rounded-md border px-2 py-1 text-[0.65rem] font-extrabold uppercase ${getCabinetScheduleStatusClass(schedule)}`}>
           {badge ?? "Без часу"}
         </span>
       </div>
@@ -1191,7 +1185,7 @@ function MobileMatchCard({ match, playerId, featured = false }: { match: Season2
           </div>
           <div className="mt-1 text-xs text-white/45">{match.dayLabel} · {venueLabel}</div>
         </div>
-        <span className={`rounded-md px-2 py-1 text-[0.65rem] font-extrabold uppercase ${played ? "bg-white/12 text-white" : "bg-[#bbf903] text-[#111111]"}`}>
+        <span className={`rounded-md border px-2 py-1 text-[0.65rem] font-extrabold uppercase ${played ? "border-white/12 bg-white/12 text-white" : "border-[#bbf903] bg-[#bbf903] text-[#111111]"}`}>
           {played ? "Зіграно" : "Скоро"}
         </span>
       </div>
@@ -1271,12 +1265,20 @@ function getFormValues(form: Array<"W" | "D" | "L">) {
 
 function formClass(value: "W" | "D" | "L" | "-") {
   const color = value === "W"
-    ? "bg-[#bbf903] text-[#111111]"
+    ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
     : value === "D"
-      ? "bg-white/14 text-white"
+      ? "border-white/22 bg-white/14 text-white"
       : value === "L"
-        ? "bg-[#ff5a1f] text-white"
-        : "bg-white/8 text-white/30";
+        ? "border-[#ff5a1f] bg-[#ff5a1f] text-white"
+        : "border-white/12 bg-transparent text-white/30";
 
-  return `inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-extrabold ${color}`;
+  return `inline-flex h-10 w-10 items-center justify-center rounded-full border text-sm font-extrabold ${color}`;
+}
+
+function getCabinetScheduleStatusClass(schedule?: Season2MatchSchedule) {
+  if (schedule?.status === "scheduled") return "border-[#ff5a1f] bg-[#ff5a1f] text-white";
+  if (schedule?.status === "negotiating") return "border-[#ff5a1f]/45 bg-[#ff5a1f]/12 text-[#ff5a1f]";
+  if (schedule?.status === "day_confirmed") return "border-[#bbf903] bg-[#bbf903] text-[#111111]";
+  if (schedule?.status === "postponed") return "border-[#ff5a1f] bg-[#2a1510] text-[#ff5a1f]";
+  return "border-white/12 bg-white/10 text-white/70";
 }
