@@ -245,7 +245,8 @@ function getSeason2HomeUpcomingRounds(now = new Date()) {
 function getSeason2HomeResultRounds() {
   return season2Rounds
     .filter(round => round.matches.some(isSeason2Played))
-    .reverse();
+    .reverse()
+    .slice(0, 2);
 }
 
 function getSeason2WeekendRounds(weekendIndex: number) {
@@ -289,7 +290,7 @@ export function Season2MatchRow({
   const played = match.homeScore !== null && match.awayScore !== null;
 
   return (
-    <article className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-3 px-4 py-3.5 sm:grid-cols-[116px_1fr_80px_1fr_132px] sm:gap-5 sm:px-6 sm:py-4">
+    <article className="group relative grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-3 px-4 py-3.5 sm:grid-cols-[116px_1fr_80px_1fr_132px] sm:gap-5 sm:px-6 sm:py-5">
       <div className="col-span-3 flex items-center justify-between gap-3 sm:col-span-1 sm:block">
         <div>
           <div className="text-[0.65rem] font-bold uppercase tracking-wide text-[#111111]/45">Матч</div>
@@ -322,7 +323,7 @@ function CommunityPrediction({
   const odds = calculateCommunityOdds(aggregate);
 
   return (
-    <div className="col-span-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-[#111111]/8 pt-2 text-center text-xs font-bold text-[#111111]/50 sm:col-span-3 sm:col-start-2 sm:text-sm">
+    <div className="col-span-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-[#111111]/8 pt-2 text-center text-xs font-bold text-[#111111]/50 sm:pointer-events-none sm:absolute sm:bottom-2 sm:left-[160px] sm:right-[160px] sm:col-span-3 sm:col-start-2 sm:rounded-full sm:border sm:border-[#111111]/10 sm:bg-white/95 sm:px-3 sm:py-1.5 sm:text-sm sm:opacity-0 sm:shadow-sm sm:transition sm:duration-200 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
       <span className="text-[#ff5a1f]">{match.home.name} {odds.home}</span>
       <span className="text-[#111111]/28">·</span>
       <span>X {odds.draw}</span>
