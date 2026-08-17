@@ -1277,8 +1277,8 @@ function formClass(value: "W" | "D" | "L" | "-") {
 
 function getCabinetScheduleStatusClass(schedule?: Season2MatchSchedule) {
   if (schedule?.status === "scheduled") return "border-[#92c900] bg-[#bbf903] text-[#111111]";
-  if (schedule?.status === "negotiating") return "border-[#f4d35e] bg-[#c9a7ff] text-[#111111]";
-  if (schedule?.status === "day_confirmed") return "border-[#f4d35e] bg-[#ffe76a] text-[#111111]";
-  if (schedule?.status === "postponed") return "border-[#d94716] bg-[#ff5a1f] text-[#111111]";
-  return "border-[#18bfd0] bg-[#2af2ff] text-[#111111]";
+  if (schedule?.status === "negotiating") return "border-[#fe008a] bg-[#fe008a] text-[#111111]";
+  if (schedule?.status === "day_confirmed") return "border-[#92c900] bg-[#bbf903] text-[#111111]";
+  if (schedule?.status === "postponed") return "border-[#3050ff] bg-[#3050ff] text-[#111111]";
+  return "border-[#d94716] bg-[#ff5a1f] text-[#111111]";
 }
