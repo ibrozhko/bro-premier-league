@@ -289,7 +289,7 @@ export function Season2MatchRow({
   const played = match.homeScore !== null && match.awayScore !== null;
 
   return (
-    <article className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-3 px-4 py-3.5 sm:grid-cols-[116px_1fr_80px_1fr_90px] sm:gap-5 sm:px-6 sm:py-4">
+    <article className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-3 px-4 py-3.5 sm:grid-cols-[116px_1fr_80px_1fr_132px] sm:gap-5 sm:px-6 sm:py-4">
       <div className="col-span-3 flex items-center justify-between gap-3 sm:col-span-1 sm:block">
         <div>
           <div className="text-[0.65rem] font-bold uppercase tracking-wide text-[#111111]/45">Матч</div>
@@ -302,7 +302,7 @@ export function Season2MatchRow({
         {played ? `${match.homeScore}:${match.awayScore}` : "VS"}
       </div>
       <Team value={match.away.name} meta={match.away.club} />
-      <div className="hidden text-right sm:block">
+      <div className="hidden justify-self-end sm:block">
         <Status played={played} schedule={schedule} />
       </div>
       <CommunityPrediction match={match} predictionAggregates={predictionAggregates} />
@@ -322,11 +322,11 @@ function CommunityPrediction({
   const odds = calculateCommunityOdds(aggregate);
 
   return (
-    <div className="col-span-3 rounded-md border border-[#111111]/10 bg-[#111111]/[0.035] px-3 py-2 text-center text-xs font-bold text-[#111111]/58 sm:col-span-5 sm:text-sm">
+    <div className="col-span-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-[#111111]/8 pt-2 text-center text-xs font-bold text-[#111111]/50 sm:col-span-3 sm:col-start-2 sm:text-sm">
       <span className="text-[#ff5a1f]">{match.home.name} {odds.home}</span>
-      <span className="mx-2 text-[#111111]/32">·</span>
+      <span className="text-[#111111]/28">·</span>
       <span>X {odds.draw}</span>
-      <span className="mx-2 text-[#111111]/32">·</span>
+      <span className="text-[#111111]/28">·</span>
       <span className="text-[#ff5a1f]">{match.away.name} {odds.away}</span>
     </div>
   );
@@ -501,7 +501,7 @@ function Status({ played, schedule, className = "" }: { played: boolean; schedul
   const badge = getScheduleBadge(schedule);
 
   return (
-    <span className={`inline-flex rounded-md border px-2 py-1 text-[0.65rem] font-bold uppercase ${getSeason2StatusClass(played, schedule)} ${className}`}>
+    <span className={`inline-flex max-w-full items-center justify-center whitespace-nowrap rounded-md border px-2.5 py-1 text-[0.65rem] font-bold uppercase ${getSeason2StatusClass(played, schedule)} ${className}`}>
       {played ? "Зіграно" : badge ?? "Скоро"}
     </span>
   );
