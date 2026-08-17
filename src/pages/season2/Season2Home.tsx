@@ -510,8 +510,8 @@ function Status({ played, schedule, className = "" }: { played: boolean; schedul
 function getSeason2StatusClass(played: boolean, schedule?: Season2MatchSchedule) {
   if (played) return "border-[#343434] bg-[#343434] text-white";
   if (schedule?.status === "scheduled") return "border-[#ff5a1f] bg-[#ff5a1f] text-white";
-  if (schedule?.status === "negotiating") return "border-[#ff5a1f]/28 bg-[#ff5a1f]/12 text-[#ff5a1f]";
+  if (schedule?.status === "negotiating") return "border-[#ffb499] bg-[#ffefe8] text-[#ff5a1f]";
   if (schedule?.status === "day_confirmed") return "border-[#bbf903] bg-[#bbf903] text-[#111111]";
-  if (schedule?.status === "postponed") return "border-[#ff5a1f] bg-[#111111] text-[#ff5a1f]";
+  if (schedule?.status === "postponed") return "border-[#ff5a1f] bg-[#111111] text-white";
   return "border-[#bbf903] bg-[#bbf903] text-[#111111]";
 }
