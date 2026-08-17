@@ -501,17 +501,17 @@ function Status({ played, schedule, className = "" }: { played: boolean; schedul
   const badge = getScheduleBadge(schedule);
 
   return (
-    <span className={`inline-flex max-w-full items-center justify-center whitespace-nowrap rounded-md border px-2.5 py-1 text-[0.65rem] font-bold uppercase ${getSeason2StatusClass(played, schedule)} ${className}`}>
+    <span className={`inline-flex min-w-[7.75rem] max-w-full items-center justify-center whitespace-nowrap rounded-lg border px-3 py-2 text-[0.65rem] font-extrabold uppercase shadow-sm ${getSeason2StatusClass(played, schedule)} ${className}`}>
       {played ? "Зіграно" : badge ?? "Скоро"}
     </span>
   );
 }
 
 function getSeason2StatusClass(played: boolean, schedule?: Season2MatchSchedule) {
-  if (played) return "border-[#343434] bg-[#343434] text-white";
-  if (schedule?.status === "scheduled") return "border-[#ff5a1f] bg-[#ff5a1f] text-white";
-  if (schedule?.status === "negotiating") return "border-[#ffb499] bg-[#ffefe8] text-[#ff5a1f]";
-  if (schedule?.status === "day_confirmed") return "border-[#bbf903] bg-[#bbf903] text-[#111111]";
-  if (schedule?.status === "postponed") return "border-[#ff5a1f] bg-[#111111] text-white";
-  return "border-[#bbf903] bg-[#bbf903] text-[#111111]";
+  if (played) return "border-[#d8d8d3] bg-[#efefea] text-[#111111]";
+  if (schedule?.status === "scheduled") return "border-[#92c900] bg-[#bbf903] text-[#111111]";
+  if (schedule?.status === "negotiating") return "border-[#f4d35e] bg-[#c9a7ff] text-[#111111]";
+  if (schedule?.status === "day_confirmed") return "border-[#f4d35e] bg-[#ffe76a] text-[#111111]";
+  if (schedule?.status === "postponed") return "border-[#d94716] bg-[#ff5a1f] text-[#111111]";
+  return "border-[#18bfd0] bg-[#2af2ff] text-[#111111]";
 }

@@ -939,7 +939,7 @@ function WeekendOpponentCard({
             <div className="mt-1 text-xs font-bold text-[#bbf903]">Новий день: {formatCabinetDate(schedule.agreedDate)}</div>
           )}
         </div>
-        <span className={`rounded-md border px-2 py-1 text-[0.65rem] font-extrabold uppercase ${getCabinetScheduleStatusClass(schedule)}`}>
+        <span className={`inline-flex min-w-[5.75rem] items-center justify-center rounded-lg border px-2.5 py-1.5 text-[0.65rem] font-extrabold uppercase ${getCabinetScheduleStatusClass(schedule)}`}>
           {badge ?? "Без часу"}
         </span>
       </div>
@@ -1276,9 +1276,9 @@ function formClass(value: "W" | "D" | "L" | "-") {
 }
 
 function getCabinetScheduleStatusClass(schedule?: Season2MatchSchedule) {
-  if (schedule?.status === "scheduled") return "border-[#ff5a1f] bg-[#ff5a1f] text-white";
-  if (schedule?.status === "negotiating") return "border-[#ff5a1f]/45 bg-[#ff5a1f]/12 text-[#ff5a1f]";
-  if (schedule?.status === "day_confirmed") return "border-[#bbf903] bg-[#bbf903] text-[#111111]";
-  if (schedule?.status === "postponed") return "border-[#ff5a1f] bg-[#2a1510] text-[#ff5a1f]";
-  return "border-white/12 bg-white/10 text-white/70";
+  if (schedule?.status === "scheduled") return "border-[#92c900] bg-[#bbf903] text-[#111111]";
+  if (schedule?.status === "negotiating") return "border-[#f4d35e] bg-[#c9a7ff] text-[#111111]";
+  if (schedule?.status === "day_confirmed") return "border-[#f4d35e] bg-[#ffe76a] text-[#111111]";
+  if (schedule?.status === "postponed") return "border-[#d94716] bg-[#ff5a1f] text-[#111111]";
+  return "border-[#18bfd0] bg-[#2af2ff] text-[#111111]";
 }
