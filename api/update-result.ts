@@ -146,14 +146,20 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       );
 
       const predictions = await recalculateSeason2PredictionPoints(payload.matchId, payload.homeScore, payload.awayScore);
-      const push = payload.homeScore === null || payload.awayScore === null
+      const resultPush = payload.homeScore === null || payload.awayScore === null
+        ? { sent: 0, removed: 0, skipped: "result-cleared" }
+        : await notifySeason2Result(payload.matchId, payload.homeScore, payload.awayScore);
+      const pointsPush = payload.homeScore === null || payload.awayScore === null
         ? { sent: 0, removed: 0, skipped: "result-cleared" }
         : await notifySeason2PredictionPoints(payload.matchId, predictions);
 
       response.status(200).json({
         message: "Результат Season 2 оновлено, прогнози перераховано",
         predictions,
-        push,
+        push: {
+          result: resultPush,
+          points: pointsPush,
+        },
       });
       return;
     }
@@ -617,6 +623,31 @@ async function notifySeason2PredictionPoints(
       sent: 0,
       removed: 0,
       error: error instanceof Error ? error.message : "Push notification failed.",
+    };
+  }
+}
+
+async function notifySeason2Result(matchId: string, homeScore: number, awayScore: number) {
+  if (!configureWebPush()) return { sent: 0, removed: 0, skipped: "missing-vapid" };
+
+  try {
+    const subscriptions = await supabaseGet<Season2DbPushSubscription[]>(
+      "/season2_push_subscriptions?select=*",
+    );
+
+    if (!subscriptions.length) return { sent: 0, removed: 0, skipped: "no-subscriptions" };
+
+    const matchLabel = getSeason2MatchLabel(matchId);
+    return await sendSeason2PushNotifications(subscriptions, {
+      title: "BPL Season 2",
+      body: `Результат: ${matchLabel} ${homeScore}:${awayScore}. Таблиця вже оновлена.`,
+      url: "/",
+    });
+  } catch (error) {
+    return {
+      sent: 0,
+      removed: 0,
+      error: error instanceof Error ? error.message : "Result push notification failed.",
     };
   }
 }
