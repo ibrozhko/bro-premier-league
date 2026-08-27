@@ -896,6 +896,7 @@ function WeekendOpponentCard({
   const opponentStanding = standings.find(row => row.player.id === opponent.id);
   const opponentRank = standings.findIndex(row => row.player.id === opponent.id) + 1;
   const [time, setTime] = useState("");
+  const [scheduleStep, setScheduleStep] = useState<"start" | "time" | "reschedule">("start");
   const [rescheduleDate, setRescheduleDate] = useState(() => getDefaultRescheduleDate(match.date));
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -908,6 +909,11 @@ function WeekendOpponentCard({
   const bookedTimes = getBookedTimesForDate(schedules, match.id, effectiveDate);
   const rescheduleDateOptions = getRescheduleDateOptions(match.date);
   const badge = getScheduleBadge(schedule);
+  const hasDateProposal = Boolean((opponentProposedDate && opponentProposedDate !== schedule?.agreedDate) || (ownProposedDate && ownProposedDate !== schedule?.agreedDate));
+  const hasTimeProposal = Boolean((opponentProposedTime && opponentProposedTime !== schedule?.agreedTime) || (ownProposedTime && ownProposedTime !== schedule?.agreedTime));
+  const showStartActions = scheduleStep === "start" && schedule?.status !== "scheduled" && schedule?.status !== "day_confirmed" && !hasDateProposal && !hasTimeProposal;
+  const showRescheduleControls = scheduleStep === "reschedule" || schedule?.status === "postponed" || hasDateProposal;
+  const showTimeControls = scheduleStep === "time" || schedule?.status === "day_confirmed" || Boolean(schedule?.agreedDate) || hasTimeProposal;
 
   const saveAction = async (input: Parameters<typeof saveSeason2MatchSchedule>[0]) => {
     setIsSaving(true);
@@ -919,6 +925,9 @@ function WeekendOpponentCard({
       setTime("");
       if (nextSchedule.agreedDate) setRescheduleDate(nextSchedule.agreedDate);
       setMessage(nextSchedule.status === "scheduled" ? "Час погоджено. Push пішов усім." : "Збережено.");
+      if (nextSchedule.status === "day_confirmed") setScheduleStep("time");
+      if (nextSchedule.status === "postponed") setScheduleStep("reschedule");
+      if (nextSchedule.status === "scheduled") setScheduleStep("start");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Не вдалося зберегти домовленість.");
     } finally {
@@ -971,60 +980,29 @@ function WeekendOpponentCard({
             <Clock3 className="h-3.5 w-3.5 text-[#ff5a1f]" />
             Узгодження часу
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => saveAction({ match, action: "day-status", dayStatus: "available" })}
-              className="h-10 rounded-md bg-[#bbf903] text-[0.72rem] font-extrabold text-[#111111] disabled:opacity-50"
-            >
-              День ок
-            </button>
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => setMessage("Обери новий день нижче і натисни «Запропонувати день».")}
-              className="h-10 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 text-[0.72rem] font-extrabold text-[#ff5a1f] disabled:opacity-50"
-            >
-              Перенести
-            </button>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            {rescheduleDateOptions.map(option => (
+          {showStartActions && (
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                key={option.date}
                 disabled={isSaving}
-                onClick={() => setRescheduleDate(option.date)}
-                className={`h-9 rounded-md border px-1 text-[0.58rem] font-extrabold uppercase leading-tight disabled:opacity-50 ${
-                  rescheduleDate === option.date
-                    ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
-                    : "border-white/10 bg-white/[0.05] text-white/60"
-                }`}
+                onClick={() => saveAction({ match, action: "day-status", dayStatus: "available" })}
+                className="h-10 rounded-md bg-[#bbf903] text-[0.72rem] font-extrabold text-[#111111] disabled:opacity-50"
               >
-                {option.label}
+                День ок
               </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              type="date"
-              value={rescheduleDate}
-              min={getMinRescheduleDate(match.date)}
-              onChange={event => setRescheduleDate(event.target.value)}
-              className="h-10 min-w-0 rounded-md border border-white/20 bg-[#111111] px-3 text-center text-xs font-extrabold text-white outline-none focus:border-[#bbf903]"
-            />
-            <button
-              type="button"
-              disabled={isSaving || !rescheduleDate}
-              onClick={() => saveAction({ match, action: "propose-date", date: rescheduleDate })}
-              className="h-10 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 px-2 text-[0.72rem] font-extrabold text-[#ff5a1f] disabled:opacity-50"
-            >
-              Запропонувати день
-            </button>
-          </div>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => {
+                  setScheduleStep("reschedule");
+                  setMessage("");
+                }}
+                className="h-10 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 text-[0.72rem] font-extrabold text-[#ff5a1f] disabled:opacity-50"
+              >
+                Перенести
+              </button>
+            </div>
+          )}
 
           {(opponentProposedDate || ownProposedDate) && (
             <div className="text-xs font-bold leading-5 text-white/58">
@@ -1044,28 +1022,84 @@ function WeekendOpponentCard({
             </button>
           )}
 
-          <div className="grid grid-cols-2 gap-2">
-            <select
-              value={time}
-              onChange={event => setTime(event.target.value)}
-              className="h-10 min-w-0 rounded-md border border-white/20 bg-[#111111] px-3 text-center text-sm font-extrabold text-white outline-none focus:border-[#bbf903]"
-            >
-              <option value="">Обери час</option>
-              {season2TimeSlots.map(slot => (
-                <option key={slot} value={slot} disabled={bookedTimes.has(slot)}>
-                  {slot}{bookedTimes.has(slot) ? " · зайнято" : ""}
-                </option>
-              ))}
-            </select>
+          {showRescheduleControls && (
+            <>
+              <div className="grid grid-cols-3 gap-2">
+                {rescheduleDateOptions.map(option => (
+                  <button
+                    type="button"
+                    key={option.date}
+                    disabled={isSaving}
+                    onClick={() => setRescheduleDate(option.date)}
+                    className={`h-9 rounded-md border px-1 text-[0.58rem] font-extrabold uppercase leading-tight disabled:opacity-50 ${
+                      rescheduleDate === option.date
+                        ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
+                        : "border-white/10 bg-white/[0.05] text-white/60"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="date"
+                  value={rescheduleDate}
+                  min={getMinRescheduleDate(match.date)}
+                  onChange={event => setRescheduleDate(event.target.value)}
+                  className="h-10 min-w-0 rounded-md border border-white/20 bg-[#111111] px-3 text-center text-xs font-extrabold text-white outline-none focus:border-[#bbf903]"
+                />
+                <button
+                  type="button"
+                  disabled={isSaving || !rescheduleDate}
+                  onClick={() => saveAction({ match, action: "propose-date", date: rescheduleDate })}
+                  className="h-10 rounded-md border border-[#ff5a1f]/40 bg-[#ff5a1f]/10 px-2 text-[0.72rem] font-extrabold text-[#ff5a1f] disabled:opacity-50"
+                >
+                  Запропонувати день
+                </button>
+              </div>
+            </>
+          )}
+
+          {showTimeControls && (
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={time}
+                onChange={event => setTime(event.target.value)}
+                className="h-10 min-w-0 rounded-md border border-white/20 bg-[#111111] px-3 text-center text-sm font-extrabold text-white outline-none focus:border-[#bbf903]"
+              >
+                <option value="">Обери час</option>
+                {season2TimeSlots.map(slot => (
+                  <option key={slot} value={slot} disabled={bookedTimes.has(slot)}>
+                    {slot}{bookedTimes.has(slot) ? " · зайнято" : ""}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={isSaving || !time}
+                onClick={() => saveAction({ match, action: "propose-time", time })}
+                className="h-10 rounded-md bg-[#ff5a1f] px-2 text-[0.72rem] font-extrabold text-white disabled:bg-[#ff5a1f]/25 disabled:text-white/45"
+              >
+                Запропонувати
+              </button>
+            </div>
+          )}
+
+          {scheduleStep !== "start" && schedule?.status !== "scheduled" && schedule?.status !== "day_confirmed" && (
             <button
               type="button"
-              disabled={isSaving || !time}
-              onClick={() => saveAction({ match, action: "propose-time", time })}
-              className="h-10 rounded-md bg-[#ff5a1f] px-2 text-[0.72rem] font-extrabold text-white disabled:bg-[#ff5a1f]/25 disabled:text-white/45"
+              disabled={isSaving}
+              onClick={() => {
+                setScheduleStep("start");
+                setMessage("");
+              }}
+              className="h-9 w-full rounded-md border border-white/10 bg-white/[0.04] text-[0.68rem] font-extrabold text-white/55 disabled:opacity-50"
             >
-              Запропонувати
+              Назад до вибору
             </button>
-          </div>
+          )}
 
           {(opponentProposedTime || ownProposedTime) && (
             <div className="text-xs font-bold leading-5 text-white/58">
@@ -1083,6 +1117,25 @@ function WeekendOpponentCard({
             >
               Погодити {opponentProposedTime}
             </button>
+          )}
+
+          {schedule?.status === "scheduled" && schedule.agreedTime && (
+            <>
+              <div className="rounded-md border border-[#bbf903]/25 bg-[#bbf903]/10 px-3 py-2 text-xs font-bold leading-5 text-[#bbf903]">
+                Матч погоджено на {schedule.agreedDate ? `${formatCabinetDate(schedule.agreedDate)} ` : ""}о {schedule.agreedTime}.
+              </div>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => {
+                  setScheduleStep("reschedule");
+                  setMessage("");
+                }}
+                className="h-9 w-full rounded-md border border-[#3050ff]/50 bg-[#3050ff]/10 text-[0.68rem] font-extrabold text-[#8ea1ff] disabled:opacity-50"
+              >
+                Потрібно перенести
+              </button>
+            </>
           )}
 
           {message && <div className="text-xs font-bold leading-5 text-white/62">{message}</div>}
