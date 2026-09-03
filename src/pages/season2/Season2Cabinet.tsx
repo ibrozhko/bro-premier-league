@@ -323,42 +323,81 @@ function MatchesTab({
   data: PlayerCabinetData;
   schedules: Record<string, Season2MatchSchedule>;
 }) {
+  const [view, setView] = useState<"mine" | "round" | "past">("mine");
+  const [selectedRound, setSelectedRound] = useState(() => getDefaultCabinetRound());
+  const [selectedPastRound, setSelectedPastRound] = useState(() => getDefaultPastRound());
+  const currentRound = season2Rounds.find(round => round.round === selectedRound) ?? season2Rounds[0];
+  const pastRounds = season2Rounds.filter(round => round.matches.some(isSeason2Played));
+  const currentPastRound = pastRounds.find(round => round.round === selectedPastRound) ?? pastRounds.at(-1);
+
   return (
     <div className="space-y-5">
       <MobileSection title="Календар" icon={CalendarDays}>
-        <div className="space-y-4">
-          {season2Rounds.map(round => {
-            const restPlayer = getRoundRestPlayer(round);
+        <SegmentedControl
+          value={view}
+          options={[
+            { value: "mine", label: "Мої" },
+            { value: "round", label: "Тур" },
+            { value: "past", label: "Минулі" },
+          ]}
+          onChange={nextView => setView(nextView as "mine" | "round" | "past")}
+        />
 
-            return (
-              <section key={round.round} className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
-                <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-white/[0.04] px-3 py-3">
-                  <div>
-                    <div className="font-heading text-[1.35rem] leading-none text-white">Тур {round.round}</div>
-                    <div className="mt-1 text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
-                      {getSeason2LegLabel(round.leg)}
-                    </div>
-                  </div>
-                  <div className="text-right text-xs font-bold text-white/45">{round.dayLabel}</div>
-                </div>
-                {restPlayer && (
-                  <div className="border-b border-white/10 px-3 py-2 text-[0.68rem] font-extrabold uppercase tracking-wide text-white/45">
-                    Відпочиває: <span className="text-[#bbf903]">{restPlayer.name}</span>
-                  </div>
-                )}
-                <div>
-                  {round.matches.map(match => (
-                    <CalendarMatchRow
-                      key={match.id}
-                      match={match}
-                      playerId={data.standing.player.id}
-                      schedule={schedules[match.id]}
-                    />
-                  ))}
-                </div>
+        <div className="mt-4 space-y-4">
+          {view === "mine" && (
+            <>
+              <section className="space-y-3">
+                <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-white/38">Мої найближчі</div>
+                {data.upcomingMatches.length ? data.upcomingMatches.map(match => (
+                  <MobileMatchCard key={match.id} match={match} playerId={data.standing.player.id} />
+                )) : <EmptyState text="Майбутніх матчів немає." />}
               </section>
-            );
-          })}
+
+              <section className="space-y-3">
+                <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-white/38">Останні результати</div>
+                {data.recentMatches.length ? data.recentMatches.map(match => (
+                  <MobileMatchCard key={match.id} match={match} playerId={data.standing.player.id} />
+                )) : <EmptyState text="Зіграних матчів ще немає." />}
+              </section>
+            </>
+          )}
+
+          {view === "round" && (
+            <>
+              <RoundChips
+                rounds={season2Rounds}
+                selectedRound={currentRound.round}
+                onSelect={setSelectedRound}
+              />
+              <CalendarRoundCard
+                round={currentRound}
+                playerId={data.standing.player.id}
+                schedules={schedules}
+              />
+            </>
+          )}
+
+          {view === "past" && (
+            <>
+              {pastRounds.length ? (
+                <>
+                  <RoundChips
+                    rounds={pastRounds}
+                    selectedRound={currentPastRound?.round ?? selectedPastRound}
+                    onSelect={setSelectedPastRound}
+                  />
+                  {currentPastRound && (
+                    <CalendarRoundCard
+                      round={currentPastRound}
+                      playerId={data.standing.player.id}
+                      schedules={schedules}
+                      onlyPlayed
+                    />
+                  )}
+                </>
+              ) : <EmptyState text="Зіграних матчів ще немає." />}
+            </>
+          )}
         </div>
       </MobileSection>
     </div>
@@ -375,6 +414,8 @@ function PredictionsTab({
   onUserUpdate: (user: Season2User) => void;
 }) {
   const predictionRounds = getSeason2PredictionWeekend();
+  const [view, setView] = useState<"open" | "history" | "table">("open");
+  const [historyRound, setHistoryRound] = useState(() => getDefaultPredictionHistoryRound(user.predictions));
   const [savedAt, setSavedAt] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -385,6 +426,7 @@ function PredictionsTab({
     setPredictions(user.predictions);
     setSavedAt("");
     setStatusMessage("");
+    setHistoryRound(getDefaultPredictionHistoryRound(user.predictions));
   }, [user.predictions]);
 
   useEffect(() => {
@@ -407,14 +449,6 @@ function PredictionsTab({
     }));
   };
 
-  if (!predictionRounds.length) {
-    return (
-      <MobileSection title="Прогнози" icon={Trophy}>
-        <EmptyState text="Зараз немає відкритого туру для прогнозів." />
-      </MobileSection>
-    );
-  }
-
   const availableMatches = predictionRounds
     .flatMap(round => round.matches)
     .filter(match => !isSeason2Played(match) && !hasPlayer(match, player.id));
@@ -435,6 +469,8 @@ function PredictionsTab({
   const isLocked = pendingMatches.length === 0 && availableMatches.length > 0;
   const totalPredictionPoints = Object.values(user.predictions).reduce((sum, prediction) => sum + (prediction.points ?? 0), 0);
   const predictionHistory = getSeason2PredictionHistory(user.predictions);
+  const historyRounds = getPredictionHistoryRounds(predictionHistory);
+  const selectedHistoryRound = historyRounds.find(round => round.round === historyRound) ?? historyRounds[0];
 
   const savePredictions = async () => {
     if (isLocked || isSaving) return;
@@ -497,57 +533,93 @@ function PredictionsTab({
         </p>
       </section>
 
-      <MobileSection title="Матчі вікенду" icon={CalendarDays}>
-        <div className="space-y-3">
-          {availableMatches.length ? predictionRounds.map(round => {
-            const roundMatches = availableMatches.filter(match => match.round === round.round);
-            if (!roundMatches.length) return null;
+      <SegmentedControl
+        value={view}
+        options={[
+          { value: "open", label: "Відкриті" },
+          { value: "history", label: "Історія" },
+          { value: "table", label: "Таблиця" },
+        ]}
+        onChange={nextView => setView(nextView as "open" | "history" | "table")}
+      />
 
-            return (
-              <div key={round.round} className="space-y-3">
-                <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/[0.04] px-3 py-2">
-                  <span className="font-heading text-lg leading-none text-white">Тур {round.round}</span>
-                  <span className="text-xs font-bold uppercase tracking-wide text-white/42">{round.dayLabel}</span>
+      {view === "open" && (
+        <MobileSection title="Матчі вікенду" icon={CalendarDays}>
+          <div className="space-y-3">
+            {predictionRounds.length && availableMatches.length ? predictionRounds.map(round => {
+              const roundMatches = availableMatches.filter(match => match.round === round.round);
+              if (!roundMatches.length) return null;
+
+              return (
+                <div key={round.round} className="space-y-3">
+                  <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/[0.04] px-3 py-2">
+                    <span className="font-heading text-lg leading-none text-white">Тур {round.round}</span>
+                    <span className="text-xs font-bold uppercase tracking-wide text-white/42">{round.dayLabel}</span>
+                  </div>
+                  {roundMatches.map(match => (
+                    <PredictionCard
+                      key={match.id}
+                      match={match}
+                      value={predictions[match.id] ?? { homeScore: "", awayScore: "" }}
+                      onChange={(side, value) => updatePrediction(match.id, side, value)}
+                      locked={Boolean(predictions[match.id]?.locked)}
+                    />
+                  ))}
                 </div>
-                {roundMatches.map(match => (
-                  <PredictionCard
-                    key={match.id}
-                    match={match}
-                    value={predictions[match.id] ?? { homeScore: "", awayScore: "" }}
-                    onChange={(side, value) => updatePrediction(match.id, side, value)}
-                    locked={Boolean(predictions[match.id]?.locked)}
-                  />
-                ))}
-              </div>
-            );
-          }) : <EmptyState text="У цьому вікенді немає матчів для твого прогнозу." />}
-        </div>
-        <button
-          type="button"
-          onClick={savePredictions}
-          disabled={isLocked || isSaving || !availableMatches.length}
-          className={`mt-4 h-12 w-full rounded-md text-sm font-extrabold ${
-            isLocked
-              ? "border border-[#bbf903]/35 bg-[#bbf903]/10 text-[#bbf903]"
-              : "bg-[#bbf903] text-[#111111]"
-          }`}
-        >
-          {isLocked ? "Прогнози зафіксовано" : isSaving ? "Зберігаємо..." : "Зберегти прогнози"}
-        </button>
-        {savedAt && <div className="mt-3 text-center text-xs font-bold text-[#bbf903]">Збережено о {savedAt}. Змінити вже не можна.</div>}
-        {statusMessage && <div className="mt-3 rounded-md border border-[#ff5a1f]/35 bg-[#ff5a1f]/10 p-3 text-xs font-bold text-[#ff5a1f]">{statusMessage}</div>}
-      </MobileSection>
+              );
+            }) : <EmptyState text="У цьому вікенді немає матчів для твого прогнозу." />}
+          </div>
+          <button
+            type="button"
+            onClick={savePredictions}
+            disabled={isLocked || isSaving || !availableMatches.length}
+            className={`mt-4 h-12 w-full rounded-md text-sm font-extrabold ${
+              isLocked
+                ? "border border-[#bbf903]/35 bg-[#bbf903]/10 text-[#bbf903]"
+                : "bg-[#bbf903] text-[#111111]"
+            }`}
+          >
+            {isLocked ? "Прогнози зафіксовано" : isSaving ? "Зберігаємо..." : "Зберегти прогнози"}
+          </button>
+          {savedAt && <div className="mt-3 text-center text-xs font-bold text-[#bbf903]">Збережено о {savedAt}. Змінити вже не можна.</div>}
+          {statusMessage && <div className="mt-3 rounded-md border border-[#ff5a1f]/35 bg-[#ff5a1f]/10 p-3 text-xs font-bold text-[#ff5a1f]">{statusMessage}</div>}
+        </MobileSection>
+      )}
 
-      <PredictionHistory predictions={predictionHistory} />
+      {view === "history" && (
+        <PredictionHistory
+          predictions={selectedHistoryRound?.items ?? []}
+          rounds={historyRounds}
+          selectedRound={selectedHistoryRound?.round}
+          onSelectRound={setHistoryRound}
+        />
+      )}
 
-      <PredictionLeaderboard rows={leaderboard} currentPlayerId={player.id} />
+      {view === "table" && <PredictionLeaderboard rows={leaderboard} currentPlayerId={player.id} />}
     </div>
   );
 }
 
-function PredictionHistory({ predictions }: { predictions: Season2PredictionHistoryItem[] }) {
+function PredictionHistory({
+  predictions,
+  rounds,
+  selectedRound,
+  onSelectRound,
+}: {
+  predictions: Season2PredictionHistoryItem[];
+  rounds: Array<{ round: number; items: Season2PredictionHistoryItem[] }>;
+  selectedRound?: number;
+  onSelectRound: (round: number) => void;
+}) {
   return (
     <MobileSection title="Минулі ставки" icon={ListChecks}>
+      {rounds.length > 0 && selectedRound && (
+        <RoundChips
+          rounds={rounds.map(round => ({ round: round.round }))}
+          selectedRound={selectedRound}
+          onSelect={onSelectRound}
+        />
+      )}
       <div className="space-y-2">
         {predictions.length ? predictions.map(item => (
           <article key={item.match.id} className="rounded-md border border-white/10 bg-white/[0.04] p-3">
@@ -888,6 +960,28 @@ function getKyivDateOnly(date: Date) {
 function getPredictionWeekendTitle(rounds: Season2Round[]) {
   if (rounds.length === 1) return `Тур ${rounds[0].round}`;
   return `Тури ${rounds.map(round => round.round).join(" та ")}`;
+}
+
+function getPredictionHistoryRounds(predictions: Season2PredictionHistoryItem[]) {
+  return season2Rounds
+    .map(round => ({
+      round: round.round,
+      items: predictions.filter(item => item.match.round === round.round),
+    }))
+    .filter(round => round.items.length > 0)
+    .reverse();
+}
+
+function getDefaultPredictionHistoryRound(predictions: Record<string, Season2SavedPrediction>) {
+  return getPredictionHistoryRounds(getSeason2PredictionHistory(predictions))[0]?.round ?? 1;
+}
+
+function getDefaultCabinetRound() {
+  return season2Rounds.find(round => round.matches.some(match => !isSeason2Played(match)))?.round ?? season2Rounds.at(-1)?.round ?? 1;
+}
+
+function getDefaultPastRound() {
+  return [...season2Rounds].reverse().find(round => round.matches.some(isSeason2Played))?.round ?? 1;
 }
 
 function PredictionCard({
@@ -1318,6 +1412,108 @@ function getNextUtcWeekday(date: Date, weekday: number) {
 function formatCabinetDate(date: string) {
   const [, month, day] = date.split("-");
   return day && month ? `${day}.${month}` : date;
+}
+
+function CalendarRoundCard({
+  round,
+  playerId,
+  schedules,
+  onlyPlayed = false,
+}: {
+  round: Season2Round;
+  playerId: string;
+  schedules: Record<string, Season2MatchSchedule>;
+  onlyPlayed?: boolean;
+}) {
+  const restPlayer = getRoundRestPlayer(round);
+  const matches = onlyPlayed ? round.matches.filter(isSeason2Played) : round.matches;
+
+  return (
+    <section className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-white/[0.04] px-3 py-3">
+        <div>
+          <div className="font-heading text-[1.35rem] leading-none text-white">Тур {round.round}</div>
+          <div className="mt-1 text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
+            {getSeason2LegLabel(round.leg)}
+          </div>
+        </div>
+        <div className="text-right text-xs font-bold text-white/45">{round.dayLabel}</div>
+      </div>
+      {restPlayer && !onlyPlayed && (
+        <div className="border-b border-white/10 px-3 py-2 text-[0.68rem] font-extrabold uppercase tracking-wide text-white/45">
+          Відпочиває: <span className="text-[#bbf903]">{restPlayer.name}</span>
+        </div>
+      )}
+      <div>
+        {matches.length ? matches.map(match => (
+          <CalendarMatchRow
+            key={match.id}
+            match={match}
+            playerId={playerId}
+            schedule={schedules[match.id]}
+          />
+        )) : <EmptyState text="У цьому турі ще немає зіграних матчів." />}
+      </div>
+    </section>
+  );
+}
+
+function SegmentedControl({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: Array<{ value: string; label: string }>;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-1 rounded-md border border-white/10 bg-white/[0.04] p-1">
+      {options.map(option => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={`h-10 rounded-[0.32rem] text-[0.72rem] font-extrabold ${
+            value === option.value ? "bg-[#bbf903] text-[#111111]" : "text-white/48"
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function RoundChips({
+  rounds,
+  selectedRound,
+  onSelect,
+}: {
+  rounds: Array<{ round: number }>;
+  selectedRound: number;
+  onSelect: (round: number) => void;
+}) {
+  return (
+    <div className="-mx-4 overflow-x-auto px-4 pb-1">
+      <div className="flex w-max gap-2">
+        {rounds.map(round => (
+          <button
+            key={round.round}
+            type="button"
+            onClick={() => onSelect(round.round)}
+            className={`h-9 rounded-md border px-3 text-[0.68rem] font-extrabold uppercase ${
+              selectedRound === round.round
+                ? "border-[#bbf903] bg-[#bbf903] text-[#111111]"
+                : "border-white/10 bg-white/[0.04] text-white/52"
+            }`}
+          >
+            Тур {round.round}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function MobileMatchCard({ match, playerId, featured = false }: { match: Season2Match; playerId: string; featured?: boolean }) {
