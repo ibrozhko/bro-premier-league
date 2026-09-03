@@ -137,7 +137,7 @@ export default function Season2Cabinet() {
                   onScheduleUpdate={schedule => setSchedules(current => ({ ...current, [schedule.matchId]: schedule }))}
                 />
               )}
-              {activeTab === "matches" && <MatchesTab data={playerData} />}
+              {activeTab === "matches" && <MatchesTab data={playerData} schedules={schedules} />}
               {activeTab === "predictions" && <PredictionsTab player={selectedPlayer} user={user} onUserUpdate={setUser} />}
               {activeTab === "table" && <TableTab data={playerData} />}
               {activeTab === "profile" && <ProfileTab player={selectedPlayer} user={user} onLogout={handleLogout} />}
@@ -316,19 +316,50 @@ function LoginPanel({ onLogin }: { onLogin: (user: Season2User) => void }) {
   );
 }
 
-function MatchesTab({ data }: { data: PlayerCabinetData }) {
+function MatchesTab({
+  data,
+  schedules,
+}: {
+  data: PlayerCabinetData;
+  schedules: Record<string, Season2MatchSchedule>;
+}) {
   return (
     <div className="space-y-5">
-      <MobileSection title="Мої найближчі" icon={CalendarDays}>
-        {data.upcomingMatches.length ? data.upcomingMatches.map(match => (
-          <MobileMatchCard key={match.id} match={match} playerId={data.standing.player.id} />
-        )) : <EmptyState text="Майбутніх матчів немає." />}
-      </MobileSection>
+      <MobileSection title="Календар" icon={CalendarDays}>
+        <div className="space-y-4">
+          {season2Rounds.map(round => {
+            const restPlayer = getRoundRestPlayer(round);
 
-      <MobileSection title="Останні результати" icon={ListChecks}>
-        {data.recentMatches.length ? data.recentMatches.map(match => (
-          <MobileMatchCard key={match.id} match={match} playerId={data.standing.player.id} />
-        )) : <EmptyState text="Зіграних матчів ще немає." />}
+            return (
+              <section key={round.round} className="overflow-hidden rounded-md border border-white/10 bg-[#1e1e1e]">
+                <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-white/[0.04] px-3 py-3">
+                  <div>
+                    <div className="font-heading text-[1.35rem] leading-none text-white">Тур {round.round}</div>
+                    <div className="mt-1 text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
+                      {getSeason2LegLabel(round.leg)}
+                    </div>
+                  </div>
+                  <div className="text-right text-xs font-bold text-white/45">{round.dayLabel}</div>
+                </div>
+                {restPlayer && (
+                  <div className="border-b border-white/10 px-3 py-2 text-[0.68rem] font-extrabold uppercase tracking-wide text-white/45">
+                    Відпочиває: <span className="text-[#bbf903]">{restPlayer.name}</span>
+                  </div>
+                )}
+                <div>
+                  {round.matches.map(match => (
+                    <CalendarMatchRow
+                      key={match.id}
+                      match={match}
+                      playerId={data.standing.player.id}
+                      schedule={schedules[match.id]}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
       </MobileSection>
     </div>
   );
@@ -403,6 +434,7 @@ function PredictionsTab({
   const isComplete = pendingMatches.length > 0 && pendingFilledCount === pendingMatches.length;
   const isLocked = pendingMatches.length === 0 && availableMatches.length > 0;
   const totalPredictionPoints = Object.values(user.predictions).reduce((sum, prediction) => sum + (prediction.points ?? 0), 0);
+  const predictionHistory = getSeason2PredictionHistory(user.predictions);
 
   const savePredictions = async () => {
     if (isLocked || isSaving) return;
@@ -506,8 +538,53 @@ function PredictionsTab({
         {statusMessage && <div className="mt-3 rounded-md border border-[#ff5a1f]/35 bg-[#ff5a1f]/10 p-3 text-xs font-bold text-[#ff5a1f]">{statusMessage}</div>}
       </MobileSection>
 
+      <PredictionHistory predictions={predictionHistory} />
+
       <PredictionLeaderboard rows={leaderboard} currentPlayerId={player.id} />
     </div>
+  );
+}
+
+function PredictionHistory({ predictions }: { predictions: Season2PredictionHistoryItem[] }) {
+  return (
+    <MobileSection title="Минулі ставки" icon={ListChecks}>
+      <div className="space-y-2">
+        {predictions.length ? predictions.map(item => (
+          <article key={item.match.id} className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">
+                  Тур {item.match.round}
+                </div>
+                <div className="mt-1 text-xs text-white/42">{item.match.dayLabel}</div>
+              </div>
+              <span className={`rounded-md px-2 py-1 text-[0.66rem] font-extrabold ${
+                item.prediction.points === 10
+                  ? "bg-[#bbf903] text-[#111111]"
+                  : item.prediction.points === 5
+                    ? "bg-[#ff5a1f] text-white"
+                    : "bg-white/10 text-white/55"
+              }`}>
+                {item.prediction.points ?? 0} оч.
+              </span>
+            </div>
+            <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+              <PredictionTeam player={item.match.home} />
+              <div className="rounded-md bg-[#111111] px-3 py-2 text-center">
+                <div className="font-heading text-lg leading-none text-white">
+                  {item.match.homeScore}:{item.match.awayScore}
+                </div>
+                <div className="mt-1 text-[0.58rem] font-extrabold uppercase tracking-wide text-white/35">результат</div>
+              </div>
+              <PredictionTeam player={item.match.away} align="right" />
+            </div>
+            <div className="mt-3 rounded-md border border-white/10 bg-[#111111] px-3 py-2 text-sm font-bold text-white/68">
+              Твій прогноз: <span className="text-[#bbf903]">{item.prediction.homeScore}:{item.prediction.awayScore}</span>
+            </div>
+          </article>
+        )) : <EmptyState text="Після зіграних матчів тут буде видно, що зайшло, а що ні." />}
+      </div>
+    </MobileSection>
   );
 }
 
@@ -551,6 +628,24 @@ function PredictionLeaderboard({ rows, currentPlayerId }: { rows: Season2Predict
       </div>
     </MobileSection>
   );
+}
+
+type Season2PredictionHistoryItem = {
+  match: Season2Match;
+  prediction: Season2SavedPrediction;
+};
+
+function getSeason2PredictionHistory(predictions: Record<string, Season2SavedPrediction>): Season2PredictionHistoryItem[] {
+  return season2Rounds
+    .flatMap(round => round.matches)
+    .filter(match => isSeason2Played(match) && predictions[match.id])
+    .map(match => ({ match, prediction: predictions[match.id] }))
+    .reverse();
+}
+
+function getRoundRestPlayer(round: Season2Round) {
+  if (!round.bye) return null;
+  return season2Players.some(player => player.id === round.bye?.id) ? round.bye : null;
 }
 
 function TableTab({ data }: { data: PlayerCabinetData }) {
@@ -1246,6 +1341,41 @@ function MobileMatchCard({ match, playerId, featured = false }: { match: Season2
       <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <TeamBlock player={match.home} align="left" />
         <div className="rounded-md bg-[#ff5a1f]/16 px-3 py-2 text-center font-heading text-xl leading-none text-[#ff5a1f]">
+          {played ? `${match.homeScore}:${match.awayScore}` : "VS"}
+        </div>
+        <TeamBlock player={match.away} align="right" />
+      </div>
+    </article>
+  );
+}
+
+function CalendarMatchRow({
+  match,
+  playerId,
+  schedule,
+}: {
+  match: Season2Match;
+  playerId: string;
+  schedule?: Season2MatchSchedule;
+}) {
+  const played = isSeason2Played(match);
+  const isMine = hasPlayer(match, playerId);
+  const badge = getScheduleBadge(schedule);
+
+  return (
+    <article className={`border-b border-white/10 px-3 py-3 last:border-b-0 ${isMine ? "bg-[#bbf903]/[0.08]" : ""}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className={`text-[0.6rem] font-extrabold uppercase tracking-wide ${isMine ? "text-[#bbf903]" : "text-white/35"}`}>
+          Матч {match.id.split("-").at(-1)}{isMine ? " · твій" : ""}
+        </div>
+        <span className={`shrink-0 rounded-md border px-2 py-1 text-[0.58rem] font-extrabold uppercase ${played ? "border-white/12 bg-white/12 text-white" : getCabinetScheduleStatusClass(schedule)}`}>
+          {played ? "Зіграно" : badge ?? "Скоро"}
+        </span>
+      </div>
+
+      <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+        <TeamBlock player={match.home} align="left" />
+        <div className="rounded-md bg-[#111111] px-2.5 py-1.5 text-center font-heading text-lg leading-none text-[#ff5a1f]">
           {played ? `${match.homeScore}:${match.awayScore}` : "VS"}
         </div>
         <TeamBlock player={match.away} align="right" />
