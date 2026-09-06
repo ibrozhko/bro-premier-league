@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, ChevronDown, Shield, Trophy, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, Radio, Shield, Trophy, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logoSeason2 from "@/assets/logo-season2-orange.png";
@@ -91,6 +91,8 @@ export default function Season2Home() {
           </div>
         </section>
 
+        <TwitchLiveSection />
+
         <section className="py-8 sm:py-12">
           <div className="mx-auto max-w-5xl px-4 sm:px-5">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -138,6 +140,60 @@ export default function Season2Home() {
         </section>
       </main>
     </Season2Shell>
+  );
+}
+
+function TwitchLiveSection() {
+  return (
+    <section className="border-b border-[#111111]/10 bg-[#111111] py-8 text-[#f7f7f2] sm:py-10">
+      <div className="mx-auto max-w-5xl px-4 sm:px-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <SectionHeader
+            eyebrow="BPL live"
+            title="Трансляції"
+            text="Матчі ліги в прямому ефірі. Якщо канал офлайн, Twitch покаже стандартний екран каналу."
+            inverted
+          />
+          <Radio className="h-6 w-6 text-[#bbf903]" />
+        </div>
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <TwitchPlayer channel="bpl2026" />
+          <TwitchPlayer channel="bpl2027" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TwitchPlayer({ channel }: { channel: string }) {
+  const parent = typeof window !== "undefined" && window.location.hostname
+    ? window.location.hostname
+    : "broleague.online";
+  const src = `https://player.twitch.tv/?channel=${channel}&parent=${encodeURIComponent(parent)}&muted=true`;
+
+  return (
+    <article className="overflow-hidden rounded-md border border-white/12 bg-[#1c1c1c]">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
+        <div className="text-sm font-extrabold text-white">twitch.tv/{channel}</div>
+        <a
+          href={`https://www.twitch.tv/${channel}`}
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs font-extrabold uppercase tracking-wide text-[#bbf903] hover:underline"
+        >
+          Відкрити
+        </a>
+      </div>
+      <div className="aspect-video bg-black">
+        <iframe
+          title={`Twitch ${channel}`}
+          src={src}
+          allowFullScreen
+          className="h-full w-full"
+        />
+      </div>
+    </article>
   );
 }
 
@@ -319,8 +375,7 @@ function CommunityPrediction({
   predictionAggregates?: Season2PredictionAggregateMap;
 }) {
   const aggregate = getSeason2PredictionAggregate(match, predictionAggregates);
-  if (!aggregate) return null;
-  const odds = calculateCommunityOdds(aggregate);
+  const odds = calculateSmartOdds(match, aggregate);
 
   return (
     <div className="col-span-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-[#111111]/8 pt-2 text-center text-xs font-bold text-[#111111]/50 sm:col-span-3 sm:col-start-2 sm:min-h-8 sm:items-start sm:border-0 sm:pt-0 sm:text-sm sm:opacity-0 sm:transition sm:duration-200 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
@@ -333,40 +388,132 @@ function CommunityPrediction({
   );
 }
 
-function calculateCommunityOdds(aggregate: Season2PredictionAggregateMap[string]) {
+function calculateSmartOdds(match: Season2Match, aggregate: Season2PredictionAggregateMap[string] | null) {
+  const community = getCommunityProbabilities(aggregate);
+  const model = getMatchModelProbabilities(match);
+  const communityWeight = aggregate ? Math.min(0.55, Math.max(0.18, 0.12 + aggregate.total * 0.07)) : 0;
+  const modelWeight = 1 - communityWeight;
+  const blended = normalizeProbabilities({
+    home: model.home * modelWeight + community.home * communityWeight,
+    draw: model.draw * modelWeight + community.draw * communityWeight,
+    away: model.away * modelWeight + community.away * communityWeight,
+  });
+
+  const homeOdds = getOdds(blended.home);
+  const awayOdds = getOdds(blended.away);
+  const rawDrawOdds = getOdds(blended.draw);
+  const drawOdds = getDrawOdds(rawDrawOdds, homeOdds, awayOdds);
+  const distinctOdds = makeOddsDistinct({ home: homeOdds, draw: drawOdds, away: awayOdds });
+
+  return {
+    home: formatOdds(distinctOdds.home),
+    draw: formatOdds(distinctOdds.draw),
+    away: formatOdds(distinctOdds.away),
+  };
+}
+
+function getCommunityProbabilities(aggregate: Season2PredictionAggregateMap[string] | null) {
+  if (!aggregate) {
+    return { home: 0.36, draw: 0.26, away: 0.38 };
+  }
+
   const homeVotes = aggregate.homeVotes ?? Math.round((aggregate.homePercent / 100) * aggregate.total);
   const drawVotes = aggregate.drawVotes ?? Math.round((aggregate.drawPercent / 100) * aggregate.total);
   const awayVotes = aggregate.awayVotes ?? Math.round((aggregate.awayPercent / 100) * aggregate.total);
-  const baseHome = 1;
-  const baseDraw = 0.72;
-  const baseAway = 1;
-  const smoothedTotal = homeVotes + drawVotes + awayVotes + baseHome + baseDraw + baseAway;
-  const homeOdds = getOdds((homeVotes + baseHome) / smoothedTotal);
-  const awayOdds = getOdds((awayVotes + baseAway) / smoothedTotal);
-  const rawDrawOdds = getOdds((drawVotes + baseDraw) / smoothedTotal);
-  const favoriteOdds = Math.min(homeOdds, awayOdds);
-  const underdogOdds = Math.max(homeOdds, awayOdds);
-  const drawOdds = getDrawOdds(rawDrawOdds, favoriteOdds, underdogOdds);
 
+  return normalizeProbabilities({
+    home: homeVotes + 1,
+    draw: drawVotes + 0.72,
+    away: awayVotes + 1,
+  });
+}
+
+function getMatchModelProbabilities(match: Season2Match) {
+  const standings = calculateSeason2Standings();
+  const home = standings.find(row => row.player.id === match.home.id);
+  const away = standings.find(row => row.player.id === match.away.id);
+
+  if (!home || !away) {
+    return { home: 0.36, draw: 0.28, away: 0.36 };
+  }
+
+  const homeRating = getTeamRating(home, standings.length) + 0.06;
+  const awayRating = getTeamRating(away, standings.length);
+  const gap = homeRating - awayRating;
+  const closeness = Math.max(0, 1 - Math.abs(gap) / 1.35);
+
+  return normalizeProbabilities({
+    home: Math.exp(gap * 1.05),
+    draw: 0.58 + closeness * 0.34,
+    away: Math.exp(-gap * 1.05),
+  });
+}
+
+function getTeamRating(row: ReturnType<typeof calculateSeason2Standings>[number], playersCount: number) {
+  const played = Math.max(1, row.played);
+  const pointsPerGame = row.points / played;
+  const goalDiffPerGame = row.goalDifference / played;
+  const rankIndex = Math.max(0, playersCount - row.rank);
+  const rankScore = playersCount > 1 ? rankIndex / (playersCount - 1) : 0.5;
+  const formScore = row.form.slice(-5).reduce((sum, result) => {
+    if (result === "W") return sum + 1;
+    if (result === "D") return sum + 0.45;
+    return sum;
+  }, 0) / Math.max(1, Math.min(5, row.form.length || 1));
+
+  return (
+    pointsPerGame * 0.26 +
+    Math.max(-1.5, Math.min(1.5, goalDiffPerGame)) * 0.16 +
+    rankScore * 0.42 +
+    formScore * 0.34
+  );
+}
+
+function normalizeProbabilities(values: { home: number; draw: number; away: number }) {
+  const total = values.home + values.draw + values.away || 1;
   return {
-    home: formatOdds(homeOdds),
-    draw: formatOdds(drawOdds),
-    away: formatOdds(awayOdds),
+    home: values.home / total,
+    draw: values.draw / total,
+    away: values.away / total,
   };
 }
 
 function getOdds(probability: number) {
   const bookmakerMargin = 0.92;
-  return Math.min(9.99, Math.max(1.15, bookmakerMargin / probability));
+  return Math.min(8.5, Math.max(1.18, bookmakerMargin / probability));
 }
 
-function getDrawOdds(rawDrawOdds: number, favoriteOdds: number, underdogOdds: number) {
+function getDrawOdds(rawDrawOdds: number, homeOdds: number, awayOdds: number) {
+  const favoriteOdds = Math.min(homeOdds, awayOdds);
+  const underdogOdds = Math.max(homeOdds, awayOdds);
   const teamGap = underdogOdds - favoriteOdds;
+
   if (teamGap > 0.35) {
-    return Math.min(Math.max(rawDrawOdds, favoriteOdds + 0.15), underdogOdds - 0.15);
+    return Math.min(Math.max(rawDrawOdds, favoriteOdds + 0.18), underdogOdds - 0.12);
   }
 
-  return Math.min(9.99, Math.max(rawDrawOdds, underdogOdds + 0.15));
+  return Math.min(8.5, Math.max(rawDrawOdds, underdogOdds + 0.18));
+}
+
+function makeOddsDistinct(odds: { home: number; draw: number; away: number }) {
+  const rounded = {
+    home: Number(formatOdds(odds.home)),
+    draw: Number(formatOdds(odds.draw)),
+    away: Number(formatOdds(odds.away)),
+  };
+
+  if (rounded.home === rounded.draw) rounded.draw += 0.06;
+  if (rounded.away === rounded.draw) rounded.draw += 0.06;
+  if (rounded.home === rounded.away) {
+    if (rounded.home <= 1.25) rounded.away += 0.08;
+    else rounded.away += 0.12;
+  }
+
+  return {
+    home: Math.min(8.5, rounded.home),
+    draw: Math.min(8.5, rounded.draw),
+    away: Math.min(8.5, rounded.away),
+  };
 }
 
 function formatOdds(odds: number) {
@@ -479,12 +626,12 @@ function InfoPill({ icon: Icon, label, value }: { icon: typeof Trophy; label: st
   );
 }
 
-function SectionHeader({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
+function SectionHeader({ eyebrow, title, text, inverted = false }: { eyebrow: string; title: string; text: string; inverted?: boolean }) {
   return (
     <div className="max-w-3xl">
       <div className="text-xs font-bold uppercase tracking-wide text-[#ff5a1f]">{eyebrow}</div>
-      <h2 className="mt-2 font-heading text-3xl leading-none sm:text-5xl">{title}</h2>
-      <p className="mt-3 text-sm leading-6 text-[#111111]/68 sm:text-base">{text}</p>
+      <h2 className={`mt-2 font-heading text-3xl leading-none sm:text-5xl ${inverted ? "text-white" : ""}`}>{title}</h2>
+      <p className={`mt-3 text-sm leading-6 sm:text-base ${inverted ? "text-white/62" : "text-[#111111]/68"}`}>{text}</p>
     </div>
   );
 }
