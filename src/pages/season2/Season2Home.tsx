@@ -375,6 +375,8 @@ function CommunityPrediction({
   predictionAggregates?: Season2PredictionAggregateMap;
 }) {
   const aggregate = getSeason2PredictionAggregate(match, predictionAggregates);
+  if (!aggregate || aggregate.total <= 0) return null;
+
   const odds = calculateSmartOdds(match, aggregate);
 
   return (
@@ -430,15 +432,17 @@ function getCommunityProbabilities(aggregate: Season2PredictionAggregateMap[stri
 
 function getMatchModelProbabilities(match: Season2Match) {
   const standings = calculateSeason2Standings();
-  const home = standings.find(row => row.player.id === match.home.id);
-  const away = standings.find(row => row.player.id === match.away.id);
+  const homeIndex = standings.findIndex(row => row.player.id === match.home.id);
+  const awayIndex = standings.findIndex(row => row.player.id === match.away.id);
+  const home = standings[homeIndex];
+  const away = standings[awayIndex];
 
   if (!home || !away) {
     return { home: 0.36, draw: 0.28, away: 0.36 };
   }
 
-  const homeRating = getTeamRating(home, standings.length) + 0.06;
-  const awayRating = getTeamRating(away, standings.length);
+  const homeRating = getTeamRating(home, homeIndex + 1, standings.length) + 0.06;
+  const awayRating = getTeamRating(away, awayIndex + 1, standings.length);
   const gap = homeRating - awayRating;
   const closeness = Math.max(0, 1 - Math.abs(gap) / 1.35);
 
@@ -449,11 +453,11 @@ function getMatchModelProbabilities(match: Season2Match) {
   });
 }
 
-function getTeamRating(row: ReturnType<typeof calculateSeason2Standings>[number], playersCount: number) {
+function getTeamRating(row: ReturnType<typeof calculateSeason2Standings>[number], rank: number, playersCount: number) {
   const played = Math.max(1, row.played);
   const pointsPerGame = row.points / played;
   const goalDiffPerGame = row.goalDifference / played;
-  const rankIndex = Math.max(0, playersCount - row.rank);
+  const rankIndex = Math.max(0, playersCount - rank);
   const rankScore = playersCount > 1 ? rankIndex / (playersCount - 1) : 0.5;
   const formScore = row.form.slice(-5).reduce((sum, result) => {
     if (result === "W") return sum + 1;
