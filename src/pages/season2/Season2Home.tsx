@@ -33,6 +33,7 @@ const season2Path = (path = "") => `${season2BasePath}${path}` || "/";
 export default function Season2Home() {
   const [predictionAggregates, setPredictionAggregates] = useState<Season2PredictionAggregateMap>({});
   const [matchSchedules, setMatchSchedules] = useState<Record<string, Season2MatchSchedule>>({});
+  const [twitchChannels, setTwitchChannels] = useState<TwitchChannelState[]>([]);
   const [openUpcomingRound, setOpenUpcomingRound] = useState<number | null>(() => getSeason2HomeUpcomingRounds()[0]?.round ?? null);
   const [openResultRound, setOpenResultRound] = useState<number | null>(() => getSeason2HomeResultRounds()[0]?.round ?? null);
   const playedMatches = getSeason2PlayedMatches();
@@ -49,6 +50,9 @@ export default function Season2Home() {
     loadSeason2MatchSchedules()
       .then(setMatchSchedules)
       .catch(() => setMatchSchedules({}));
+    loadTwitchChannels()
+      .then(setTwitchChannels)
+      .catch(() => setTwitchChannels([]));
   }, []);
 
   return (
@@ -91,7 +95,7 @@ export default function Season2Home() {
           </div>
         </section>
 
-        <TwitchLiveSection />
+        <TwitchLiveSection channels={twitchChannels} />
 
         <section className="py-8 sm:py-12">
           <div className="mx-auto max-w-5xl px-4 sm:px-5">
@@ -143,7 +147,38 @@ export default function Season2Home() {
   );
 }
 
-function TwitchLiveSection() {
+type TwitchChannelState = {
+  login: string;
+  displayName: string;
+  isLive: boolean;
+  stream: {
+    title: string;
+    viewerCount: number;
+    startedAt: string;
+  } | null;
+  latestVideo: {
+    id: string;
+    title: string;
+    createdAt: string;
+    duration: string;
+  } | null;
+};
+
+async function loadTwitchChannels() {
+  const response = await fetch("/api/twitch");
+  if (!response.ok) throw new Error("Twitch status failed.");
+  const payload = await response.json() as { channels: TwitchChannelState[] };
+  return payload.channels;
+}
+
+function TwitchLiveSection({ channels }: { channels: TwitchChannelState[] }) {
+  const visibleChannels = channels.length ? channels : [
+    { login: "bpl2026", displayName: "bpl2026", isLive: false, stream: null, latestVideo: null },
+    { login: "bpl2027", displayName: "bpl2027", isLive: false, stream: null, latestVideo: null },
+  ];
+  const primaryChannel = visibleChannels.find(channel => channel.login === "bpl2026") ?? visibleChannels[0];
+  const sliderChannels = visibleChannels.filter(channel => channel.login !== primaryChannel.login);
+
   return (
     <section className="border-b border-[#111111]/10 bg-[#111111] py-8 text-[#f7f7f2] sm:py-10">
       <div className="mx-auto max-w-5xl px-4 sm:px-5">
@@ -157,27 +192,70 @@ function TwitchLiveSection() {
           <Radio className="h-6 w-6 text-[#bbf903]" />
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <TwitchPlayer channel="bpl2026" />
-          <TwitchPlayer channel="bpl2027" />
+        <div className="mt-6">
+          {primaryChannel && (
+            <TwitchPlayer channel={primaryChannel} featured />
+          )}
+          {sliderChannels.length > 0 && (
+            <div className="mt-4">
+              <div className="mb-2 text-xs font-extrabold uppercase tracking-wide text-white/38">Додаткові канали</div>
+              <div className="-mx-4 overflow-x-auto px-4 pb-2">
+                <div className="flex snap-x snap-mandatory gap-3">
+                  {sliderChannels.map(channel => (
+                    <div key={channel.login} className="w-[82vw] max-w-[460px] shrink-0 snap-start sm:w-[420px]">
+                      <TwitchPlayer channel={channel} compact />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>
   );
 }
 
-function TwitchPlayer({ channel }: { channel: string }) {
+function TwitchPlayer({
+  channel,
+  featured = false,
+  compact = false,
+}: {
+  channel: TwitchChannelState;
+  featured?: boolean;
+  compact?: boolean;
+}) {
   const parent = typeof window !== "undefined" && window.location.hostname
     ? window.location.hostname
     : "broleague.online";
-  const src = `https://player.twitch.tv/?channel=${channel}&parent=${encodeURIComponent(parent)}&muted=true`;
+  const src = channel.isLive || !channel.latestVideo
+    ? `https://player.twitch.tv/?channel=${channel.login}&parent=${encodeURIComponent(parent)}&muted=true`
+    : `https://player.twitch.tv/?video=${channel.latestVideo.id}&parent=${encodeURIComponent(parent)}&muted=true`;
+  const title = channel.isLive
+    ? channel.stream?.title
+    : channel.latestVideo?.title;
 
   return (
     <article className="overflow-hidden rounded-md border border-white/12 bg-[#1c1c1c]">
-      <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
-        <div className="text-sm font-extrabold text-white">twitch.tv/{channel}</div>
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2 sm:px-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className={`h-2.5 w-2.5 rounded-full ${channel.isLive ? "bg-[#fe008a]" : "bg-white/28"}`} />
+            <span className={`truncate font-extrabold text-white ${featured ? "text-base sm:text-lg" : "text-sm"}`}>
+              twitch.tv/{channel.login}
+            </span>
+            {featured && (
+              <span className="hidden rounded-full bg-[#bbf903] px-2 py-0.5 text-[0.62rem] font-extrabold uppercase text-[#111111] sm:inline-flex">
+                Основний
+              </span>
+            )}
+          </div>
+          <div className="mt-0.5 truncate text-xs font-bold text-white/42">
+            {channel.isLive ? "Live зараз" : channel.latestVideo ? "Останній ефір" : "Канал офлайн"}
+          </div>
+        </div>
         <a
-          href={`https://www.twitch.tv/${channel}`}
+          href={`https://www.twitch.tv/${channel.login}`}
           target="_blank"
           rel="noreferrer"
           className="text-xs font-extrabold uppercase tracking-wide text-[#bbf903] hover:underline"
@@ -187,12 +265,17 @@ function TwitchPlayer({ channel }: { channel: string }) {
       </div>
       <div className="aspect-video bg-black">
         <iframe
-          title={`Twitch ${channel}`}
+          title={`Twitch ${channel.login}`}
           src={src}
           allowFullScreen
           className="h-full w-full"
         />
       </div>
+      {title && !compact && (
+        <div className="border-t border-white/10 px-3 py-2 text-xs font-bold leading-5 text-white/58">
+          {title}
+        </div>
+      )}
     </article>
   );
 }
