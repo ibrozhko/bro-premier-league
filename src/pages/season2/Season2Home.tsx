@@ -203,28 +203,28 @@ function TwitchLiveSection({ channels }: { channels: TwitchChannelState[] }) {
           <Radio className="h-6 w-6 text-[#bbf903]" />
         </div>
 
-        <div className="mt-6">
-          <div className="relative overflow-hidden rounded-md">
-            {canSlide && (
-              <button
-                type="button"
-                onClick={() => shiftSlide(-1)}
-                className="absolute left-2 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-white/18 bg-[#111111]/78 text-white shadow-[0_10px_28px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-[#bbf903]/70 hover:bg-[#bbf903] hover:text-[#111111] sm:left-3 sm:h-12 sm:w-12"
-                aria-label="Попередня трансляція"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-            )}
-            {canSlide && (
-              <button
-                type="button"
-                onClick={() => shiftSlide(1)}
-                className="absolute right-2 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-white/18 bg-[#111111]/78 text-white shadow-[0_10px_28px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-[#bbf903]/70 hover:bg-[#bbf903] hover:text-[#111111] sm:right-3 sm:h-12 sm:w-12"
-                aria-label="Наступна трансляція"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            )}
+        <div className="relative mt-6 md:-mx-14 md:px-14">
+          {canSlide && (
+            <button
+              type="button"
+              onClick={() => shiftSlide(-1)}
+              className="absolute -left-1 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md bg-[#bbf903] text-[#111111] shadow-[0_12px_30px_rgba(187,249,3,0.22)] transition hover:scale-105 hover:bg-[#d6ff3d] sm:h-12 sm:w-12 md:left-0"
+              aria-label="Попередня трансляція"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+          )}
+          {canSlide && (
+            <button
+              type="button"
+              onClick={() => shiftSlide(1)}
+              className="absolute -right-1 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md bg-[#bbf903] text-[#111111] shadow-[0_12px_30px_rgba(187,249,3,0.22)] transition hover:scale-105 hover:bg-[#d6ff3d] sm:h-12 sm:w-12 md:right-0"
+              aria-label="Наступна трансляція"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          )}
+          <div className="overflow-hidden rounded-md">
             <div
               className="flex transition-transform duration-300 ease-out"
               style={{ transform: `translateX(-${activeIndex * 100}%)` }}
