@@ -58,6 +58,13 @@ create table if not exists season2_match_scheduling (
   updated_at timestamptz default now() not null
 );
 
+create table if not exists season2_twitch_eventsub_events (
+  message_id text primary key,
+  stream_id text unique not null,
+  channel_login text not null,
+  created_at timestamptz default now() not null
+);
+
 alter table season2_users add column if not exists player_id text;
 alter table season2_users add column if not exists display_name text;
 alter table season2_users add column if not exists is_admin boolean default false;
@@ -89,6 +96,13 @@ alter table season2_match_scheduling add column if not exists updated_by_player_
 alter table season2_match_scheduling add column if not exists created_at timestamptz default now() not null;
 alter table season2_match_scheduling add column if not exists updated_at timestamptz default now() not null;
 
+alter table season2_twitch_eventsub_events add column if not exists stream_id text;
+alter table season2_twitch_eventsub_events add column if not exists channel_login text;
+alter table season2_twitch_eventsub_events add column if not exists created_at timestamptz default now() not null;
+
+create unique index if not exists season2_twitch_eventsub_events_stream_id_key
+  on season2_twitch_eventsub_events(stream_id);
+
 alter table season2_match_scheduling
   drop constraint if exists season2_match_scheduling_home_day_status_check,
   add constraint season2_match_scheduling_home_day_status_check
@@ -108,11 +122,13 @@ alter table season2_users enable row level security;
 alter table season2_predictions enable row level security;
 alter table season2_push_subscriptions enable row level security;
 alter table season2_match_scheduling enable row level security;
+alter table season2_twitch_eventsub_events enable row level security;
 
 drop policy if exists "season2 users are service-role managed" on season2_users;
 drop policy if exists "season2 predictions are service-role managed" on season2_predictions;
 drop policy if exists "season2 push subscriptions are service-role managed" on season2_push_subscriptions;
 drop policy if exists "season2 match scheduling is service-role managed" on season2_match_scheduling;
+drop policy if exists "season2 twitch eventsub events are service-role managed" on season2_twitch_eventsub_events;
 
 create policy "season2 users are service-role managed" on season2_users
 for all using (false);
@@ -124,4 +140,7 @@ create policy "season2 push subscriptions are service-role managed" on season2_p
 for all using (false);
 
 create policy "season2 match scheduling is service-role managed" on season2_match_scheduling
+for all using (false);
+
+create policy "season2 twitch eventsub events are service-role managed" on season2_twitch_eventsub_events
 for all using (false);
