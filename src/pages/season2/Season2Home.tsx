@@ -165,7 +165,7 @@ type TwitchChannelState = {
 };
 
 async function loadTwitchChannels() {
-  const response = await fetch("/api/twitch");
+  const response = await fetch("/api/season2?resource=twitch");
   if (!response.ok) throw new Error("Twitch status failed.");
   const payload = await response.json() as { channels: TwitchChannelState[] };
   return payload.channels;
