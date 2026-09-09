@@ -20,6 +20,7 @@ import {
   type Season2MatchDayStatus,
 } from "./_utils/season2Api.js";
 import { isSeason2Played, season2Rounds } from "../src/data/season2Data.js";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import webpush from "web-push";
 
 type AuthPayload = {
@@ -119,13 +120,52 @@ type TwitchVideo = {
   thumbnail_url: string;
 };
 
+type TwitchSubscription = {
+  id: string;
+  type: string;
+  status: string;
+  condition?: {
+    broadcaster_user_id?: string;
+  };
+};
+
+type TwitchEventSubPayload = {
+  challenge?: string;
+  subscription?: {
+    type?: string;
+    status?: string;
+  };
+  event?: {
+    id?: string;
+    broadcaster_user_login?: string;
+    broadcaster_user_name?: string;
+  };
+};
+
+type TwitchEventSubMessageRow = {
+  message_id: string;
+};
+
 const twitchChannels = ["bpl2026", "bpl2027"];
+const twitchEventSubNotificationType = "notification";
+const twitchEventSubVerificationType = "webhook_callback_verification";
+const twitchEventSubRevocationType = "revocation";
 
 export default async function handler(request: ApiRequest, response: ApiResponse) {
   try {
     requireSeason2Env();
 
     const resource = getQueryValue(request, "resource") ?? "auth";
+
+    if (resource === "twitch-eventsub") {
+      await handleTwitchEventSub(request, response);
+      return;
+    }
+
+    if (resource === "twitch-eventsub-register") {
+      await handleTwitchEventSubRegister(request, response);
+      return;
+    }
 
     if (resource === "twitch") {
       await handleTwitch(request, response);
@@ -181,6 +221,146 @@ export default async function handler(request: ApiRequest, response: ApiResponse
   } catch (error) {
     response.status(500).json({ error: error instanceof Error ? error.message : "Season 2 API error." });
   }
+}
+
+async function handleTwitchEventSub(request: ApiRequest, response: ApiResponse) {
+  if (request.method !== "POST") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const secret = process.env.TWITCH_EVENTSUB_SECRET;
+  if (!secret) {
+    response.status(500).json({ error: "Missing Twitch EventSub secret." });
+    return;
+  }
+
+  const rawBody = await readRawBody(request);
+  if (!verifyTwitchEventSubSignature(request, rawBody, secret)) {
+    response.status(403).json({ error: "Invalid Twitch EventSub signature." });
+    return;
+  }
+
+  const messageType = getRequestHeader(request, "twitch-eventsub-message-type");
+  const subscriptionType = getRequestHeader(request, "twitch-eventsub-subscription-type");
+  const payload = JSON.parse(rawBody) as TwitchEventSubPayload;
+
+  if (messageType === twitchEventSubVerificationType) {
+    sendText(response, payload.challenge ?? "");
+    return;
+  }
+
+  if (messageType === twitchEventSubRevocationType) {
+    response.status(200).json({ ok: true, revoked: payload.subscription?.status ?? "unknown" });
+    return;
+  }
+
+  if (messageType !== twitchEventSubNotificationType || subscriptionType !== "stream.online") {
+    response.status(200).json({ ok: true, ignored: true });
+    return;
+  }
+
+  const streamId = payload.event?.id?.trim() ?? "";
+  const channelLogin = payload.event?.broadcaster_user_login?.trim().toLowerCase() ?? "";
+  if (!streamId || !twitchChannels.includes(channelLogin)) {
+    response.status(200).json({ ok: true, ignored: true });
+    return;
+  }
+
+  const messageId = getRequestHeader(request, "twitch-eventsub-message-id");
+  const duplicate = await rememberTwitchEventSubMessage(messageId, streamId, channelLogin);
+  if (duplicate) {
+    response.status(200).json({ ok: true, duplicate: true });
+    return;
+  }
+
+  configureWebPush();
+  const rows = await supabaseGet<Season2DbPushSubscription[]>("/season2_push_subscriptions?select=*");
+  const result = rows.length
+    ? await sendPushNotifications(rows, {
+      title: "BPL Season 2 LIVE",
+      body: `${payload.event?.broadcaster_user_name ?? channelLogin} вже в ефірі. Заходь дивитись трансляцію.`,
+      url: "/",
+    })
+    : { sent: 0, removed: 0 };
+
+  response.status(200).json({ ok: true, push: result });
+}
+
+async function handleTwitchEventSubRegister(request: ApiRequest, response: ApiResponse) {
+  if (request.method !== "POST") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  if (!isAuthorizedServiceRequest(request)) {
+    response.status(401).json({ error: "Unauthorized Twitch EventSub registration." });
+    return;
+  }
+
+  const clientId = process.env.TWITCH_CLIENT_ID;
+  const clientSecret = process.env.TWITCH_CLIENT_SECRET;
+  const eventSubSecret = process.env.TWITCH_EVENTSUB_SECRET;
+  const callbackUrl = process.env.TWITCH_EVENTSUB_CALLBACK_URL ?? "https://broleague.online/api/season2?resource=twitch-eventsub";
+
+  if (!clientId || !clientSecret || !eventSubSecret) {
+    response.status(500).json({ error: "Missing Twitch EventSub environment variables." });
+    return;
+  }
+
+  const token = await getTwitchAccessToken(clientId, clientSecret);
+  const headers = {
+    "Client-ID": clientId,
+    Authorization: `Bearer ${token}`,
+  };
+  const users = await twitchGet<{ data: TwitchUser[] }>(
+    `https://api.twitch.tv/helix/users?${twitchChannels.map(channel => `login=${encodeURIComponent(channel)}`).join("&")}`,
+    headers,
+  );
+  const existing = await twitchGet<{ data: TwitchSubscription[] }>(
+    "https://api.twitch.tv/helix/eventsub/subscriptions?type=stream.online",
+    headers,
+  );
+
+  const created = [];
+  const skipped = [];
+
+  for (const user of users.data) {
+    const alreadyExists = existing.data.some(subscription =>
+      subscription.type === "stream.online" &&
+      subscription.condition?.broadcaster_user_id === user.id &&
+      ["enabled", "webhook_callback_verification_pending"].includes(subscription.status),
+    );
+
+    if (alreadyExists) {
+      skipped.push(user.login);
+      continue;
+    }
+
+    const subscription = await twitchPost<{ data: TwitchSubscription[] }>(
+      "https://api.twitch.tv/helix/eventsub/subscriptions",
+      headers,
+      {
+        type: "stream.online",
+        version: "1",
+        condition: {
+          broadcaster_user_id: user.id,
+        },
+        transport: {
+          method: "webhook",
+          callback: callbackUrl,
+          secret: eventSubSecret,
+        },
+      },
+    );
+
+    created.push({
+      channel: user.login,
+      status: subscription.data[0]?.status ?? "unknown",
+    });
+  }
+
+  response.status(200).json({ ok: true, created, skipped });
 }
 
 async function handleTwitch(request: ApiRequest, response: ApiResponse) {
@@ -1002,6 +1182,21 @@ async function twitchGet<T>(url: string, headers: Record<string, string>): Promi
   return payload;
 }
 
+async function twitchPost<T>(url: string, headers: Record<string, string>, body: unknown): Promise<T> {
+  const result = await fetch(url, {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const payload = await result.json() as T & { message?: string };
+
+  if (!result.ok) {
+    throw new Error(payload.message ?? "Twitch request failed.");
+  }
+
+  return payload;
+}
+
 function normalizeTwitchThumbnail(url: string) {
   return url
     .replace("%{width}", "640")
@@ -1058,6 +1253,83 @@ function isAuthorizedServiceRequest(request: ApiRequest) {
     process.env.PREDICT_SESSION_SECRET,
     process.env.VAPID_PRIVATE_KEY,
   ].filter(Boolean).includes(token);
+}
+
+async function readRawBody(request: ApiRequest) {
+  if (typeof request.body === "string") return request.body;
+  if (request.body && typeof request.body === "object") return JSON.stringify(request.body);
+
+  const streamRequest = request as ApiRequest & {
+    on?: (event: "data" | "end" | "error", callback: (chunk?: Buffer) => void) => void;
+  };
+  if (!streamRequest.on) return "";
+
+  const chunks: Buffer[] = [];
+  await new Promise<void>((resolve, reject) => {
+    streamRequest.on?.("data", chunk => {
+      if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    });
+    streamRequest.on?.("end", () => resolve());
+    streamRequest.on?.("error", () => reject(new Error("Failed to read Twitch EventSub body.")));
+  });
+
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function verifyTwitchEventSubSignature(request: ApiRequest, rawBody: string, secret: string) {
+  const messageId = getRequestHeader(request, "twitch-eventsub-message-id");
+  const timestamp = getRequestHeader(request, "twitch-eventsub-message-timestamp");
+  const signature = getRequestHeader(request, "twitch-eventsub-message-signature");
+  if (!messageId || !timestamp || !signature) return false;
+
+  const expected = `sha256=${createHmac("sha256", secret).update(`${messageId}${timestamp}${rawBody}`).digest("hex")}`;
+  return safeEqual(signature, expected);
+}
+
+function safeEqual(left: string, right: string) {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+async function rememberTwitchEventSubMessage(messageId: string, streamId: string, channelLogin: string) {
+  const existing = await supabaseGet<TwitchEventSubMessageRow[]>(
+    `/season2_twitch_eventsub_events?select=message_id&or=(message_id.eq.${encodeURIComponent(messageId)},stream_id.eq.${encodeURIComponent(streamId)})&limit=1`,
+  );
+
+  if (existing.length) return true;
+
+  await supabasePost(
+    "/season2_twitch_eventsub_events",
+    {
+      message_id: messageId,
+      stream_id: streamId,
+      channel_login: channelLogin,
+    },
+    "return=minimal",
+  );
+
+  return false;
+}
+
+function getRequestHeader(request: ApiRequest, key: string) {
+  const direct = request.headers?.[key] ?? request.headers?.[key.toLowerCase()];
+  const value = Array.isArray(direct) ? direct[0] : direct;
+  return value?.trim() ?? "";
+}
+
+function sendText(response: ApiResponse, body: string) {
+  response.setHeader?.("Content-Type", "text/plain");
+  const textResponse = response as ApiResponse & {
+    send?: (value: string) => void;
+    end?: (value?: string) => void;
+  };
+
+  if (textResponse.send) {
+    textResponse.status(200).send(body);
+    return;
+  }
+  textResponse.status(200).end?.(body);
 }
 
 function getBearerToken(request: ApiRequest) {
