@@ -204,50 +204,27 @@ function TwitchLiveSection({ channels }: { channels: TwitchChannelState[] }) {
         </div>
 
         <div className="mt-6">
-          {canSlide && (
-            <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="relative overflow-hidden rounded-md">
+            {canSlide && (
               <button
                 type="button"
                 onClick={() => shiftSlide(-1)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/12 bg-white/6 text-white transition hover:border-[#bbf903]/70 hover:text-[#bbf903]"
+                className="absolute left-2 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-white/18 bg-[#111111]/78 text-white shadow-[0_10px_28px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-[#bbf903]/70 hover:bg-[#bbf903] hover:text-[#111111] sm:left-3 sm:h-12 sm:w-12"
                 aria-label="Попередня трансляція"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
-                {visibleChannels.map((channel, index) => {
-                  const isActive = activeIndex === index;
-
-                  return (
-                    <button
-                      key={channel.login}
-                      type="button"
-                      onClick={() => setActiveIndex(index)}
-                      className={`h-9 rounded-full px-3 text-xs font-extrabold uppercase tracking-wide transition ${
-                        isActive
-                          ? "bg-[#bbf903] text-[#111111]"
-                          : "bg-white/8 text-white/58 hover:bg-white/12 hover:text-white"
-                      }`}
-                      aria-label={`Відкрити ${channel.login}`}
-                      aria-current={isActive ? "true" : undefined}
-                    >
-                      {channel.login}
-                    </button>
-                  );
-                })}
-              </div>
+            )}
+            {canSlide && (
               <button
                 type="button"
                 onClick={() => shiftSlide(1)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/12 bg-white/6 text-white transition hover:border-[#bbf903]/70 hover:text-[#bbf903]"
+                className="absolute right-2 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-white/18 bg-[#111111]/78 text-white shadow-[0_10px_28px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-[#bbf903]/70 hover:bg-[#bbf903] hover:text-[#111111] sm:right-3 sm:h-12 sm:w-12"
                 aria-label="Наступна трансляція"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
-            </div>
-          )}
-
-          <div className="overflow-hidden rounded-md">
+            )}
             <div
               className="flex transition-transform duration-300 ease-out"
               style={{ transform: `translateX(-${activeIndex * 100}%)` }}
