@@ -326,14 +326,17 @@ async function handleTwitchEventSubRegister(request: ApiRequest, response: ApiRe
   const skipped = [];
 
   for (const user of users.data) {
-    const alreadyExists = existing.data.some(subscription =>
+    const currentSubscription = existing.data.find(subscription =>
       subscription.type === "stream.online" &&
       subscription.condition?.broadcaster_user_id === user.id &&
       ["enabled", "webhook_callback_verification_pending"].includes(subscription.status),
     );
 
-    if (alreadyExists) {
-      skipped.push(user.login);
+    if (currentSubscription) {
+      skipped.push({
+        channel: user.login,
+        status: currentSubscription.status,
+      });
       continue;
     }
 
