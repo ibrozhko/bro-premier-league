@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, ChevronDown, Radio, Shield, Trophy, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Radio, Shield, Trophy, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logoSeason2 from "@/assets/logo-season2-orange.png";
@@ -172,12 +172,23 @@ async function loadTwitchChannels() {
 }
 
 function TwitchLiveSection({ channels }: { channels: TwitchChannelState[] }) {
-  const visibleChannels = channels.length ? channels : [
+  const fallbackChannels: TwitchChannelState[] = [
     { login: "bpl2026", displayName: "bpl2026", isLive: false, stream: null, latestVideo: null },
     { login: "bpl2027", displayName: "bpl2027", isLive: false, stream: null, latestVideo: null },
   ];
-  const primaryChannel = visibleChannels.find(channel => channel.login === "bpl2026") ?? visibleChannels[0];
-  const sliderChannels = visibleChannels.filter(channel => channel.login !== primaryChannel.login);
+  const visibleChannels = orderTwitchChannels(channels.length ? channels : fallbackChannels);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const canSlide = visibleChannels.length > 1;
+
+  useEffect(() => {
+    if (activeIndex > visibleChannels.length - 1) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, visibleChannels.length]);
+
+  const shiftSlide = (direction: -1 | 1) => {
+    setActiveIndex(current => (current + direction + visibleChannels.length) % visibleChannels.length);
+  };
 
   return (
     <section className="border-b border-[#111111]/10 bg-[#111111] py-8 text-[#f7f7f2] sm:py-10">
@@ -193,38 +204,82 @@ function TwitchLiveSection({ channels }: { channels: TwitchChannelState[] }) {
         </div>
 
         <div className="mt-6">
-          {primaryChannel && (
-            <TwitchPlayer channel={primaryChannel} featured />
-          )}
-          {sliderChannels.length > 0 && (
-            <div className="mt-4">
-              <div className="mb-2 text-xs font-extrabold uppercase tracking-wide text-white/38">Додаткові канали</div>
-              <div className="-mx-4 overflow-x-auto px-4 pb-2">
-                <div className="flex snap-x snap-mandatory gap-3">
-                  {sliderChannels.map(channel => (
-                    <div key={channel.login} className="w-[82vw] max-w-[460px] shrink-0 snap-start sm:w-[420px]">
-                      <TwitchPlayer channel={channel} compact />
-                    </div>
-                  ))}
-                </div>
+          {canSlide && (
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => shiftSlide(-1)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/12 bg-white/6 text-white transition hover:border-[#bbf903]/70 hover:text-[#bbf903]"
+                aria-label="Попередня трансляція"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+                {visibleChannels.map((channel, index) => {
+                  const isActive = activeIndex === index;
+
+                  return (
+                    <button
+                      key={channel.login}
+                      type="button"
+                      onClick={() => setActiveIndex(index)}
+                      className={`h-9 rounded-full px-3 text-xs font-extrabold uppercase tracking-wide transition ${
+                        isActive
+                          ? "bg-[#bbf903] text-[#111111]"
+                          : "bg-white/8 text-white/58 hover:bg-white/12 hover:text-white"
+                      }`}
+                      aria-label={`Відкрити ${channel.login}`}
+                      aria-current={isActive ? "true" : undefined}
+                    >
+                      {channel.login}
+                    </button>
+                  );
+                })}
               </div>
+              <button
+                type="button"
+                onClick={() => shiftSlide(1)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/12 bg-white/6 text-white transition hover:border-[#bbf903]/70 hover:text-[#bbf903]"
+                aria-label="Наступна трансляція"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
             </div>
           )}
+
+          <div className="overflow-hidden rounded-md">
+            <div
+              className="flex transition-transform duration-300 ease-out"
+              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+            >
+              {visibleChannels.map(channel => (
+                <div key={channel.login} className="w-full shrink-0">
+                  <TwitchPlayer channel={channel} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function TwitchPlayer({
-  channel,
-  featured = false,
-  compact = false,
-}: {
-  channel: TwitchChannelState;
-  featured?: boolean;
-  compact?: boolean;
-}) {
+function orderTwitchChannels(channels: TwitchChannelState[]) {
+  const preferredOrder = ["bpl2026", "bpl2027"];
+
+  return [...channels].sort((first, second) => {
+    const firstIndex = preferredOrder.indexOf(first.login);
+    const secondIndex = preferredOrder.indexOf(second.login);
+
+    if (firstIndex === -1 && secondIndex === -1) return first.login.localeCompare(second.login);
+    if (firstIndex === -1) return 1;
+    if (secondIndex === -1) return -1;
+    return firstIndex - secondIndex;
+  });
+}
+
+function TwitchPlayer({ channel }: { channel: TwitchChannelState }) {
   const parent = typeof window !== "undefined" && window.location.hostname
     ? window.location.hostname
     : "broleague.online";
@@ -241,10 +296,10 @@ function TwitchPlayer({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className={`h-2.5 w-2.5 rounded-full ${channel.isLive ? "bg-[#fe008a]" : "bg-white/28"}`} />
-            <span className={`truncate font-extrabold text-white ${featured ? "text-base sm:text-lg" : "text-sm"}`}>
+            <span className="truncate text-base font-extrabold text-white sm:text-lg">
               twitch.tv/{channel.login}
             </span>
-            {featured && (
+            {channel.login === "bpl2026" && (
               <span className="hidden rounded-full bg-[#bbf903] px-2 py-0.5 text-[0.62rem] font-extrabold uppercase text-[#111111] sm:inline-flex">
                 Основний
               </span>
@@ -271,7 +326,7 @@ function TwitchPlayer({
           className="h-full w-full"
         />
       </div>
-      {title && !compact && (
+      {title && (
         <div className="border-t border-white/10 px-3 py-2 text-xs font-bold leading-5 text-white/58">
           {title}
         </div>
