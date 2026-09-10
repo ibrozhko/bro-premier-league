@@ -1389,10 +1389,12 @@ function sendText(response: ApiResponse, body: string) {
   };
 
   if (textResponse.send) {
-    textResponse.status(200).send(body);
+    textResponse.status(200);
+    textResponse.send(body);
     return;
   }
-  textResponse.status(200).end?.(body);
+  textResponse.status(200);
+  textResponse.end?.(body);
 }
 
 function getBearerToken(request: ApiRequest) {
