@@ -2,6 +2,7 @@ import {
   clearSessionCookie,
   getSeason2UserBundle,
   getSessionUserId,
+  hashPassword,
   parseBody,
   calculateSeason2PredictionPoints,
   requireSeason2Env,
@@ -27,6 +28,12 @@ type AuthPayload = {
   action?: "login" | "logout";
   username?: string;
   password?: string;
+};
+
+type FanUserPayload = {
+  username?: string;
+  password?: string;
+  displayName?: string;
 };
 
 type SavePrediction = {
@@ -57,6 +64,7 @@ type PredictionLeaderboardRow = {
   playerId: string;
   displayName: string;
   username: string;
+  role: "player" | "fan" | "admin";
   points: number;
   predictions: number;
   exact: number;
@@ -174,6 +182,11 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 
     if (resource === "auth") {
       await handleAuth(request, response);
+      return;
+    }
+
+    if (resource === "fan-user") {
+      await handleFanUser(request, response);
       return;
     }
 
@@ -797,6 +810,52 @@ async function handleAuth(request: ApiRequest, response: ApiResponse) {
   response.status(200).json({ user: await getSeason2UserBundle(user.id) });
 }
 
+async function handleFanUser(request: ApiRequest, response: ApiResponse) {
+  if (request.method !== "POST") {
+    response.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  if (!isAuthorizedServiceRequest(request)) {
+    response.status(401).json({ error: "Unauthorized fan user request." });
+    return;
+  }
+
+  const payload = parseBody<FanUserPayload>(request.body);
+  const username = payload?.username?.trim();
+  const password = payload?.password ?? "";
+  const displayName = payload?.displayName?.trim() || username;
+
+  if (!username || username.length < 2 || password.length < 6) {
+    response.status(400).json({ error: "Вкажи логін і пароль мінімум 6 символів." });
+    return;
+  }
+
+  const playerId = `fan:${username.toLowerCase()}`;
+  const rows = await supabasePost<Array<Pick<Season2DbUser, "id" | "username" | "display_name" | "player_id" | "role">>>(
+    "/season2_users?on_conflict=username",
+    {
+      username,
+      display_name: displayName,
+      player_id: playerId,
+      password_hash: hashPassword(password),
+      is_admin: false,
+      role: "fan",
+    },
+    "resolution=merge-duplicates,return=representation",
+  );
+
+  response.status(200).json({
+    user: {
+      id: rows[0]?.id,
+      username: rows[0]?.username ?? username,
+      displayName: rows[0]?.display_name ?? displayName,
+      playerId: rows[0]?.player_id ?? playerId,
+      role: rows[0]?.role ?? "fan",
+    },
+  });
+}
+
 async function handlePredictions(request: ApiRequest, response: ApiResponse) {
   const userId = await getSessionUserId(request);
   if (!userId) {
@@ -847,7 +906,7 @@ async function handlePredictions(request: ApiRequest, response: ApiResponse) {
   }
 
   const rows = newPredictions.map(prediction => {
-    if (prediction.homePlayerId === user.player_id || prediction.awayPlayerId === user.player_id) {
+    if ((user.role ?? "player") !== "fan" && (prediction.homePlayerId === user.player_id || prediction.awayPlayerId === user.player_id)) {
       throw new Error("На свій матч прогноз ставити не можна.");
     }
     if (!Number.isInteger(prediction.predictedHomeScore) || !Number.isInteger(prediction.predictedAwayScore)) {
@@ -916,8 +975,8 @@ async function handlePredictionLeaderboard(request: ApiRequest, response: ApiRes
   }
 
   const [users, predictions] = await Promise.all([
-    supabaseGet<Array<Pick<Season2DbUser, "id" | "player_id" | "display_name" | "username">>>(
-      "/season2_users?select=id,player_id,display_name,username",
+    supabaseGet<Array<Pick<Season2DbUser, "id" | "player_id" | "display_name" | "username" | "role" | "is_admin">>>(
+      "/season2_users?select=id,player_id,display_name,username,role,is_admin",
     ),
     supabaseGet<Array<Pick<
       Season2DbPrediction,
@@ -935,6 +994,7 @@ async function handlePredictionLeaderboard(request: ApiRequest, response: ApiRes
       playerId: user.player_id,
       displayName: user.display_name ?? user.username,
       username: user.username,
+      role: user.role ?? (user.is_admin ? "admin" : "player"),
       points: scoredPredictions.reduce((sum, points) => sum + points, 0),
       predictions: userPredictions.length,
       exact: scoredPredictions.filter(points => points === 10).length,

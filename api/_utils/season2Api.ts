@@ -23,6 +23,7 @@ export type Season2DbUser = {
   display_name: string | null;
   password_hash?: string;
   is_admin: boolean;
+  role?: "player" | "fan" | "admin";
   created_at: string;
 };
 
@@ -205,6 +206,7 @@ export function toClientUser(user: Season2DbUser, predictions: Season2DbPredicti
     username: user.username,
     displayName: user.display_name ?? undefined,
     isAdmin: user.is_admin,
+    role: user.role ?? (user.is_admin ? "admin" : "player"),
     createdAt: user.created_at,
     predictions: Object.fromEntries(predictions.map(prediction => [
       prediction.match_id,

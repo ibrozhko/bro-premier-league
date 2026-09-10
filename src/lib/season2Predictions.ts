@@ -39,6 +39,7 @@ export type Season2User = {
   username: string;
   displayName?: string;
   isAdmin: boolean;
+  role?: "player" | "fan" | "admin";
   createdAt: string;
   predictions: Record<string, Season2SavedPrediction & { matchId: string; round: number }>;
 };

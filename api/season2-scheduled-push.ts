@@ -50,19 +50,28 @@ export default async function handler(request: ApiRequest, response: ApiResponse
 }
 
 async function sendMondayBroadcast() {
-  const rows = await supabaseGet<Season2DbPushSubscription[]>(
-    "/season2_push_subscriptions?select=*",
-  );
+  const [rows, users] = await Promise.all([
+    supabaseGet<Season2DbPushSubscription[]>("/season2_push_subscriptions?select=*"),
+    supabaseGet<Array<Pick<Season2DbUser, "id" | "role">>>("/season2_users?select=id,role"),
+  ]);
   const weekend = getSeason2PredictionWeekend();
 
   if (!rows.length) return { sent: 0, removed: 0, rounds: getRoundNumbers(weekend) };
 
+  const userRoleById = new Map(users.map(user => [user.id, user.role ?? "player"]));
+  const fanRows = rows.filter(row => userRoleById.get(row.user_id) === "fan");
+  const playerRows = rows.filter(row => userRoleById.get(row.user_id) !== "fan");
+  const notification = {
+    title: "BPL Season 2",
+    body: `${getPredictionWeekendTitle(weekend)} відкрито для прогнозів. Зайди в кабінет і постав свої варіанти.`,
+  };
+  const results = await Promise.all([
+    playerRows.length ? sendPushNotifications(playerRows, { ...notification, url: "/cabinet" }) : Promise.resolve({ sent: 0, removed: 0 }),
+    fanRows.length ? sendPushNotifications(fanRows, { ...notification, url: "/fan" }) : Promise.resolve({ sent: 0, removed: 0 }),
+  ]);
+
   return {
-    ...await sendPushNotifications(rows, {
-      title: "BPL Season 2",
-      body: `${getPredictionWeekendTitle(weekend)} відкрито для прогнозів. Зайди в кабінет і постав свої варіанти.`,
-      url: "/cabinet",
-    }),
+    ...sumPushResults(results),
     rounds: getRoundNumbers(weekend),
   };
 }
@@ -76,8 +85,8 @@ async function sendFridayPredictionReminders() {
   }
 
   const [users, predictions, subscriptions] = await Promise.all([
-    supabaseGet<Array<Pick<Season2DbUser, "id" | "player_id" | "display_name" | "username">>>(
-      "/season2_users?select=id,player_id,display_name,username",
+    supabaseGet<Array<Pick<Season2DbUser, "id" | "player_id" | "display_name" | "username" | "role">>>(
+      "/season2_users?select=id,player_id,display_name,username,role",
     ),
     supabaseGet<Array<Pick<Season2DbPrediction, "user_id" | "match_id">>>(
       `/season2_predictions?select=user_id,match_id&match_id=in.(${matches.map(match => encodeURIComponent(match.id)).join(",")})`,
@@ -104,7 +113,7 @@ async function sendFridayPredictionReminders() {
   });
 
   const reminderTargets = users.flatMap(user => {
-    const missingCount = getMissingPredictionCount(user.player_id, matches, predictedByUserId.get(user.id));
+    const missingCount = getMissingPredictionCount(user.player_id, matches, predictedByUserId.get(user.id), user.role ?? "player");
     const rows = subscriptionsByUserId.get(user.id) ?? [];
 
     return missingCount > 0 && rows.length ? [{ user, rows, missingCount }] : [];
@@ -114,7 +123,7 @@ async function sendFridayPredictionReminders() {
     sendPushNotifications(target.rows, {
       title: "BPL Season 2",
       body: `${target.user.display_name ?? target.user.username}, не забудь прогнози: ${target.missingCount} ${formatMatchesWord(target.missingCount)} ще без ставки.`,
-      url: "/cabinet",
+      url: (target.user.role ?? "player") === "fan" ? "/fan" : "/cabinet",
     }),
   ));
 
@@ -152,10 +161,9 @@ async function sendPushNotifications(
   };
 }
 
-function getMissingPredictionCount(playerId: string, matches: Season2Match[], predictedMatchIds = new Set<string>()) {
+function getMissingPredictionCount(playerId: string, matches: Season2Match[], predictedMatchIds = new Set<string>(), role = "player") {
   return matches.filter(match =>
-    match.home.id !== playerId &&
-    match.away.id !== playerId &&
+    (role === "fan" || (match.home.id !== playerId && match.away.id !== playerId)) &&
     !predictedMatchIds.has(match.id),
   ).length;
 }

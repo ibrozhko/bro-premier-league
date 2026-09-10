@@ -5,6 +5,7 @@ import {
   supabasePatch,
   type Season2DbPrediction,
   type Season2DbPushSubscription,
+  type Season2DbUser,
 } from "./_utils/season2Api.js";
 import { season2Rounds } from "../src/data/season2Data.js";
 import webpush from "web-push";
@@ -588,9 +589,14 @@ async function notifySeason2PredictionPoints(
 
   try {
     const userIds = [...new Set(predictions.rows.map(row => row.userId))];
-    const subscriptions = await supabaseGet<Season2DbPushSubscription[]>(
-      `/season2_push_subscriptions?select=*&user_id=in.(${userIds.map(encodeURIComponent).join(",")})`,
-    );
+    const [subscriptions, users] = await Promise.all([
+      supabaseGet<Season2DbPushSubscription[]>(
+        `/season2_push_subscriptions?select=*&user_id=in.(${userIds.map(encodeURIComponent).join(",")})`,
+      ),
+      supabaseGet<Array<Pick<Season2DbUser, "id" | "role">>>(
+        `/season2_users?select=id,role&id=in.(${userIds.map(encodeURIComponent).join(",")})`,
+      ),
+    ]);
 
     if (!subscriptions.length) return { sent: 0, removed: 0, skipped: "no-subscriptions" };
 
@@ -601,6 +607,7 @@ async function notifySeason2PredictionPoints(
         subscription,
       ]);
     });
+    const userRoleById = new Map(users.map(user => [user.id, user.role ?? "player"]));
 
     const matchLabel = getSeason2MatchLabel(matchId);
     const results = await Promise.all(predictions.rows.map(row => {
@@ -610,7 +617,7 @@ async function notifySeason2PredictionPoints(
       return sendSeason2PushNotifications(rows, {
         title: "BPL Season 2",
         body: `Твій прогноз на ${matchLabel} приніс ${row.points} ${formatPointsWord(row.points)}.`,
-        url: "/cabinet",
+        url: userRoleById.get(row.userId) === "fan" ? "/fan" : "/cabinet",
       });
     }));
 

@@ -7,6 +7,7 @@ create table if not exists season2_users (
   display_name text,
   password_hash text not null,
   is_admin boolean default false,
+  role text not null default 'player',
   created_at timestamptz default now()
 );
 
@@ -68,6 +69,7 @@ create table if not exists season2_twitch_eventsub_events (
 alter table season2_users add column if not exists player_id text;
 alter table season2_users add column if not exists display_name text;
 alter table season2_users add column if not exists is_admin boolean default false;
+alter table season2_users add column if not exists role text not null default 'player';
 
 alter table season2_predictions add column if not exists player_id text;
 alter table season2_predictions add column if not exists round int;
@@ -117,6 +119,11 @@ alter table season2_match_scheduling
   drop constraint if exists season2_match_scheduling_status_check,
   add constraint season2_match_scheduling_status_check
   check (status in ('pending', 'day_confirmed', 'negotiating', 'scheduled', 'postponed'));
+
+alter table season2_users
+  drop constraint if exists season2_users_role_check,
+  add constraint season2_users_role_check
+  check (role in ('player', 'fan', 'admin'));
 
 alter table season2_users enable row level security;
 alter table season2_predictions enable row level security;
