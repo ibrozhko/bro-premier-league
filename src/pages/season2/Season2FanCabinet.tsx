@@ -25,6 +25,7 @@ import {
   type Season2PushStatus,
 } from "@/lib/season2Push";
 import { getScheduleBadge, loadSeason2MatchSchedules, type Season2MatchSchedule } from "@/lib/season2Scheduling";
+import { Season2CabinetTwitchBlock } from "@/components/season2/Season2CabinetTwitchBlock";
 
 type FanTab = "home" | "predictions" | "table" | "profile";
 
@@ -158,18 +159,7 @@ function FanHomeTab({ user, schedules }: { user: Season2User; schedules: Record<
       </section>
 
       <FanSection title="Live центр" icon={Radio}>
-        <a
-          href="https://www.twitch.tv/bpl2026"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-between gap-3 rounded-md border border-white/10 bg-white/[0.05] p-4"
-        >
-          <div>
-            <div className="text-[0.66rem] font-extrabold uppercase tracking-wide text-[#ff5a1f]">Основний канал</div>
-            <div className="mt-1 text-xl font-extrabold text-white">twitch.tv/bpl2026</div>
-          </div>
-          <span className="rounded-md bg-[#bbf903] px-3 py-2 text-xs font-extrabold uppercase text-[#111111]">Відкрити</span>
-        </a>
+        <Season2CabinetTwitchBlock />
       </FanSection>
 
       <FanSection title="Найближчі матчі" icon={CalendarDays}>

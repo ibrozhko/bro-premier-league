@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, Clock3, House, ListChecks, LogOut, Table2, Trophy, UserRound } from "lucide-react";
+import { Bell, CalendarDays, Clock3, House, ListChecks, LogOut, Radio, Table2, Trophy, UserRound } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   calculateSeason2Standings,
@@ -33,6 +33,7 @@ import {
   saveSeason2MatchSchedule,
   type Season2MatchSchedule,
 } from "@/lib/season2Scheduling";
+import { Season2CabinetTwitchBlock } from "@/components/season2/Season2CabinetTwitchBlock";
 
 type CabinetTab = "home" | "matches" | "predictions" | "table" | "profile";
 
@@ -216,6 +217,10 @@ function HomeTab({
           ))}
         </div>
       </section>
+
+      <MobileSection title="Live центр" icon={Radio}>
+        <Season2CabinetTwitchBlock />
+      </MobileSection>
 
       <MobileSection
         title={data.weekendMatches.length ? "Твій вікенд" : primaryMatch && !isSeason2Played(primaryMatch) ? "Твій матч" : primaryMatch ? "Останній матч" : "Очікуємо календар"}
