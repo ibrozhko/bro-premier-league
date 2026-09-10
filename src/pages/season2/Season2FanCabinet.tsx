@@ -1,6 +1,7 @@
-import { Bell, CalendarDays, House, ListChecks, LogOut, Radio, Trophy, UserRound } from "lucide-react";
+import { Bell, CalendarDays, House, ListChecks, LogOut, Radio, Table2, Trophy, UserRound } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
+  calculateSeason2Standings,
   getSeason2LegLabel,
   isSeason2Played,
   season2Rounds,
@@ -25,7 +26,7 @@ import {
 } from "@/lib/season2Push";
 import { getScheduleBadge, loadSeason2MatchSchedules, type Season2MatchSchedule } from "@/lib/season2Scheduling";
 
-type FanTab = "home" | "predictions" | "rating" | "profile";
+type FanTab = "home" | "predictions" | "table" | "profile";
 
 export default function Season2FanCabinet() {
   const [activeTab, setActiveTab] = useState<FanTab>("home");
@@ -99,7 +100,7 @@ export default function Season2FanCabinet() {
             <>
               {activeTab === "home" && <FanHomeTab user={user} schedules={schedules} />}
               {activeTab === "predictions" && <FanPredictionsTab user={user} onUserUpdate={setUser} />}
-              {activeTab === "rating" && <FanRatingTab currentUser={user} />}
+              {activeTab === "table" && <FanTableTab />}
               {activeTab === "profile" && <FanProfileTab user={user} onLogout={async () => {
                 await logoutSeason2User();
                 setUser(null);
@@ -113,7 +114,7 @@ export default function Season2FanCabinet() {
             <div className="grid grid-cols-4 gap-1">
               <FanTabButton active={activeTab === "home"} icon={House} label="Головна" onClick={() => setActiveTab("home")} />
               <FanTabButton active={activeTab === "predictions"} icon={Trophy} label="Прогнози" onClick={() => setActiveTab("predictions")} />
-              <FanTabButton active={activeTab === "rating"} icon={ListChecks} label="Рейтинг" onClick={() => setActiveTab("rating")} />
+              <FanTabButton active={activeTab === "table"} icon={Table2} label="Таблиця" onClick={() => setActiveTab("table")} />
               <FanTabButton active={activeTab === "profile"} icon={UserRound} label="Профіль" onClick={() => setActiveTab("profile")} />
             </div>
           </nav>
@@ -188,7 +189,7 @@ function FanHomeTab({ user, schedules }: { user: Season2User; schedules: Record<
 
 function FanPredictionsTab({ user, onUserUpdate }: { user: Season2User; onUserUpdate: (user: Season2User) => void }) {
   const predictionRounds = getSeason2PredictionWeekend();
-  const [view, setView] = useState<"open" | "history">("open");
+  const [view, setView] = useState<"open" | "history" | "rating">("open");
   const [predictions, setPredictions] = useState<Record<string, Season2SavedPrediction>>(() => user.predictions);
   const [historyRound, setHistoryRound] = useState(() => getDefaultPredictionHistoryRound(user.predictions));
   const [statusMessage, setStatusMessage] = useState("");
@@ -280,9 +281,10 @@ function FanPredictionsTab({ user, onUserUpdate }: { user: Season2User; onUserUp
         <p className="mt-3 text-xs font-bold leading-5 text-white/48">Точний рахунок - 10, правильний результат - 5, мимо - 0.</p>
       </section>
 
-      <div className="grid grid-cols-2 gap-1 rounded-md border border-white/10 bg-white/[0.04] p-1">
+      <div className="grid grid-cols-3 gap-1 rounded-md border border-white/10 bg-white/[0.04] p-1">
         <button type="button" onClick={() => setView("open")} className={`h-10 rounded-[0.32rem] text-[0.72rem] font-extrabold ${view === "open" ? "bg-[#bbf903] text-[#111111]" : "text-white/48"}`}>Відкриті</button>
         <button type="button" onClick={() => setView("history")} className={`h-10 rounded-[0.32rem] text-[0.72rem] font-extrabold ${view === "history" ? "bg-[#bbf903] text-[#111111]" : "text-white/48"}`}>Історія</button>
+        <button type="button" onClick={() => setView("rating")} className={`h-10 rounded-[0.32rem] text-[0.72rem] font-extrabold ${view === "rating" ? "bg-[#bbf903] text-[#111111]" : "text-white/48"}`}>Рейтинг</button>
       </div>
 
       {view === "open" && (
@@ -327,8 +329,58 @@ function FanPredictionsTab({ user, onUserUpdate }: { user: Season2User; onUserUp
           onSelectRound={setHistoryRound}
         />
       )}
+
+      {view === "rating" && <FanRatingTab currentUser={user} />}
     </div>
   );
+}
+
+function FanTableTab() {
+  const rows = calculateSeason2Standings().map((row, index) => ({ ...row, rank: index + 1 }));
+
+  return (
+    <FanSection title="Турнірна таблиця" icon={Table2}>
+      <div className="mb-3 grid grid-cols-[32px_minmax(0,1fr)_28px_28px_28px_34px_36px] gap-1.5 px-2 text-[0.58rem] font-extrabold uppercase tracking-wide text-white/36">
+        <span>#</span>
+        <span>Клуб</span>
+        <span className="text-center">І</span>
+        <span className="text-center">ЗГ</span>
+        <span className="text-center">ПГ</span>
+        <span className="text-center">РГ</span>
+        <span className="text-right">О</span>
+      </div>
+      <div className="space-y-2">
+        {rows.map(row => (
+          <article key={row.player.id} className="rounded-md border border-white/10 bg-white/[0.045] px-2 py-3 text-white">
+            <div className="grid grid-cols-[32px_minmax(0,1fr)_28px_28px_28px_34px_36px] items-center gap-1.5">
+              <div className="font-heading text-lg leading-none text-[#ff5a1f]">#{row.rank}</div>
+              <div className="min-w-0">
+                <div className="truncate text-[0.95rem] font-extrabold leading-tight">{row.player.name}</div>
+                <div className="mt-0.5 truncate text-xs text-white/48">{row.player.club}</div>
+              </div>
+              <FanTableNumber value={row.played} />
+              <FanTableNumber value={row.goalsFor} />
+              <FanTableNumber value={row.goalsAgainst} />
+              <FanTableNumber value={row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference} />
+              <div className="text-right font-heading text-lg leading-none text-[#bbf903]">{row.points}</div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <div className="text-[0.56rem] font-extrabold uppercase tracking-wide text-white/30">Форма</div>
+              <div className="flex gap-1.5">
+                {getFanFormValues(row.form).map((value, index) => (
+                  <span key={`${row.player.id}-${value}-${index}`} className={fanFormClass(value)}>{value}</span>
+                ))}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </FanSection>
+  );
+}
+
+function FanTableNumber({ value }: { value: number | string }) {
+  return <div className="text-center text-sm font-extrabold">{value}</div>;
 }
 
 function FanRatingTab({ currentUser }: { currentUser: Season2User }) {
@@ -710,6 +762,22 @@ function getFanScheduleStatusClass(schedule?: Season2MatchSchedule) {
   if (schedule?.status === "day_confirmed") return "bg-[#bbf903] text-[#111111]";
   if (schedule?.status === "postponed") return "bg-[#3050ff] text-white";
   return "bg-[#ff5a1f] text-white";
+}
+
+function getFanFormValues(form: Array<"W" | "D" | "L">) {
+  return form.length ? form : Array.from({ length: 5 }, () => "-");
+}
+
+function fanFormClass(value: "W" | "D" | "L" | "-") {
+  const color = value === "W"
+    ? "bg-[#bbf903] text-[#111111]"
+    : value === "D"
+      ? "bg-white/14 text-white"
+      : value === "L"
+        ? "bg-[#ff5a1f] text-white"
+        : "bg-white/[0.06] text-white/28";
+
+  return `inline-flex h-7 w-7 items-center justify-center rounded-full text-[0.62rem] font-extrabold ${color}`;
 }
 
 function FanSection({ icon: Icon, title, children }: { icon: typeof CalendarDays; title: string; children: React.ReactNode }) {
