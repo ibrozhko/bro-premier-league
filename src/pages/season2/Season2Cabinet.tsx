@@ -71,9 +71,31 @@ export default function Season2Cabinet() {
   useEffect(() => {
     if (!user) return;
 
-    loadSeason2MatchSchedules()
-      .then(setSchedules)
-      .catch(() => setSchedules({}));
+    let isActive = true;
+    const refreshSchedules = () => {
+      loadSeason2MatchSchedules()
+        .then(nextSchedules => {
+          if (isActive) setSchedules(nextSchedules);
+        })
+        .catch(() => {
+          if (isActive) setSchedules({});
+        });
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshSchedules();
+    };
+
+    refreshSchedules();
+    const intervalId = window.setInterval(refreshSchedules, 10000);
+    window.addEventListener("focus", refreshSchedules);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refreshSchedules);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [user]);
 
   useEffect(() => {
