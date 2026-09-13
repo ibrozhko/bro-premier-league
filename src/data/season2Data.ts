@@ -135,6 +135,7 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-07-04": { homeScore: 7, awayScore: 1 },
   "S2-07-05": { homeScore: 1, awayScore: 3 },
   "S2-07-06": { homeScore: 6, awayScore: 1 },
+  "S2-07-07": { homeScore: 5, awayScore: 3 },
   "S2-07-08": { homeScore: 1, awayScore: 3 },
   "S2-08-01": { homeScore: 2, awayScore: 2 },
   "S2-08-02": { homeScore: 0, awayScore: 4 },
