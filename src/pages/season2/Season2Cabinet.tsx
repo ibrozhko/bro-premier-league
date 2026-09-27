@@ -34,6 +34,7 @@ import {
   type Season2MatchSchedule,
 } from "@/lib/season2Scheduling";
 import { Season2CabinetTwitchBlock } from "@/components/season2/Season2CabinetTwitchBlock";
+import Season2FanCabinet from "./Season2FanCabinet";
 
 type CabinetTab = "home" | "matches" | "predictions" | "table" | "profile";
 
@@ -113,6 +114,10 @@ export default function Season2Cabinet() {
 
   const selectedPlayer = season2Players.find(player => player.id === selectedPlayerId) ?? season2Players[0];
   const playerData = useMemo(() => getPlayerCabinetData(selectedPlayer), [selectedPlayer]);
+
+  if (user?.role === "fan") {
+    return <Season2FanCabinet />;
+  }
 
   const handleLogin = (nextUser: Season2User) => {
     setUser(nextUser);
