@@ -915,7 +915,7 @@ async function githubJson(url: string, init: RequestInit = {}) {
 async function triggerProductionDeploy(reason: string) {
   const deployHookUrl = process.env.VERCEL_DEPLOY_HOOK_URL ?? process.env.SEASON2_VERCEL_DEPLOY_HOOK_URL;
   if (!deployHookUrl) {
-    return { status: "skipped", reason: "missing-deploy-hook" } as const;
+    return triggerGitHubDeployRefresh(reason);
   }
 
   try {
@@ -924,20 +924,54 @@ async function triggerProductionDeploy(reason: string) {
 
     const result = await fetch(url, { method: "POST" });
     if (!result.ok) {
-      return {
+      return triggerGitHubDeployRefresh(reason, {
         status: "failed",
         code: result.status,
         message: await safeResponseText(result),
-      } as const;
+      } as const);
     }
 
-    return { status: "triggered", code: result.status } as const;
+    return { status: "triggered", via: "vercel-deploy-hook", code: result.status } as const;
   } catch (error) {
-    return {
+    return triggerGitHubDeployRefresh(reason, {
       status: "failed",
       message: error instanceof Error ? error.message : "Unknown deploy hook error",
+    } as const);
+  }
+}
+
+async function triggerGitHubDeployRefresh(reason: string, deployHook?: { status: "failed"; code?: number; message: string }) {
+  const result = await fetch(`https://api.github.com/repos/${owner()}/${repo()}/dispatches`, {
+    method: "POST",
+    headers: {
+      ...githubHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      event_type: "admin-result-updated",
+      client_payload: {
+        reason,
+        source: "update-result",
+      },
+    }),
+  });
+
+  if (!result.ok) {
+    return {
+      status: "failed",
+      via: "github-dispatch",
+      code: result.status,
+      message: await safeResponseText(result),
+      deployHook,
     } as const;
   }
+
+  return {
+    status: "triggered",
+    via: "github-dispatch",
+    code: result.status,
+    deployHook,
+  } as const;
 }
 
 async function safeResponseText(response: Response) {

@@ -1,0 +1,37 @@
+name: Admin result deploy refresh
+
+on:
+  repository_dispatch:
+    types:
+      - admin-result-updated
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why the production refresh is needed
+        required: false
+        default: manual
+
+permissions:
+  contents: write
+
+concurrency:
+  group: admin-result-deploy-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Push deployment refresh commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Create empty deployment trigger commit
+        run: |
+          git config user.name "BPL Admin Bot"
+          git config user.email "actions@github.com"
+          git commit --allow-empty -m "Trigger production deploy after admin result"
+          git push origin HEAD:main
