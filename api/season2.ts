@@ -6,6 +6,7 @@ import {
   isCurrentSeason2Prediction,
   parseBody,
   calculateSeason2PredictionPoints,
+  getSeason2PredictionPoints,
   requireSeason2Env,
   setSessionCookie,
   supabaseDelete,
@@ -1003,7 +1004,7 @@ async function handlePredictionLeaderboard(request: ApiRequest, response: ApiRes
 
   const rows = users.map(user => {
     const userPredictions = predictions.filter(prediction => prediction.user_id === user.id && isCurrentSeason2Prediction(prediction));
-    const scoredPredictions = userPredictions.map(calculateSeason2PredictionPoints);
+    const scoredPredictions = userPredictions.map(getSeason2PredictionPoints);
 
     return {
       playerId: user.player_id,

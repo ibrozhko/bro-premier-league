@@ -217,7 +217,7 @@ export function toClientUser(user: Season2DbUser, predictions: Season2DbPredicti
         round: prediction.round,
         homeScore: String(prediction.predicted_home_score),
         awayScore: String(prediction.predicted_away_score),
-        points: calculateSeason2PredictionPoints(prediction),
+        points: getSeason2PredictionPoints(prediction),
         locked: prediction.locked,
         updatedAt: prediction.created_at,
       },
@@ -272,6 +272,18 @@ export function calculateSeason2PredictionPoints(prediction: Pick<
   const actualResult = getResultSide(match.homeScore!, match.awayScore!);
 
   return predictedResult === actualResult ? 5 : 0;
+}
+
+export function getSeason2PredictionPoints(prediction: Pick<
+  Season2DbPrediction,
+  "match_id" | "predicted_home_score" | "predicted_away_score" | "points"
+> & Partial<Pick<
+  Season2DbPrediction,
+  "home_player_id" | "away_player_id"
+>>) {
+  return typeof prediction.points === "number"
+    ? prediction.points
+    : calculateSeason2PredictionPoints(prediction);
 }
 
 function getResultSide(homeScore: number, awayScore: number) {
