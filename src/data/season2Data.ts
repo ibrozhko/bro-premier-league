@@ -485,7 +485,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "26.09.2026";
+export const season2LastUpdated = "27.09.2026";
 
 export const season2Summary = {
   players: season2Players.length,
