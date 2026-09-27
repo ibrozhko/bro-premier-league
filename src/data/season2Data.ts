@@ -152,6 +152,7 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-07-04": { homeScore: 7, awayScore: 1 },
   "S2-07-05": { homeScore: 1, awayScore: 3 },
   "S2-07-06": { homeScore: 6, awayScore: 1 },
+  "S2-07-07": { homeScore: 5, awayScore: 3 },
   "S2-07-08": { homeScore: 1, awayScore: 3 },
   "S2-08-01": { homeScore: 2, awayScore: 2 },
   "S2-08-02": { homeScore: 0, awayScore: 4 },
@@ -161,7 +162,9 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-08-07": { homeScore: 7, awayScore: 2 },
   "S2-08-08": { homeScore: 5, awayScore: 2 },
   "S2-09-01": { homeScore: 1, awayScore: 3 },
+  "S2-09-02": { homeScore: 0, awayScore: 7 },
   "S2-09-03": { homeScore: 0, awayScore: 10 },
+  "S2-09-04": { homeScore: 8, awayScore: 0 },
   "S2-09-05": { homeScore: 2, awayScore: 7 },
   "S2-09-06": { homeScore: 6, awayScore: 4 },
   "S2-09-08": { homeScore: 5, awayScore: 0 },
@@ -172,8 +175,29 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-10-06": { homeScore: 4, awayScore: 1 },
   "S2-10-07": { homeScore: 2, awayScore: 3 },
   "S2-10-08": { homeScore: 1, awayScore: 2 },
+  "S2-11-01": { homeScore: 0, awayScore: 5 },
   "S2-11-02": { homeScore: 6, awayScore: 4 },
+  "S2-11-04": { homeScore: 4, awayScore: 2 },
+  "S2-11-05": { homeScore: 7, awayScore: 6 },
+  "S2-11-07": { homeScore: 3, awayScore: 5 },
   "S2-11-08": { homeScore: 4, awayScore: 0 },
+  "S2-12-01": { homeScore: 6, awayScore: 7 },
+  "S2-12-02": { homeScore: 5, awayScore: 4 },
+  "S2-12-03": { homeScore: 4, awayScore: 4 },
+  "S2-12-04": { homeScore: 2, awayScore: 3 },
+  "S2-12-06": { homeScore: 1, awayScore: 4 },
+  "S2-12-08": { homeScore: 4, awayScore: 0 },
+  "S2-13-01": { homeScore: 6, awayScore: 1 },
+  "S2-13-02": { homeScore: 2, awayScore: 13 },
+  "S2-13-03": { homeScore: 0, awayScore: 5 },
+  "S2-13-05": { homeScore: 4, awayScore: 6 },
+  "S2-13-06": { homeScore: 9, awayScore: 2 },
+  "S2-14-01": { homeScore: 1, awayScore: 5 },
+  "S2-14-03": { homeScore: 1, awayScore: 2 },
+  "S2-14-05": { homeScore: 1, awayScore: 4 },
+  "S2-14-06": { homeScore: 6, awayScore: 5 },
+  "S2-14-07": { homeScore: 11, awayScore: 2 },
+  "S2-14-08": { homeScore: 5, awayScore: 0 },
 };
 
 function hashSeed(seed: string) {
@@ -461,7 +485,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "13.09.2026";
+export const season2LastUpdated = "26.09.2026";
 
 export const season2Summary = {
   players: season2Players.length,
