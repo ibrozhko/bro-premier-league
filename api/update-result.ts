@@ -145,6 +145,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         [{ path: season2DataPath(), content: nextSource }],
         `Update Season 2 ${payload.matchId}: ${scoreText(payload.homeScore)}-${scoreText(payload.awayScore)}`,
       );
+      const deploy = await triggerProductionDeploy("season2-result");
 
       const predictions = await recalculateSeason2PredictionPoints(payload.matchId, payload.homeScore, payload.awayScore);
       const resultPush = payload.homeScore === null || payload.awayScore === null
@@ -155,8 +156,11 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         : await notifySeason2PredictionPoints(payload.matchId, predictions);
 
       response.status(200).json({
-        message: "Результат Season 2 оновлено, прогнози перераховано",
+        message: deploy.status === "triggered"
+          ? "Результат Season 2 оновлено, прогнози перераховано, деплой запущено"
+          : "Результат Season 2 оновлено, прогнози перераховано",
         predictions,
+        deploy,
         push: {
           result: resultPush,
           points: pointsPush,
@@ -906,6 +910,42 @@ async function githubJson(url: string, init: RequestInit = {}) {
   }
 
   return payload;
+}
+
+async function triggerProductionDeploy(reason: string) {
+  const deployHookUrl = process.env.VERCEL_DEPLOY_HOOK_URL ?? process.env.SEASON2_VERCEL_DEPLOY_HOOK_URL;
+  if (!deployHookUrl) {
+    return { status: "skipped", reason: "missing-deploy-hook" } as const;
+  }
+
+  try {
+    const url = new URL(deployHookUrl);
+    url.searchParams.set("reason", reason);
+
+    const result = await fetch(url, { method: "POST" });
+    if (!result.ok) {
+      return {
+        status: "failed",
+        code: result.status,
+        message: await safeResponseText(result),
+      } as const;
+    }
+
+    return { status: "triggered", code: result.status } as const;
+  } catch (error) {
+    return {
+      status: "failed",
+      message: error instanceof Error ? error.message : "Unknown deploy hook error",
+    } as const;
+  }
+}
+
+async function safeResponseText(response: Response) {
+  try {
+    return await response.text();
+  } catch {
+    return "";
+  }
 }
 
 function githubContentsUrl(path: string) {
