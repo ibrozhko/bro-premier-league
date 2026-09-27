@@ -50,7 +50,6 @@ export const season2Players: Season2Player[] = [
   { id: "mykola", name: "Коля", nick: "Fixius777", platform: "Xbox", club: "Борнмут 🏴󠁧󠁢󠁥󠁮󠁧󠁿", achievements: ["Переможець кубку"] },
   { id: "vlad", name: "Влад", nick: "d_Xyqenko", platform: "PS5", club: "Шахтар 🇺🇦", achievements: ["2 місце сезону 1"] },
   { id: "pitch", name: "Сергій", nick: "Flugergehaimer__", platform: "PS5", club: "Сток Сіті 🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-  { id: "misha", name: "Майкл", nick: "early_actor62", platform: "PS5", club: "Ліверпуль 🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
   { id: "oleksii", name: "Олексій", nick: "Mer4iik", platform: "PS5", club: "Комо 🇮🇹", achievements: ["3 місце сезону 1"] },
   { id: "andrii", name: "Андрій", nick: "Juced99", platform: "PC", club: "Ракув 🇵🇱", achievements: ["Переможець сезону 1", "Фіналіст World Cup"] },
   { id: "dmytro", name: "Дмитро", nick: "LusuyKrab", platform: "PS5", club: "ПСЖ 🇫🇷" },
@@ -61,6 +60,7 @@ export const season2Players: Season2Player[] = [
 
 const withdrawnSeason2Players: Season2Player[] = [
   { id: "zheka", name: "Жека", nick: "katrik_89", platform: "PS5", club: "Манчестер Сіті 🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+  { id: "misha", name: "Майкл", nick: "early_actor62", platform: "PS5", club: "Ліверпуль 🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
 ];
 
 const season2WithdrawnPlayerIds = new Set(withdrawnSeason2Players.map(player => player.id));
@@ -85,6 +85,23 @@ const season2CalendarPlayers = [
   "artem",
 ].map(playerId => season2CalendarPlayerById.get(playerId)!);
 const season2FloatingPlayer = season2Players.find(player => player.id === "vitalii") ?? null;
+const season2RebalancedStartRound = 15;
+const season2RebalancedSecondLegPlayerIds = [
+  "dimas",
+  "artem",
+  "dmytro",
+  "posol",
+  "kiril",
+  "vlad",
+  "zhenia",
+  "oleksii",
+  "vitalii",
+  "igor",
+  "sania",
+  "mykola",
+  "pitch",
+  "andrii",
+];
 
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
 export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {
@@ -286,6 +303,99 @@ function shuffleRoundPairings(
     });
 }
 
+function makeSeason2Round(
+  pairings: Array<[Season2Player, Season2Player]>,
+  bye: Season2Player | null,
+  round: number,
+  leg: 1 | 2,
+  matchIdOffset = 0,
+) {
+  const date = getRoundDate(round);
+  let roundBye = bye;
+  const matches: Season2Match[] = pairings.flatMap(([home, away], matchIndex) => {
+    if (season2WithdrawnPlayerIds.has(home.id)) {
+      roundBye = away;
+      return [];
+    }
+
+    if (season2WithdrawnPlayerIds.has(away.id)) {
+      roundBye = home;
+      return [];
+    }
+
+    return [{
+      id: `S2-${String(round).padStart(2, "0")}-${String(matchIdOffset + matchIndex + 1).padStart(2, "0")}`,
+      round,
+      date: toIsoDate(date),
+      dayLabel: formatDate(date),
+      leg,
+      home,
+      away,
+      homeScore: null,
+      awayScore: null,
+    }];
+  });
+
+  const visibleBye = roundBye && !season2WithdrawnPlayerIds.has(roundBye.id) ? roundBye : null;
+
+  return {
+    round,
+    date: toIsoDate(date),
+    dayLabel: formatDate(date),
+    leg,
+    bye: visibleBye,
+    matches,
+  } satisfies Season2Round;
+}
+
+function createRebalancedSecondLegRounds(startRound: number) {
+  const players: SchedulePlayer[] = season2RebalancedSecondLegPlayerIds
+    .map(playerId => season2CalendarPlayerById.get(playerId))
+    .filter((player): player is Season2Player => Boolean(player) && !season2WithdrawnPlayerIds.has(player.id));
+
+  const rounds: Season2Round[] = [];
+  let rotation = [...players];
+
+  if (rotation.length % 2 === 1) {
+    rotation.push(null);
+  }
+
+  for (let roundIndex = 0; roundIndex < rotation.length - 1; roundIndex += 1) {
+    const roundMatches = makeRoundMatches(rotation, roundIndex);
+    rounds.push(makeSeason2Round(
+      roundMatches.pairings,
+      roundMatches.bye,
+      startRound + roundIndex,
+      2,
+      50,
+    ));
+    rotation = [rotation[0], rotation[rotation.length - 1], ...rotation.slice(1, -1)];
+  }
+
+  return rounds;
+}
+
+function orientSecondLegPairings(
+  pairings: Array<[Season2Player, Season2Player]>,
+  firstLegHomeAway: Map<string, [string, string]>,
+) {
+  return pairings.map(([home, away]) => {
+    const previous = firstLegHomeAway.get(getPairKey(home.id, away.id));
+    if (!previous) return [home, away] as [Season2Player, Season2Player];
+
+    const [previousHome, previousAway] = previous;
+    if (home.id === previousAway && away.id === previousHome) {
+      return [home, away] as [Season2Player, Season2Player];
+    }
+
+    return [away, home] as [Season2Player, Season2Player];
+  });
+}
+
+function getPairKey(firstPlayerId: string, secondPlayerId: string) {
+  return [firstPlayerId, secondPlayerId].sort().join("-");
+}
+
 export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
   const shuffledPlayers: SchedulePlayer[] = seededShuffle(season2CalendarPlayers, seed);
   if (shuffledPlayers.length % 2 === 1) {
@@ -305,45 +415,33 @@ export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
     ...shuffleRoundPairings(firstLegRounds, seed, 2),
   ];
 
-  return allPairings.map(({ pairings, bye }, roundIndex) => {
+  const legacyRounds = allPairings.map(({ pairings, bye }, roundIndex) => {
     const round = roundIndex + 1;
-    const date = getRoundDate(round);
     const leg = round <= firstLegRounds.length ? 1 : 2;
     const roundWithFloatingPlayer = addFloatingPlayerMatch(pairings, bye, leg);
-    let roundBye = roundWithFloatingPlayer.bye;
-    const matches: Season2Match[] = roundWithFloatingPlayer.pairings.flatMap(([home, away], matchIndex) => {
-      if (season2WithdrawnPlayerIds.has(home.id)) {
-        roundBye = away;
-        return [];
-      }
-
-      if (season2WithdrawnPlayerIds.has(away.id)) {
-        roundBye = home;
-        return [];
-      }
-
-      return [{
-        id: `S2-${String(round).padStart(2, "0")}-${String(matchIndex + 1).padStart(2, "0")}`,
-        round,
-        date: toIsoDate(date),
-        dayLabel: formatDate(date),
-        leg,
-        home,
-        away,
-        homeScore: null,
-        awayScore: null,
-      }];
-    });
-
-    return {
-      round,
-      date: toIsoDate(date),
-      dayLabel: formatDate(date),
-      leg,
-      bye: roundBye,
-      matches,
-    };
+    return makeSeason2Round(roundWithFloatingPlayer.pairings, roundWithFloatingPlayer.bye, round, leg);
   });
+  const firstLegHomeAway = new Map(
+    legacyRounds
+      .filter(round => round.round < season2RebalancedStartRound)
+      .flatMap(round => round.matches)
+      .map(match => [getPairKey(match.home.id, match.away.id), [match.home.id, match.away.id] as [string, string]]),
+  );
+  const rebalancedRounds = createRebalancedSecondLegRounds(season2RebalancedStartRound).map(round => ({
+    ...round,
+    matches: makeSeason2Round(
+      orientSecondLegPairings(round.matches.map(match => [match.home, match.away]), firstLegHomeAway),
+      round.bye,
+      round.round,
+      round.leg,
+      50,
+    ).matches,
+  }));
+
+  return [
+    ...legacyRounds.filter(round => round.round < season2RebalancedStartRound),
+    ...rebalancedRounds,
+  ];
 }
 
 function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
@@ -382,7 +480,6 @@ const season2InitialTableOrder = [
   "mykola",
   "vlad",
   "pitch",
-  "misha",
   "oleksii",
   "zhenia",
   "dmytro",

@@ -200,6 +200,8 @@ export async function getSeason2UserBundle(userId: string) {
 }
 
 export function toClientUser(user: Season2DbUser, predictions: Season2DbPrediction[] = []) {
+  const currentPredictions = predictions.filter(isCurrentSeason2Prediction);
+
   return {
     id: user.id,
     playerId: user.player_id,
@@ -208,7 +210,7 @@ export function toClientUser(user: Season2DbUser, predictions: Season2DbPredicti
     isAdmin: user.is_admin,
     role: user.role ?? (user.is_admin ? "admin" : "player"),
     createdAt: user.created_at,
-    predictions: Object.fromEntries(predictions.map(prediction => [
+    predictions: Object.fromEntries(currentPredictions.map(prediction => [
       prediction.match_id,
       {
         matchId: prediction.match_id,
@@ -223,15 +225,40 @@ export function toClientUser(user: Season2DbUser, predictions: Season2DbPredicti
   };
 }
 
-export function calculateSeason2PredictionPoints(prediction: Pick<
+export function isCurrentSeason2Prediction(prediction: Pick<
   Season2DbPrediction,
-  "match_id" | "predicted_home_score" | "predicted_away_score" | "points"
+  "match_id" | "home_player_id" | "away_player_id"
 >) {
   const match = season2Rounds
     .flatMap(round => round.matches)
     .find(item => item.id === prediction.match_id);
 
-  if (!match) return prediction.points ?? 0;
+  return Boolean(
+    match &&
+    match.home.id === prediction.home_player_id &&
+    match.away.id === prediction.away_player_id,
+  );
+}
+
+export function calculateSeason2PredictionPoints(prediction: Pick<
+  Season2DbPrediction,
+  "match_id" | "predicted_home_score" | "predicted_away_score" | "points"
+> & Partial<Pick<
+  Season2DbPrediction,
+  "home_player_id" | "away_player_id"
+>>) {
+  const match = season2Rounds
+    .flatMap(round => round.matches)
+    .find(item => item.id === prediction.match_id);
+
+  if (!match) return 0;
+  if (
+    prediction.home_player_id &&
+    prediction.away_player_id &&
+    (match.home.id !== prediction.home_player_id || match.away.id !== prediction.away_player_id)
+  ) {
+    return 0;
+  }
   if (!isSeason2Played(match)) return 0;
 
   if (

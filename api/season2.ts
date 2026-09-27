@@ -3,6 +3,7 @@ import {
   getSeason2UserBundle,
   getSessionUserId,
   hashPassword,
+  isCurrentSeason2Prediction,
   parseBody,
   calculateSeason2PredictionPoints,
   requireSeason2Env,
@@ -457,7 +458,12 @@ async function handleMatchScheduling(request: ApiRequest, response: ApiResponse)
       const rows = await supabaseGet<Season2DbMatchScheduling[]>(
         "/season2_match_scheduling?select=*",
       );
-      response.status(200).json({ schedules: rows });
+      const currentMatches = new Map(season2Rounds.flatMap(round => round.matches).map(match => [match.id, match]));
+      const currentRows = rows.filter(row => {
+        const match = currentMatches.get(row.match_id);
+        return match && match.home.id === row.home_player_id && match.away.id === row.away_player_id;
+      });
+      response.status(200).json({ schedules: currentRows });
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
       if (message.includes("season2_match_scheduling")) {
@@ -497,7 +503,11 @@ async function handleMatchScheduling(request: ApiRequest, response: ApiResponse)
   const existingRows = await supabaseGet<Season2DbMatchScheduling[]>(
     `/season2_match_scheduling?select=*&match_id=eq.${encodeURIComponent(matchId)}&limit=1`,
   );
-  const existing = existingRows[0] ?? makeInitialSchedule(matchId, round, homePlayerId, awayPlayerId);
+  const existingRow = existingRows.find(row =>
+    row.home_player_id === homePlayerId &&
+    row.away_player_id === awayPlayerId,
+  );
+  const existing = existingRow ?? makeInitialSchedule(matchId, round, homePlayerId, awayPlayerId);
   const previousAgreedTime = existing.agreed_time;
   const next = applySchedulingAction(existing, side, payload);
   const slotConflict = next.status === "scheduled" && next.agreed_time
@@ -511,9 +521,9 @@ async function handleMatchScheduling(request: ApiRequest, response: ApiResponse)
     return;
   }
 
-  const savedRows = existingRows[0]
+  const savedRows = existingRow
     ? await supabasePatch<Season2DbMatchScheduling[]>(
-      `/season2_match_scheduling?match_id=eq.${encodeURIComponent(matchId)}`,
+      `/season2_match_scheduling?match_id=eq.${encodeURIComponent(matchId)}&home_player_id=eq.${encodeURIComponent(homePlayerId)}&away_player_id=eq.${encodeURIComponent(awayPlayerId)}`,
       { ...next, updated_by_player_id: user.player_id, updated_at: new Date().toISOString() },
     )
     : await supabasePost<Season2DbMatchScheduling[]>(
@@ -632,11 +642,16 @@ async function getSchedulingTimeConflict(schedule: Season2DbMatchScheduling) {
   if (!schedule.agreed_time) return null;
 
   const scheduledDate = getScheduleEffectiveDate(schedule);
-  const rows = await supabaseGet<Array<Pick<Season2DbMatchScheduling, "match_id" | "round" | "agreed_time" | "agreed_date" | "status">>>(
-    `/season2_match_scheduling?select=match_id,round,agreed_time,agreed_date,status&status=eq.scheduled`,
+  const rows = await supabaseGet<Array<Pick<Season2DbMatchScheduling, "match_id" | "round" | "home_player_id" | "away_player_id" | "agreed_time" | "agreed_date" | "status">>>(
+    `/season2_match_scheduling?select=match_id,round,home_player_id,away_player_id,agreed_time,agreed_date,status&status=eq.scheduled`,
   );
+  const currentMatches = new Map(season2Rounds.flatMap(round => round.matches).map(match => [match.id, match]));
+  const currentRows = rows.filter(row => {
+    const match = currentMatches.get(row.match_id);
+    return match && match.home.id === row.home_player_id && match.away.id === row.away_player_id;
+  });
 
-  return rows.find(row =>
+  return currentRows.find(row =>
     row.match_id !== schedule.match_id &&
     row.agreed_time === schedule.agreed_time &&
     getScheduleEffectiveDate(row) === scheduledDate,
@@ -940,11 +955,11 @@ async function handlePredictionStats(request: ApiRequest, response: ApiResponse)
   }
 
   const rows = await supabaseGet<Season2DbPrediction[]>(
-    "/season2_predictions?select=match_id,predicted_home_score,predicted_away_score",
+    "/season2_predictions?select=match_id,home_player_id,away_player_id,predicted_home_score,predicted_away_score",
   );
   const grouped = new Map<string, Season2DbPrediction[]>();
 
-  rows.forEach(row => {
+  rows.filter(isCurrentSeason2Prediction).forEach(row => {
     grouped.set(row.match_id, [...(grouped.get(row.match_id) ?? []), row]);
   });
 
@@ -980,14 +995,14 @@ async function handlePredictionLeaderboard(request: ApiRequest, response: ApiRes
     ),
     supabaseGet<Array<Pick<
       Season2DbPrediction,
-      "user_id" | "match_id" | "predicted_home_score" | "predicted_away_score" | "points"
+      "user_id" | "match_id" | "home_player_id" | "away_player_id" | "predicted_home_score" | "predicted_away_score" | "points"
     >>>(
-      "/season2_predictions?select=user_id,match_id,predicted_home_score,predicted_away_score,points",
+      "/season2_predictions?select=user_id,match_id,home_player_id,away_player_id,predicted_home_score,predicted_away_score,points",
     ),
   ]);
 
   const rows = users.map(user => {
-    const userPredictions = predictions.filter(prediction => prediction.user_id === user.id);
+    const userPredictions = predictions.filter(prediction => prediction.user_id === user.id && isCurrentSeason2Prediction(prediction));
     const scoredPredictions = userPredictions.map(calculateSeason2PredictionPoints);
 
     return {
@@ -1030,26 +1045,26 @@ async function handleRecalculatePredictions(request: ApiRequest, response: ApiRe
 
   const rows = await supabaseGet<Array<Pick<
     Season2DbPrediction,
-    "id" | "match_id" | "predicted_home_score" | "predicted_away_score"
+    "id" | "match_id" | "home_player_id" | "away_player_id" | "predicted_home_score" | "predicted_away_score"
   >>>(
-    "/season2_predictions?select=id,match_id,predicted_home_score,predicted_away_score",
+    "/season2_predictions?select=id,match_id,home_player_id,away_player_id,predicted_home_score,predicted_away_score",
   );
 
   let updated = 0;
   await Promise.all(rows.map(row => {
     const score = playedScores.get(row.match_id);
-    if (!score) return Promise.resolve();
-
     updated += 1;
     return supabasePatch(
       `/season2_predictions?id=eq.${row.id}`,
       {
-        points: calculatePredictionPoints(
-          row.predicted_home_score,
-          row.predicted_away_score,
-          score.homeScore,
-          score.awayScore,
-        ),
+        points: score && isCurrentSeason2Prediction(row)
+          ? calculatePredictionPoints(
+            row.predicted_home_score,
+            row.predicted_away_score,
+            score.homeScore,
+            score.awayScore,
+          )
+          : 0,
       },
       "return=minimal",
     );
