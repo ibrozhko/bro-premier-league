@@ -202,6 +202,7 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-14-08": { homeScore: 5, awayScore: 0 },
   "S2-15-52": { homeScore: 4, awayScore: 8 },
   "S2-15-55": { homeScore: 6, awayScore: 2 },
+  "S2-15-56": { homeScore: 6, awayScore: 2 },
   "S2-15-57": { homeScore: 3, awayScore: 2 },
   "S2-16-55": { homeScore: 5, awayScore: 3 },
   "S2-16-56": { homeScore: 4, awayScore: 8 },
@@ -493,7 +494,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "02.10.2026";
+export const season2LastUpdated = "03.10.2026";
 
 export const season2Summary = {
   players: season2Players.length,
