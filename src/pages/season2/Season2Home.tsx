@@ -490,9 +490,7 @@ function CommunityPrediction({
   predictionAggregates?: Season2PredictionAggregateMap;
 }) {
   const aggregate = getSeason2PredictionAggregate(match, predictionAggregates);
-  if (!aggregate || aggregate.total <= 0) return null;
-
-  const odds = calculateSmartOdds(match, aggregate);
+  const odds = calculateSmartOdds(match, aggregate && aggregate.total > 0 ? aggregate : null);
 
   return (
     <div className="col-span-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-[#111111]/8 pt-2 text-center text-xs font-bold text-[#111111]/50 sm:col-span-3 sm:col-start-2 sm:min-h-8 sm:items-start sm:border-0 sm:pt-0 sm:text-sm sm:opacity-0 sm:transition sm:duration-200 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
