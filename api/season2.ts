@@ -1057,10 +1057,10 @@ async function handleRecalculatePredictions(request: ApiRequest, response: ApiRe
   );
 
   let updated = 0;
-  await Promise.all(rows.map(row => {
+  const updates = rows.map(row => {
     const score = playedScores.get(row.match_id);
     updated += 1;
-    return supabasePatch(
+    return () => supabasePatch(
       `/season2_predictions?id=eq.${row.id}`,
       {
         points: score && isCurrentSeason2Prediction(row)
@@ -1074,9 +1074,17 @@ async function handleRecalculatePredictions(request: ApiRequest, response: ApiRe
       },
       "return=minimal",
     );
-  }));
+  });
+
+  await runInBatches(updates, 25);
 
   response.status(200).json({ matches: playedScores.size, predictions: rows.length, updated });
+}
+
+async function runInBatches(tasks: Array<() => Promise<unknown>>, batchSize: number) {
+  for (let index = 0; index < tasks.length; index += batchSize) {
+    await Promise.all(tasks.slice(index, index + batchSize).map(task => task()));
+  }
 }
 
 function calculatePredictionPoints(
