@@ -157,6 +157,16 @@ type TwitchEventSubMessageRow = {
   message_id: string;
 };
 
+type LeaderboardPredictionRow = Pick<
+  Season2DbPrediction,
+  "user_id" | "match_id" | "home_player_id" | "away_player_id" | "predicted_home_score" | "predicted_away_score" | "points"
+>;
+
+type RecalculatePredictionRow = Pick<
+  Season2DbPrediction,
+  "id" | "match_id" | "home_player_id" | "away_player_id" | "predicted_home_score" | "predicted_away_score"
+>;
+
 const twitchChannels = ["bpl2026", "bpl2027"];
 const twitchEventSubNotificationType = "notification";
 const twitchEventSubVerificationType = "webhook_callback_verification";
@@ -995,10 +1005,7 @@ async function handlePredictionLeaderboard(request: ApiRequest, response: ApiRes
     supabaseGet<Array<Pick<Season2DbUser, "id" | "player_id" | "display_name" | "username" | "role" | "is_admin">>>(
       "/season2_users?select=id,player_id,display_name,username,role,is_admin",
     ),
-    supabaseGetAll<Pick<
-      Season2DbPrediction,
-      "user_id" | "match_id" | "home_player_id" | "away_player_id" | "predicted_home_score" | "predicted_away_score" | "points"
-    >(
+    supabaseGetAll<LeaderboardPredictionRow>(
       "/season2_predictions?select=user_id,match_id,home_player_id,away_player_id,predicted_home_score,predicted_away_score,points",
     ),
   ]);
@@ -1045,10 +1052,7 @@ async function handleRecalculatePredictions(request: ApiRequest, response: ApiRe
       .map(match => [match.id, { homeScore: match.homeScore!, awayScore: match.awayScore! }]),
   );
 
-  const rows = await supabaseGetAll<Pick<
-    Season2DbPrediction,
-    "id" | "match_id" | "home_player_id" | "away_player_id" | "predicted_home_score" | "predicted_away_score"
-  >(
+  const rows = await supabaseGetAll<RecalculatePredictionRow>(
     "/season2_predictions?select=id,match_id,home_player_id,away_player_id,predicted_home_score,predicted_away_score",
   );
 
