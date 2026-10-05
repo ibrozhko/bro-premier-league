@@ -281,9 +281,7 @@ export function getSeason2PredictionPoints(prediction: Pick<
   Season2DbPrediction,
   "home_player_id" | "away_player_id"
 >>) {
-  return typeof prediction.points === "number"
-    ? prediction.points
-    : calculateSeason2PredictionPoints(prediction);
+  return calculateSeason2PredictionPoints(prediction);
 }
 
 function getResultSide(homeScore: number, awayScore: number) {

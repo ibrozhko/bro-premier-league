@@ -499,7 +499,8 @@ function PredictionsTab({
   ).length;
   const isComplete = pendingMatches.length > 0 && pendingFilledCount === pendingMatches.length;
   const isLocked = pendingMatches.length === 0 && availableMatches.length > 0;
-  const totalPredictionPoints = Object.values(user.predictions).reduce((sum, prediction) => sum + (prediction.points ?? 0), 0);
+  const currentLeaderboardRow = leaderboard.find(row => row.playerId === player.id);
+  const totalPredictionPoints = currentLeaderboardRow?.points ?? Object.values(user.predictions).reduce((sum, prediction) => sum + (prediction.points ?? 0), 0);
   const predictionHistory = getSeason2PredictionHistory(user.predictions);
   const historyRounds = getPredictionHistoryRounds(predictionHistory);
   const selectedHistoryRound = historyRounds.find(round => round.round === historyRound) ?? historyRounds[0];
