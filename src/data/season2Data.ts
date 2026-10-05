@@ -102,6 +102,14 @@ const season2RebalancedSecondLegPlayerIds = [
   "pitch",
   "andrii",
 ];
+const season2SupplementalReturnPairings: Array<[string, string]> = [
+  ["igor", "kiril"],
+  ["sania", "posol"],
+  ["mykola", "dmytro"],
+  ["vitalii", "vlad"],
+  ["pitch", "artem"],
+  ["andrii", "dimas"],
+];
 
 export const season2Seed = "BPL-SEASON-2-FINAL-DRAW-20260803181528-690781000";
 export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {
@@ -423,6 +431,12 @@ function getPairKey(firstPlayerId: string, secondPlayerId: string) {
   return [firstPlayerId, secondPlayerId].sort().join("-");
 }
 
+function getSeason2CalendarPlayer(playerId: string) {
+  const player = season2CalendarPlayerById.get(playerId);
+  if (!player) throw new Error(`Season 2 player not found: ${playerId}`);
+  return player;
+}
+
 export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
   const shuffledPlayers: SchedulePlayer[] = seededShuffle(season2CalendarPlayers, seed);
   if (shuffledPlayers.length % 2 === 1) {
@@ -464,10 +478,21 @@ export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
       50,
     ).matches,
   }));
+  const supplementalReturnRound = makeSeason2Round(
+    season2SupplementalReturnPairings.map(([homeId, awayId]) => [
+      getSeason2CalendarPlayer(homeId),
+      getSeason2CalendarPlayer(awayId),
+    ]),
+    null,
+    season2RebalancedStartRound + rebalancedRounds.length,
+    2,
+    50,
+  );
 
   return [
     ...legacyRounds.filter(round => round.round < season2RebalancedStartRound),
     ...rebalancedRounds,
+    supplementalReturnRound,
   ];
 }
 
@@ -488,7 +513,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "27.09.2026";
+export const season2LastUpdated = "05.10.2026";
 
 export const season2Summary = {
   players: season2Players.length,
