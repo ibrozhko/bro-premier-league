@@ -110,6 +110,18 @@ export async function supabaseGet<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export async function supabaseGetAll<T>(path: string, pageSize = 1000): Promise<T[]> {
+  const rows: T[] = [];
+
+  for (let offset = 0; ; offset += pageSize) {
+    const separator = path.includes("?") ? "&" : "?";
+    const page = await supabaseGet<T[]>(`${path}${separator}limit=${pageSize}&offset=${offset}`);
+
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
+}
+
 export async function supabasePost<T>(path: string, body: unknown, prefer = "return=representation"): Promise<T> {
   const response = await fetch(`${supabaseRestUrl()}${path}`, {
     method: "POST",

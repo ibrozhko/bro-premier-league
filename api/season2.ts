@@ -11,6 +11,7 @@ import {
   setSessionCookie,
   supabaseDelete,
   supabaseGet,
+  supabaseGetAll,
   supabasePatch,
   supabasePost,
   verifyPassword,
@@ -955,7 +956,7 @@ async function handlePredictionStats(request: ApiRequest, response: ApiResponse)
     return;
   }
 
-  const rows = await supabaseGet<Season2DbPrediction[]>(
+  const rows = await supabaseGetAll<Season2DbPrediction>(
     "/season2_predictions?select=match_id,home_player_id,away_player_id,predicted_home_score,predicted_away_score",
   );
   const grouped = new Map<string, Season2DbPrediction[]>();
@@ -994,10 +995,10 @@ async function handlePredictionLeaderboard(request: ApiRequest, response: ApiRes
     supabaseGet<Array<Pick<Season2DbUser, "id" | "player_id" | "display_name" | "username" | "role" | "is_admin">>>(
       "/season2_users?select=id,player_id,display_name,username,role,is_admin",
     ),
-    supabaseGet<Array<Pick<
+    supabaseGetAll<Pick<
       Season2DbPrediction,
       "user_id" | "match_id" | "home_player_id" | "away_player_id" | "predicted_home_score" | "predicted_away_score" | "points"
-    >>>(
+    >(
       "/season2_predictions?select=user_id,match_id,home_player_id,away_player_id,predicted_home_score,predicted_away_score,points",
     ),
   ]);
@@ -1044,10 +1045,10 @@ async function handleRecalculatePredictions(request: ApiRequest, response: ApiRe
       .map(match => [match.id, { homeScore: match.homeScore!, awayScore: match.awayScore! }]),
   );
 
-  const rows = await supabaseGet<Array<Pick<
+  const rows = await supabaseGetAll<Pick<
     Season2DbPrediction,
     "id" | "match_id" | "home_player_id" | "away_player_id" | "predicted_home_score" | "predicted_away_score"
-  >>>(
+  >(
     "/season2_predictions?select=id,match_id,home_player_id,away_player_id,predicted_home_score,predicted_away_score",
   );
 
