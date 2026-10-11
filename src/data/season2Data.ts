@@ -219,6 +219,7 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-17-56": { homeScore: 4, awayScore: 1 },
   "S2-18-52": { homeScore: 1, awayScore: 7 },
   "S2-18-53": { homeScore: 1, awayScore: 4 },
+  "S2-20-56": { homeScore: 2, awayScore: 1 },
 };
 
 function hashSeed(seed: string) {
@@ -523,7 +524,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
 }
 
 export const season2Rounds = applySeason2ResultOverrides(createSeason2Schedule());
-export const season2LastUpdated = "05.10.2026";
+export const season2LastUpdated = "11.10.2026";
 
 export const season2Summary = {
   players: season2Players.length,
