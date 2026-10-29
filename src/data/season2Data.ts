@@ -211,12 +211,7 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-14-06": { homeScore: 6, awayScore: 5 },
   "S2-14-07": { homeScore: 11, awayScore: 2 },
   "S2-14-08": { homeScore: 5, awayScore: 0 },
-  "S2-15-52": { homeScore: 4, awayScore: 8 },
-  "S2-15-54": { homeScore: 3, awayScore: 3 },
-  "S2-15-55": { homeScore: 6, awayScore: 2 },
-  "S2-15-56": { homeScore: 6, awayScore: 2 },
   "S2-15-57": { homeScore: 3, awayScore: 2 },
-  "S2-16-52": { homeScore: 0, awayScore: 6 },
   "S2-16-53": { homeScore: 5, awayScore: 1 },
   "S2-16-54": { homeScore: 6, awayScore: 7 },
   "S2-16-55": { homeScore: 5, awayScore: 3 },
@@ -227,28 +222,21 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
   "S2-17-56": { homeScore: 4, awayScore: 1 },
   "S2-17-57": { homeScore: 6, awayScore: 7 },
   "S2-18-52": { homeScore: 1, awayScore: 7 },
-  "S2-18-53": { homeScore: 1, awayScore: 4 },
   "S2-18-55": { homeScore: 1, awayScore: 2 },
   "S2-18-56": { homeScore: 6, awayScore: 4 },
   "S2-18-57": { homeScore: 4, awayScore: 6 },
   "S2-19-53": { homeScore: 4, awayScore: 4 },
-  "S2-19-54": { homeScore: 4, awayScore: 9 },
   "S2-19-56": { homeScore: 5, awayScore: 6 },
   "S2-19-57": { homeScore: 4, awayScore: 4 },
-  "S2-20-52": { homeScore: 8, awayScore: 2 },
   "S2-20-53": { homeScore: 5, awayScore: 1 },
   "S2-20-54": { homeScore: 4, awayScore: 4 },
   "S2-20-56": { homeScore: 2, awayScore: 1 },
   "S2-20-57": { homeScore: 2, awayScore: 11 },
   "S2-21-52": { homeScore: 1, awayScore: 2 },
   "S2-21-54": { homeScore: 5, awayScore: 1 },
-  "S2-21-55": { homeScore: 1, awayScore: 2 },
   "S2-22-52": { homeScore: 5, awayScore: 6 },
-  "S2-22-53": { homeScore: 1, awayScore: 3 },
   "S2-22-54": { homeScore: 4, awayScore: 1 },
-  "S2-22-56": { homeScore: 4, awayScore: 5 },
   "S2-23-53": { homeScore: 2, awayScore: 2 },
-  "S2-24-52": { homeScore: 5, awayScore: 2 },
 };
 
 function hashSeed(seed: string) {
@@ -649,12 +637,9 @@ function getHistoricalSeason2ScoresByPair() {
     homeScore: number;
     awayScore: number;
   }>();
-  const historicalResultIds = new Set<string>();
-
   for (const match of createOriginalSeason2ScheduleForResultMapping().flatMap(round => round.matches)) {
     const override = season2ResultOverrides[match.id];
     if (override) {
-      historicalResultIds.add(match.id);
       scores.set(`${getPairKey(match.home.id, match.away.id)}:${match.leg}`, {
         homeId: match.home.id,
         awayId: match.away.id,
@@ -663,13 +648,10 @@ function getHistoricalSeason2ScoresByPair() {
     }
   }
 
-  return { scores, historicalResultIds };
+  return scores;
 }
 
-const {
-  scores: historicalSeason2ScoresByPair,
-  historicalResultIds: historicalSeason2ResultIds,
-} = getHistoricalSeason2ScoresByPair();
+const historicalSeason2ScoresByPair = getHistoricalSeason2ScoresByPair();
 
 function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
   return rounds.map(round => ({
@@ -680,9 +662,7 @@ function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
         ? match.home.id === historicalScore.homeId
           ? { homeScore: historicalScore.homeScore, awayScore: historicalScore.awayScore }
           : { homeScore: historicalScore.awayScore, awayScore: historicalScore.homeScore }
-        : historicalSeason2ResultIds.has(match.id)
-          ? undefined
-          : season2ResultOverrides[match.id];
+        : season2ResultOverrides[match.id];
       if (!override) return match;
 
       return {
