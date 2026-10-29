@@ -814,16 +814,20 @@ function assertCurrentSeason2Source(source: string) {
     "createRebalancedSecondLegRounds",
     "\"zheka\"",
     "\"misha\"",
+    "\"dimas\"",
   ];
   const missingMarker = requiredMarkers.find(marker => !source.includes(marker));
   const zhekaIsActive = /export const season2Players: Season2Player\[] = \[(?:(?!\n\];)[\s\S])*\{ id: "zheka"/.test(source);
   const mishaIsActive = /export const season2Players: Season2Player\[] = \[(?:(?!\n\];)[\s\S])*\{ id: "misha"/.test(source);
+  const activePlayersSource = source.split("export const season2Players: Season2Player[] = [")[1]?.split("\n];")[0] ?? "";
+  const dimasIsActive = activePlayersSource.includes('id: "dimas"');
   const zhekaNotInTechnicalSlot = !/const season2CalendarPlayers = \[[\s\S]*?"andrii",\s*"zheka",\s*"dmytro"/.test(source);
 
   if (
     missingMarker ||
     zhekaIsActive ||
     mishaIsActive ||
+    dimasIsActive ||
     zhekaNotInTechnicalSlot ||
     source.includes("fen1kssss\", platform: \"PC\", club: \"Фенербахче")
   ) {
