@@ -525,19 +525,19 @@ function updateSeason2ResultSource(source: string, payload: UpdatePayload) {
     throw new Error(`Некоректний ID матчу Season 2: ${matchId}.`);
   }
 
-  const overrides = getSeason2ResultOverrides(source);
+  const currentOverrides = getSeason2CurrentResultOverrides(source);
   if (payload.homeScore === null && payload.awayScore === null) {
-    overrides.delete(matchId);
+    currentOverrides.set(matchId, null);
   } else {
-    overrides.set(matchId, {
+    currentOverrides.set(matchId, {
       homeScore: payload.homeScore!,
       awayScore: payload.awayScore!,
     });
   }
 
   const nextSource = source.replace(
-    season2OverridesPattern(),
-    buildSeason2ResultOverridesSource(overrides),
+    season2CurrentOverridesPattern(),
+    buildSeason2CurrentOverridesSource(currentOverrides),
   );
 
   if (!updatedPattern.test(nextSource)) {
@@ -744,42 +744,42 @@ function getResultSide(homeScore: number, awayScore: number) {
   return "draw";
 }
 
-function getSeason2ResultOverrides(source: string) {
-  const objectMatch = source.match(season2OverridesPattern());
+function getSeason2CurrentResultOverrides(source: string) {
+  const objectMatch = source.match(season2CurrentOverridesPattern());
   if (!objectMatch?.[1]) {
-    throw new Error("Блок season2ResultOverrides не знайдено у файлі Season 2.");
+    throw new Error("Блок season2CurrentResultOverrides не знайдено у файлі Season 2.");
   }
 
-  const overrides = new Map<string, { homeScore: number; awayScore: number }>();
-  const entryPattern = /"([^"]+)": \{ homeScore: (\d+), awayScore: (\d+) \}/g;
+  const overrides = new Map<string, { homeScore: number; awayScore: number } | null>();
+  const entryPattern = /"([^"]+)": (null|\{ homeScore: (\d+), awayScore: (\d+) \})/g;
   let entryMatch: RegExpExecArray | null;
 
   while ((entryMatch = entryPattern.exec(objectMatch[1])) !== null) {
-    overrides.set(entryMatch[1], {
-      homeScore: Number(entryMatch[2]),
-      awayScore: Number(entryMatch[3]),
+    overrides.set(entryMatch[1], entryMatch[2] === "null" ? null : {
+      homeScore: Number(entryMatch[3]),
+      awayScore: Number(entryMatch[4]),
     });
   }
 
   return overrides;
 }
 
-function buildSeason2ResultOverridesSource(overrides: Map<string, { homeScore: number; awayScore: number }>) {
+function buildSeason2CurrentOverridesSource(overrides: Map<string, { homeScore: number; awayScore: number } | null>) {
   const entries = [...overrides.entries()].sort(([firstId], [secondId]) => firstId.localeCompare(secondId));
 
   if (!entries.length) {
-    return "export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {\n};";
+    return "export const season2CurrentResultOverrides: Record<string, { homeScore: number; awayScore: number } | null> = {};";
   }
 
-  const lines = entries.map(([id, score]) =>
-    `  "${id}": { homeScore: ${score.homeScore}, awayScore: ${score.awayScore} },`,
-  );
+  const lines = entries.map(([id, score]) => score === null
+    ? `  "${id}": null,`
+    : `  "${id}": { homeScore: ${score.homeScore}, awayScore: ${score.awayScore} },`);
 
-  return `export const season2ResultOverrides: Record<string, { homeScore: number; awayScore: number }> = {\n${lines.join("\n")}\n};`;
+  return `export const season2CurrentResultOverrides: Record<string, { homeScore: number; awayScore: number } | null> = {\n${lines.join("\n")}\n};`;
 }
 
-function season2OverridesPattern() {
-  return /export const season2ResultOverrides: Record<string, \{ homeScore: number; awayScore: number \}> = \{([\s\S]*?)\};/;
+function season2CurrentOverridesPattern() {
+  return /export const season2CurrentResultOverrides: Record<string, \{ homeScore: number; awayScore: number \} \| null> = \{([\s\S]*?)\};/;
 }
 
 function assertCurrentWorldCupSource(source: string) {
@@ -801,6 +801,7 @@ function assertCurrentWorldCupSource(source: string) {
 function assertCurrentSeason2Source(source: string) {
   const requiredMarkers = [
     "season2ResultOverrides",
+    "season2CurrentResultOverrides",
     "BPL-SEASON-2-FINAL-DRAW",
     "Лаціо",
     "turbovitalik",
