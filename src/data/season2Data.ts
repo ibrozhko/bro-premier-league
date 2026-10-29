@@ -101,6 +101,11 @@ const season2RebalancedSecondLegPlayerIds = [
   "pitch",
   "andrii",
 ];
+const season2OriginalRebalancedSecondLegPlayerIds = [
+  "dimas",
+  ...season2RebalancedSecondLegPlayerIds,
+];
+const season2OriginalWithdrawnPlayerIds = new Set(["zheka", "misha"]);
 const season2SupplementalReturnPairings: Array<[string, string]> = [
   ["igor", "kiril"],
   ["sania", "posol"],
@@ -419,10 +424,14 @@ function makeSeason2Round(
   } satisfies Season2Round;
 }
 
-function createRebalancedSecondLegRounds(startRound: number) {
-  const players: SchedulePlayer[] = season2RebalancedSecondLegPlayerIds
+function createRebalancedSecondLegRounds(
+  startRound: number,
+  playerIds = season2RebalancedSecondLegPlayerIds,
+  excludedPlayerIds = season2WithdrawnPlayerIds,
+) {
+  const players: SchedulePlayer[] = playerIds
     .map(playerId => season2CalendarPlayerById.get(playerId))
-    .filter((player): player is Season2Player => Boolean(player) && !season2WithdrawnPlayerIds.has(player.id));
+    .filter((player): player is Season2Player => Boolean(player) && !excludedPlayerIds.has(player.id));
 
   const rounds: Season2Round[] = [];
   let rotation = [...players];
@@ -439,6 +448,7 @@ function createRebalancedSecondLegRounds(startRound: number) {
       startRound + roundIndex,
       2,
       50,
+      excludedPlayerIds,
     ));
     rotation = [rotation[0], rotation[rotation.length - 1], ...rotation.slice(1, -1)];
   }
@@ -558,11 +568,121 @@ export function createSeason2Schedule(seed = season2Seed): Season2Round[] {
   ];
 }
 
+function createOriginalSeason2ScheduleForResultMapping(seed = season2Seed): Season2Round[] {
+  const shuffledPlayers: SchedulePlayer[] = seededShuffle(season2CalendarPlayers, seed);
+  if (shuffledPlayers.length % 2 === 1) {
+    shuffledPlayers.push(null);
+  }
+
+  const firstLegRounds: ScheduleRound[] = [];
+  let rotation = [...shuffledPlayers];
+
+  for (let roundIndex = 0; roundIndex < rotation.length - 1; roundIndex += 1) {
+    firstLegRounds.push(makeRoundMatches(rotation, roundIndex));
+    rotation = [rotation[0], rotation[rotation.length - 1], ...rotation.slice(1, -1)];
+  }
+
+  const allPairings = [
+    ...shuffleRoundPairings(firstLegRounds, seed, 1),
+    ...shuffleRoundPairings(firstLegRounds, seed, 2),
+  ];
+  const legacyRounds = allPairings.map(({ pairings, bye }, roundIndex) => {
+    const round = roundIndex + 1;
+    const leg = round <= firstLegRounds.length ? 1 : 2;
+    const roundWithFloatingPlayer = addFloatingPlayerMatch(pairings, bye, leg);
+    return makeSeason2Round(
+      roundWithFloatingPlayer.pairings,
+      roundWithFloatingPlayer.bye,
+      round,
+      leg,
+      0,
+      season2OriginalWithdrawnPlayerIds,
+    );
+  });
+  const firstLegHomeAway = new Map(
+    legacyRounds
+      .filter(round => round.round < season2RebalancedStartRound)
+      .flatMap(round => round.matches)
+      .map(match => [getPairKey(match.home.id, match.away.id), [match.home.id, match.away.id] as [string, string]]),
+  );
+  const rebalancedRounds = createRebalancedSecondLegRounds(
+    season2RebalancedStartRound,
+    season2OriginalRebalancedSecondLegPlayerIds,
+    season2OriginalWithdrawnPlayerIds,
+  ).map(round => ({
+    ...round,
+    matches: makeSeason2Round(
+      orientSecondLegPairings(round.matches.map(match => [match.home, match.away]), firstLegHomeAway),
+      round.bye,
+      round.round,
+      round.leg,
+      50,
+      season2OriginalWithdrawnPlayerIds,
+    ).matches,
+  }));
+  const supplementalReturnRound = makeSeason2Round(
+    [
+      ...season2SupplementalReturnPairings,
+      ["andrii", "dimas"],
+    ].map(([homeId, awayId]) => [
+      getSeason2CalendarPlayer(homeId),
+      getSeason2CalendarPlayer(awayId),
+    ]),
+    null,
+    season2RebalancedStartRound + rebalancedRounds.length,
+    2,
+    50,
+    season2OriginalWithdrawnPlayerIds,
+  );
+
+  return [
+    ...legacyRounds.filter(round => round.round < season2RebalancedStartRound),
+    ...rebalancedRounds,
+    supplementalReturnRound,
+  ];
+}
+
+function getHistoricalSeason2ScoresByPair() {
+  const scores = new Map<string, {
+    homeId: string;
+    awayId: string;
+    homeScore: number;
+    awayScore: number;
+  }>();
+  const historicalResultIds = new Set<string>();
+
+  for (const match of createOriginalSeason2ScheduleForResultMapping().flatMap(round => round.matches)) {
+    const override = season2ResultOverrides[match.id];
+    if (override) {
+      historicalResultIds.add(match.id);
+      scores.set(`${getPairKey(match.home.id, match.away.id)}:${match.leg}`, {
+        homeId: match.home.id,
+        awayId: match.away.id,
+        ...override,
+      });
+    }
+  }
+
+  return { scores, historicalResultIds };
+}
+
+const {
+  scores: historicalSeason2ScoresByPair,
+  historicalResultIds: historicalSeason2ResultIds,
+} = getHistoricalSeason2ScoresByPair();
+
 function applySeason2ResultOverrides(rounds: Season2Round[]): Season2Round[] {
   return rounds.map(round => ({
     ...round,
     matches: round.matches.map(match => {
-      const override = season2ResultOverrides[match.id];
+      const historicalScore = historicalSeason2ScoresByPair.get(`${getPairKey(match.home.id, match.away.id)}:${match.leg}`);
+      const override = historicalScore
+        ? match.home.id === historicalScore.homeId
+          ? { homeScore: historicalScore.homeScore, awayScore: historicalScore.awayScore }
+          : { homeScore: historicalScore.awayScore, awayScore: historicalScore.homeScore }
+        : historicalSeason2ResultIds.has(match.id)
+          ? undefined
+          : season2ResultOverrides[match.id];
       if (!override) return match;
 
       return {
