@@ -552,12 +552,15 @@ function updateSeason2ResultSource(source: string, payload: UpdatePayload) {
     season2CurrentOverridesPattern(),
     buildSeason2CurrentOverridesSource(currentOverrides),
   );
+  const sourceWithCurrentOverrides = season2CurrentOverridesPattern().test(source)
+    ? nextSource
+    : `${nextSource}\n\n${buildSeason2CurrentOverridesSource(currentOverrides)}\n`;
 
-  if (!updatedPattern.test(nextSource)) {
+  if (!updatedPattern.test(sourceWithCurrentOverrides)) {
     throw new Error("Поле season2LastUpdated не знайдено у файлі Season 2.");
   }
 
-  return nextSource.replace(updatedPattern, `$1${formatToday()}$2`);
+  return sourceWithCurrentOverrides.replace(updatedPattern, `$1${formatToday()}$2`);
 }
 
 async function recalculateSeason2PredictionPoints(matchId: string, homeScore: number | null | undefined, awayScore: number | null | undefined) {
@@ -760,7 +763,7 @@ function getResultSide(homeScore: number, awayScore: number) {
 function getSeason2CurrentResultOverrides(source: string) {
   const objectMatch = source.match(season2CurrentOverridesPattern());
   if (!objectMatch?.[1]) {
-    throw new Error("Блок season2CurrentResultOverrides не знайдено у файлі Season 2.");
+    return new Map<string, { homeScore: number; awayScore: number } | null>();
   }
 
   const overrides = new Map<string, { homeScore: number; awayScore: number } | null>();
@@ -814,7 +817,6 @@ function assertCurrentWorldCupSource(source: string) {
 function assertCurrentSeason2Source(source: string) {
   const requiredMarkers = [
     "season2ResultOverrides",
-    "season2CurrentResultOverrides",
     "BPL-SEASON-2-FINAL-DRAW",
     "Лаціо",
     "turbovitalik",
