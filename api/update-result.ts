@@ -56,6 +56,8 @@ type UpdatePayload = {
   password?: string;
   action?: "updateResult" | "updatePlayers" | "startSeason" | "updateWorldCupResult" | "updateSeason2Result";
   matchId?: string;
+  homePlayerId?: string;
+  awayPlayerId?: string;
   matchdayNumber?: number;
   home?: number;
   away?: number;
@@ -328,6 +330,17 @@ function validateWorldCupResultPayload(payload: UpdatePayload): string | null {
 function validateSeason2ResultPayload(payload: UpdatePayload): string | null {
   if (!payload.matchId || typeof payload.matchId !== "string") {
     return "Не вистачає ID матчу Season 2.";
+  }
+
+  const match = season2Rounds.flatMap(round => round.matches).find(item => item.id === payload.matchId);
+  if (!match) {
+    return "Матч не знайдено в актуальному календарі Season 2. Онови сторінку адмінки.";
+  }
+  if (
+    payload.homePlayerId && payload.awayPlayerId &&
+    (payload.homePlayerId !== match.home.id || payload.awayPlayerId !== match.away.id)
+  ) {
+    return "Індекс матчу застарів. Онови сторінку адмінки та вибери матч ще раз.";
   }
 
   if (!isValidScore(payload.homeScore) || !isValidScore(payload.awayScore)) {

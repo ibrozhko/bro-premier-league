@@ -24,6 +24,8 @@ type ResultsTournament = "season2" | "worldCup";
 
 type AdminMatchOption = {
   id: string;
+  homePlayerId?: string;
+  awayPlayerId?: string;
   label: string;
   dateLabel: string;
   homeName: string;
@@ -61,6 +63,8 @@ const worldCupMatchOptions: AdminMatchOption[] = worldCupMatches.map(match => {
 const season2MatchOptions: AdminMatchOption[] = season2Rounds.flatMap(round =>
   round.matches.map(match => ({
     id: match.id,
+    homePlayerId: match.home.id,
+    awayPlayerId: match.away.id,
     label: `Season 2 · Тур ${round.round}`,
     dateLabel: round.dayLabel,
     homeName: match.home.name,
@@ -156,6 +160,8 @@ export default function Admin() {
     await sendAdminAction({
       action: resultsTournament === "season2" ? "updateSeason2Result" : "updateWorldCupResult",
       matchId: selectedMatch.id,
+      homePlayerId: selectedMatch.homePlayerId,
+      awayPlayerId: selectedMatch.awayPlayerId,
       homeScore: nextHomeScore,
       awayScore: nextAwayScore,
     });
