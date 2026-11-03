@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Twitch, X, Youtube } from "lucide-react";
+import { Menu, Moon, Sun, Twitch, X, Youtube } from "lucide-react";
 import logoSeason2 from "@/assets/logo-season2-orange.png";
 import { season2Summary } from "@/data/season2Data";
 
@@ -34,6 +34,17 @@ const youtubeChannel = channels.find(channel => channel.icon === Youtube);
 export default function Season2Shell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [eveningTheme, setEveningTheme] = useState(() =>
+    typeof window !== "undefined" && window.localStorage.getItem("bpl-evening-theme") === "true",
+  );
+
+  const toggleEveningTheme = () => {
+    setEveningTheme(current => {
+      const next = !current;
+      window.localStorage.setItem("bpl-evening-theme", String(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     document.title = "Bro Premier League Season 2 — FC 26";
@@ -48,7 +59,7 @@ export default function Season2Shell({ children }: { children: ReactNode }) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#f7f7f2] text-[#111111]">
+    <div className={`bpl-season2-shell min-h-screen bg-[#f7f7f2] text-[#111111] ${eveningTheme ? "bpl-evening-theme" : ""}`}>
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#111111] text-[#f7f7f2] shadow-[0_16px_40px_rgba(0,0,0,0.25)]">
         <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4 sm:h-16 sm:px-5">
           <Link to={season2Path()} className="flex items-center gap-3">
@@ -77,6 +88,15 @@ export default function Season2Shell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden items-center gap-1 lg:flex">
+            <button
+              type="button"
+              onClick={toggleEveningTheme}
+              aria-label={eveningTheme ? "Увімкнути денну тему" : "Увімкнути вечірню тему"}
+              title={eveningTheme ? "Денна тема" : "Вечірня тема"}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#bbf903] text-[#111111] transition-colors hover:bg-[#ff5a1f] hover:text-white"
+            >
+              {eveningTheme ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
             <div className="group relative">
               <button
                 type="button"
@@ -164,6 +184,14 @@ export default function Season2Shell({ children }: { children: ReactNode }) {
                   );
                 })}
               </div>
+              <button
+                type="button"
+                onClick={toggleEveningTheme}
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md border border-white/15 px-3 py-2 text-xs font-bold text-[#f7f7f2]"
+              >
+                {eveningTheme ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {eveningTheme ? "Денна тема" : "Вечірня тема"}
+              </button>
             </div>
           </div>
         )}

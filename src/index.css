@@ -317,6 +317,49 @@
     color: #343434;
   }
 
+  .bpl-evening-theme {
+    background: #111111 !important;
+    color: #f7f7f2;
+  }
+
+  .bpl-evening-theme [class~="bg-[#f7f7f2]"],
+  .bpl-evening-theme [class~="bg-[#f3f3f6]"],
+  .bpl-evening-theme [class~="bg-[#efefea]"],
+  .bpl-evening-theme [class~="bg-white"] {
+    background-color: #181818 !important;
+  }
+
+  .bpl-evening-theme [class~="text-[#111111]"],
+  .bpl-evening-theme [class~="text-[#343434]"] {
+    color: #f7f7f2 !important;
+  }
+
+  .bpl-evening-theme [class~="bg-[#bbf903]"][class~="text-[#111111]"],
+  .bpl-evening-theme [class~="bg-[#d6ff3d]"][class~="text-[#111111]"],
+  .bpl-evening-theme [class~="bg-accent"][class~="text-accent-foreground"] {
+    color: #111111 !important;
+  }
+
+  .bpl-evening-theme [class~="border-[#111111]"],
+  .bpl-evening-theme [class~="border-[#d8d8d3]"] {
+    border-color: rgb(255 255 255 / 0.14) !important;
+  }
+
+  .bpl-evening-theme table,
+  .bpl-evening-theme .light-panel {
+    background: #181818 !important;
+    color: #f7f7f2;
+  }
+
+  .bpl-evening-theme table tbody tr,
+  .bpl-evening-theme table thead tr {
+    background: #181818 !important;
+  }
+
+  .bpl-evening-theme table tbody tr:hover {
+    background: #242424 !important;
+  }
+
   @media (max-width: 640px) {
     .coax-light main.content-shell {
       padding-top: 1.5rem;
