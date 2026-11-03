@@ -317,9 +317,10 @@
     color: #343434;
   }
 
-  .bpl-evening-theme {
+  .bpl-evening-theme,
+  .bpl-evening-theme[class*="text-[#111111]"] {
     background: #111111 !important;
-    color: #f7f7f2;
+    color: #f7f7f2 !important;
   }
 
   .bpl-evening-theme [class~="bg-[#f7f7f2]"],
@@ -329,19 +330,19 @@
     background-color: #181818 !important;
   }
 
-  .bpl-evening-theme [class~="text-[#111111]"],
-  .bpl-evening-theme [class~="text-[#343434]"] {
+  .bpl-evening-theme [class*="text-[#111111]"],
+  .bpl-evening-theme [class*="text-[#343434]"] {
     color: #f7f7f2 !important;
   }
 
-  .bpl-evening-theme [class~="bg-[#bbf903]"][class~="text-[#111111]"],
-  .bpl-evening-theme [class~="bg-[#d6ff3d]"][class~="text-[#111111]"],
-  .bpl-evening-theme [class~="bg-accent"][class~="text-accent-foreground"] {
+  .bpl-evening-theme [class*="bg-[#bbf903]"][class*="text-[#111111]"],
+  .bpl-evening-theme [class*="bg-[#d6ff3d]"][class*="text-[#111111]"],
+  .bpl-evening-theme [class*="bg-accent"][class*="text-accent-foreground"] {
     color: #111111 !important;
   }
 
-  .bpl-evening-theme [class~="border-[#111111]"],
-  .bpl-evening-theme [class~="border-[#d8d8d3]"] {
+  .bpl-evening-theme [class*="border-[#111111]"],
+  .bpl-evening-theme [class*="border-[#d8d8d3]"] {
     border-color: rgb(255 255 255 / 0.14) !important;
   }
 
