@@ -252,6 +252,10 @@ export const season2ResultOverrides: Record<string, { homeScore: number; awaySco
 };
 
 export const season2CurrentResultOverrides: Record<string, { homeScore: number; awayScore: number } | null> = {
+  "S2-06-02": null,
+  "S2-07-04": null,
+  "S2-12-06": null,
+  "S2-15-55": null,
   "S2-17-53": { homeScore: 0, awayScore: 3 },
   "S2-19-52": { homeScore: 2, awayScore: 2 },
   "S2-21-53": { homeScore: 3, awayScore: 3 },
